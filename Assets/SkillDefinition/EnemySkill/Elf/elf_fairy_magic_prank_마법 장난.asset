@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: elf_fairy_magic_prank
   skillName: "\uB9C8\uBC95 \uC7A5\uB09C"
   description: "\uD53C\uD574 100%. \uC2E4\uBA85 15% \uD655\uB960 \uBD80\uC5EC."
-  icon: {fileID: 21300000, guid: 757ef7c180839f747a5cb1709940eaaa, type: 3}
+  icon: {fileID: 21300000, guid: 14878d9e05a2a2045bf146381fbd15c3, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0

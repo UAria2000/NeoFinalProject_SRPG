@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: elf_spirit_deer_ram
   skillName: "\uB4E4\uC774\uBC1B\uAE30"
   description: "\uD53C\uD574 100%."
-  icon: {fileID: 21300000, guid: 7eb02e34d6fadf34683d45a5b70dca0e, type: 3}
+  icon: {fileID: 21300000, guid: 0b15faf5e4d1a1c469bfa776f0c86c79, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0

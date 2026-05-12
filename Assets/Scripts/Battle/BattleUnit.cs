@@ -946,21 +946,6 @@ public class BattleUnit
         if (statType == StatModifierType.None || duration <= 0 || magnitude == 0)
             return false;
 
-        for (int i = 0; i < timedModifiers.Count; i++)
-        {
-            BattleTimedModifierInstance existing = timedModifiers[i];
-            if (existing.statModifierType != statType)
-                continue;
-
-            existing.magnitude += magnitude;
-            existing.remainingTurns = duration;
-
-            if (existing.magnitude == 0)
-                timedModifiers.RemoveAt(i);
-
-            return true;
-        }
-
         BattleTimedModifierInstance instance = new BattleTimedModifierInstance();
         instance.statModifierType = statType;
         instance.magnitude = magnitude;
@@ -999,24 +984,28 @@ public class BattleUnit
 
     public int GetTimedModifierMagnitude(StatModifierType statType)
     {
+        int total = 0;
         for (int i = 0; i < timedModifiers.Count; i++)
         {
-            if (timedModifiers[i].statModifierType == statType)
-                return timedModifiers[i].magnitude;
+            BattleTimedModifierInstance instance = timedModifiers[i];
+            if (instance != null && instance.statModifierType == statType)
+                total += instance.magnitude;
         }
 
-        return 0;
+        return total;
     }
 
     public int GetTimedModifierRemainingTurns(StatModifierType statType)
     {
+        int max = 0;
         for (int i = 0; i < timedModifiers.Count; i++)
         {
-            if (timedModifiers[i].statModifierType == statType)
-                return timedModifiers[i].remainingTurns;
+            BattleTimedModifierInstance instance = timedModifiers[i];
+            if (instance != null && instance.statModifierType == statType)
+                max = Mathf.Max(max, instance.remainingTurns);
         }
 
-        return 0;
+        return max;
     }
 
     public bool HasTimedModifier(StatModifierType statType)
@@ -1087,6 +1076,11 @@ public class BattleUnit
     public IReadOnlyList<BattleStatusInstance> Statuses
     {
         get { return statuses; }
+    }
+
+    public IReadOnlyList<BattleTimedModifierInstance> TimedModifiers
+    {
+        get { return timedModifiers; }
     }
 
     public int GetStatusStackCount(StatusEffectType statusType)

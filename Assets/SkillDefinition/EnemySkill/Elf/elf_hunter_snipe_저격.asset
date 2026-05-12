@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: elf_hunter_snipe
   skillName: "\uC800\uACA9"
   description: "\uD53C\uD574 100%."
-  icon: {fileID: 21300000, guid: 1acc91a0569be674bbcd7c08d2f3920b, type: 3}
+  icon: {fileID: 21300000, guid: 17f5aacc03944e14c858724518fe9067, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0

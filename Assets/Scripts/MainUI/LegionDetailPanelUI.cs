@@ -153,6 +153,7 @@ public class LegionDetailPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text selectedSkillAccuracyText;
     [SerializeField] private TMP_Text selectedSkillCooldownText;
     [SerializeField] private TMP_Text selectedSkillEffectText;
+    [SerializeField] private SkillEffectListUI selectedSkillEffectList;
 
     [Header("Stat Hover")]
     [SerializeField] private LegionStatHoverTargetUI dmgHover;
@@ -780,10 +781,11 @@ public class LegionDetailPanelUI : MonoBehaviour
 
         SetText(selectedSkillNameText, skill != null ? skill.skillName : string.Empty);
         SetText(selectedSkillDescriptionText, BattleSkillInfoFormatter.GetDescriptionValueText(skill));
-        SetText(selectedSkillPowerText, BattleSkillInfoFormatter.GetPowerValueText(skill));
+        SetText(selectedSkillPowerText, string.Empty);
         SetText(selectedSkillAccuracyText, BattleSkillInfoFormatter.GetSuccessValueText(skill));
         SetText(selectedSkillCooldownText, BattleSkillInfoFormatter.GetCooldownValueText(skill));
-        SetText(selectedSkillEffectText, BattleSkillInfoFormatter.GetEffectValueText(skill));
+        SetText(selectedSkillEffectText, BattleSkillInfoFormatter.GetUnifiedEffectValueText(skill));
+        if (selectedSkillEffectList != null) selectedSkillEffectList.Show(skill);
 
         RefreshPositionHexes(skill);
     }

@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: elf_mage_fireball
   skillName: "\uD654\uC5FC\uAD6C"
   description: "\uD53C\uD574 100%. \uD654\uC0C1 100% \uD655\uB960 \uBD80\uC5EC."
-  icon: {fileID: 21300000, guid: d121f7b32481b084bb92da82f8ee7002, type: 3}
+  icon: {fileID: 21300000, guid: 5e7323a48cd97374aba5267f99c2dc11, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0

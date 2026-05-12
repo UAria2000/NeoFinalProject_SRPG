@@ -34,7 +34,7 @@ MonoBehaviour:
   stunResist: 0
   frostResist: 0
   blindResist: 0
-  basicAttack: {fileID: 0}
+  basicAttack: {fileID: 11400000, guid: d30674cf3037a6547ad71b47abaf0503, type: 2}
   varianceRules:
     maxHpRange: {x: 0, y: 0}
     dmgRange: {x: 0, y: 0}

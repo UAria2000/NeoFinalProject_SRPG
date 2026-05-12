@@ -12,6 +12,7 @@ public class SkillTooltipUI : HoverPopupUIBase
     [SerializeField] private TMP_Text accuracyOrSuccessText;
     [SerializeField] private TMP_Text positionText;
     [SerializeField] private TMP_Text cooldownText;
+    [SerializeField] private SkillEffectListUI effectListUI;
 
     public virtual void Show(SkillDefinition skill, Vector2 pointerScreenPosition)
     {
@@ -25,7 +26,8 @@ public class SkillTooltipUI : HoverPopupUIBase
 
         if (iconImage != null) iconImage.sprite = skill.icon;
         if (nameText != null) nameText.text = skill.skillName;
-        if (descText != null) descText.text = skill.description;
+        if (descText != null) descText.text = BattleSkillInfoFormatter.GetTooltipBodyText(skill);
+        if (effectListUI != null) effectListUI.Show(skill);
 
         if (typeText != null)
             typeText.text = skill.resolutionMode == SkillResolutionMode.Attack ? "공격형" : "성공판정형";
@@ -47,6 +49,7 @@ public class SkillTooltipUI : HoverPopupUIBase
 
     public virtual void Hide()
     {
+        if (effectListUI != null) effectListUI.HideAll();
         HideRoot(root);
     }
 }

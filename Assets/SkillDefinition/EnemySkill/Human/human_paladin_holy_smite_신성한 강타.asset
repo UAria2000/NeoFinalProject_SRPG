@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: human_paladin_holy_smite
   skillName: "\uC2E0\uC131\uD55C \uAC15\uD0C0"
   description: "\uD53C\uD574 100%, \uAE30\uC808 30% \uD655\uB960"
-  icon: {fileID: 21300000, guid: c3ef702d960e12b4ca636f10f6439030, type: 3}
+  icon: {fileID: 21300000, guid: ffd25651fd561ce43aba6b9f40a01c98, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0

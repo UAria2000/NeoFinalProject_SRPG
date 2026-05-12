@@ -2,6 +2,18 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
+public class SkillEffectDisplayEntry
+{
+    public Sprite icon;
+    public string text;
+
+    public SkillEffectDisplayEntry(Sprite icon, string text)
+    {
+        this.icon = icon;
+        this.text = text;
+    }
+}
+
 public static class BattleSkillInfoFormatter
 {
     public static SkillClass GetSkillClass(SkillDefinition skill)
@@ -11,15 +23,12 @@ public static class BattleSkillInfoFormatter
 
         int raw = (int)skill.skillClass;
 
-        // Former learnTags was a flags enum. If an old asset still contains multiple bits,
-        // normalize it into one display class using this priority.
         if ((raw & (int)SkillClass.Unique) != 0) return SkillClass.Unique;
         if ((raw & (int)SkillClass.Common) != 0) return SkillClass.Common;
         if ((raw & (int)SkillClass.Melee) != 0) return SkillClass.Melee;
         if ((raw & (int)SkillClass.Mid) != 0) return SkillClass.Mid;
         if ((raw & (int)SkillClass.Ranged) != 0) return SkillClass.Ranged;
 
-        // Old None/empty data falls back to the unit-style range tag so existing assets do not show blank badges.
         switch (skill.rangeTag)
         {
             case CharacterRangeType.Mid:
@@ -40,16 +49,11 @@ public static class BattleSkillInfoFormatter
     {
         switch (skillClass)
         {
-            case SkillClass.Unique:
-                return "고유";
-            case SkillClass.Common:
-                return "공통";
-            case SkillClass.Mid:
-                return "미드";
-            case SkillClass.Ranged:
-                return "레인지";
-            default:
-                return "밀리";
+            case SkillClass.Unique: return "고유";
+            case SkillClass.Common: return "공통";
+            case SkillClass.Mid: return "미드";
+            case SkillClass.Ranged: return "레인지";
+            default: return "밀리";
         }
     }
 
@@ -58,13 +62,7 @@ public static class BattleSkillInfoFormatter
         if (skill == null || string.IsNullOrWhiteSpace(skill.description))
             return string.Empty;
 
-        string description = skill.description.Trim();
-
-        // The generated ally/enemy assets currently store mechanical summaries in description
-        // (for example: "피해 120%. 준 HP 피해의 25% 회복...").
-        // The detail panel already has separate Power / Accuracy / Cooldown / Effect fields,
-        // so showing that text again makes power and effects look mixed. Hide obvious mechanical summaries here.
-        return LooksLikeMechanicalSummary(description) ? string.Empty : description;
+        return skill.description.Trim();
     }
 
     public static string GetTooltipBodyText(SkillDefinition skill)
@@ -73,7 +71,6 @@ public static class BattleSkillInfoFormatter
             return string.Empty;
 
         StringBuilder sb = new StringBuilder();
-
         string description = GetDescriptionValueText(skill);
         if (!string.IsNullOrWhiteSpace(description))
         {
@@ -81,10 +78,9 @@ public static class BattleSkillInfoFormatter
             sb.AppendLine();
         }
 
-        sb.AppendLine(GetPowerText(skill));
         sb.AppendLine(GetSuccessText(skill));
         sb.AppendLine(GetCooldownText(skill));
-        sb.Append(GetEffectText(skill));
+        sb.Append(GetUnifiedEffectText(skill));
         return sb.ToString();
     }
 
@@ -95,44 +91,9 @@ public static class BattleSkillInfoFormatter
 
     public static string GetPowerValueText(SkillDefinition skill)
     {
-        if (skill == null || skill.effects == null || skill.effects.Count == 0)
-            return "-";
-
-        // Priority: if the skill deals damage, Power should show the main damage coefficient only.
-        // Heal/drain/shield riders are effects, not the main power line.
-        List<string> damageEntries = new List<string>();
-        for (int i = 0; i < skill.effects.Count; i++)
-        {
-            BattleEffectBlock block = skill.effects[i];
-            if (block == null || block.kind != BattleEffectKind.Damage)
-                continue;
-
-            damageEntries.Add("피해 " + FormatEffectPower(block));
-        }
-
-        if (damageEntries.Count > 0)
-            return string.Join(" / ", damageEntries);
-
-        // Non-damaging skills may use Power to show heal/shield magnitude.
-        List<string> supportEntries = new List<string>();
-        for (int i = 0; i < skill.effects.Count; i++)
-        {
-            BattleEffectBlock block = skill.effects[i];
-            if (block == null)
-                continue;
-
-            switch (block.kind)
-            {
-                case BattleEffectKind.Heal:
-                    supportEntries.Add("회복 " + FormatEffectPower(block));
-                    break;
-                case BattleEffectKind.Shield:
-                    supportEntries.Add("보호막 " + FormatEffectPower(block));
-                    break;
-            }
-        }
-
-        return supportEntries.Count > 0 ? string.Join(" / ", supportEntries) : "-";
+        // 새 UI에서는 위력/효과를 분리하지 않고 효과 목록 하나에 통합한다.
+        // 기존 Text 필드 호환을 위해 값만 필요한 경우에도 통합 효과 문자열을 반환한다.
+        return GetUnifiedEffectValueText(skill);
     }
 
     public static string GetSuccessText(SkillDefinition skill)
@@ -185,16 +146,40 @@ public static class BattleSkillInfoFormatter
 
     public static string GetEffectText(SkillDefinition skill)
     {
-        return "효과: " + GetEffectValueText(skill);
+        return GetUnifiedEffectText(skill);
     }
 
     public static string GetEffectValueText(SkillDefinition skill)
     {
-        if (skill == null)
+        return GetUnifiedEffectValueText(skill);
+    }
+
+    public static string GetUnifiedEffectText(SkillDefinition skill)
+    {
+        return "효과: " + GetUnifiedEffectValueText(skill);
+    }
+
+    public static string GetUnifiedEffectValueText(SkillDefinition skill)
+    {
+        List<SkillEffectDisplayEntry> entries = GetUnifiedEffectEntries(skill);
+        if (entries.Count <= 0)
             return "-";
 
-        bool hasDamage = skill.HasDamageEffect();
-        List<string> entries = new List<string>();
+        List<string> texts = new List<string>();
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (entries[i] != null && !string.IsNullOrWhiteSpace(entries[i].text))
+                texts.Add(entries[i].text);
+        }
+
+        return texts.Count > 0 ? string.Join(", ", texts) : "-";
+    }
+
+    public static List<SkillEffectDisplayEntry> GetUnifiedEffectEntries(SkillDefinition skill)
+    {
+        List<SkillEffectDisplayEntry> entries = new List<SkillEffectDisplayEntry>();
+        if (skill == null)
+            return entries;
 
         if (skill.effects != null)
         {
@@ -204,76 +189,83 @@ public static class BattleSkillInfoFormatter
                 if (block == null)
                     continue;
 
-                AddEffectEntry(entries, FormatEffectBlockForEffectLine(skill, block, hasDamage));
+                AddEffectEntry(entries, block.displayIcon, FormatEffectBlock(skill, block));
             }
         }
+
+        AddGimmickEntries(entries, skill);
+        return entries;
+    }
+
+    private static void AddGimmickEntries(List<SkillEffectDisplayEntry> entries, SkillDefinition skill)
+    {
+        if (skill == null)
+            return;
 
         switch (skill.activeGimmick)
         {
             case ActiveSkillGimmick.DelayedReinforcement:
-                AddEffectEntry(entries, "지연 증원");
+                AddEffectEntry(entries, null, "지연 증원");
                 break;
             case ActiveSkillGimmick.BleedDrainStrike:
                 if (!HasEffectOfKind(skill, BattleEffectKind.Heal))
-                    AddEffectEntry(entries, "준 HP 피해 회복");
+                    AddEffectEntry(entries, null, "준 HP 피해 회복");
                 break;
             case ActiveSkillGimmick.ForceMoveTargetToRankAfterHit:
-                AddEffectEntry(entries, string.Format("대상 {0}열 이동", Mathf.Clamp(skill.forcedTargetMoveToRank, 1, 4)));
+                AddEffectEntry(entries, null, string.Format("대상 {0}열 이동", Mathf.Clamp(skill.forcedTargetMoveToRank, 1, 4)));
                 break;
             case ActiveSkillGimmick.PushTargetBackwardAfterHit:
                 if (skill.pushBackFailFinalPowerPercent > 0f)
-                    AddEffectEntry(entries, string.Format("대상 뒤로 {0}칸, 이동 면역 시 피해 {1}%", Mathf.Max(1, skill.forcedTargetMoveSteps), FormatPercentNumber(skill.pushBackFailFinalPowerPercent)));
+                    AddEffectEntry(entries, null, string.Format("대상 뒤로 {0}칸, 이동 면역 시 피해 {1}%", Mathf.Max(1, skill.forcedTargetMoveSteps), FormatPercentNumber(skill.pushBackFailFinalPowerPercent)));
                 else
-                    AddEffectEntry(entries, string.Format("대상 뒤로 {0}칸", Mathf.Max(1, skill.forcedTargetMoveSteps)));
+                    AddEffectEntry(entries, null, string.Format("대상 뒤로 {0}칸", Mathf.Max(1, skill.forcedTargetMoveSteps)));
                 break;
             case ActiveSkillGimmick.PullTargetForwardAfterHit:
-                AddEffectEntry(entries, string.Format("대상 앞으로 {0}칸", Mathf.Max(1, skill.forcedTargetMoveSteps)));
+                AddEffectEntry(entries, null, string.Format("대상 앞으로 {0}칸", Mathf.Max(1, skill.forcedTargetMoveSteps)));
                 break;
             case ActiveSkillGimmick.AbyssReboundSelfRecoil20FromTotalDamage:
-                AddEffectEntry(entries, "심연 반동");
+                AddEffectEntry(entries, null, "심연 반동");
                 break;
             case ActiveSkillGimmick.BlackArenaDuel2Turns:
-                AddEffectEntry(entries, string.Format("결투 {0}턴", Mathf.Max(1, skill.blackArenaDuelDurationTurns)));
+                AddEffectEntry(entries, null, string.Format("결투 {0}턴", Mathf.Max(1, skill.blackArenaDuelDurationTurns)));
                 break;
             case ActiveSkillGimmick.FleeOnNextOwnTurn:
-                AddEffectEntry(entries, "다음 자기 턴 도주");
+                AddEffectEntry(entries, null, "다음 자기 턴 도주");
                 break;
             case ActiveSkillGimmick.RandomRepositionTargetsOnHit:
-                AddEffectEntry(entries, string.Format("무작위 위치 이동 {0}%", FormatPercentNumber(skill.randomRepositionChancePercent)));
+                AddEffectEntry(entries, null, string.Format("무작위 위치 이동 {0}%", FormatPercentNumber(skill.randomRepositionChancePercent)));
                 break;
             case ActiveSkillGimmick.ImmediateSummonInFront:
-                AddEffectEntry(entries, "본인 앞 소환");
+                AddEffectEntry(entries, null, "본인 앞 소환");
                 break;
             case ActiveSkillGimmick.ShieldSelfFromDamageDealt:
-                AddEffectEntry(entries, string.Format("준 HP 피해의 {0}% 보호막", FormatPercentNumber(skill.selfShieldFromDamageDealtPercent)));
+                AddEffectEntry(entries, null, string.Format("준 HP 피해의 {0}% 보호막", FormatPercentNumber(skill.selfShieldFromDamageDealtPercent)));
                 break;
             case ActiveSkillGimmick.ChainLightning:
-                AddEffectEntry(entries, string.Format("연쇄 피해 {0}% / {1}%", FormatPercentNumber(skill.chainLightningFirstJumpPowerPercent), FormatPercentNumber(skill.chainLightningSecondJumpPowerPercent)));
+                AddEffectEntry(entries, null, string.Format("연쇄 피해 {0}% / {1}%", FormatPercentNumber(skill.chainLightningFirstJumpPowerPercent), FormatPercentNumber(skill.chainLightningSecondJumpPowerPercent)));
                 break;
             case ActiveSkillGimmick.ChainExecutionOnce:
-                AddEffectEntry(entries, "처치 시 1회 연쇄");
+                AddEffectEntry(entries, null, "처치 시 1회 연쇄");
                 break;
         }
 
         if (skill.HasSelfMoveAfterUse())
         {
             string direction = skill.selfMoveDirection == SkillSelfMoveDirection.Forward ? "사용자 전진" : "사용자 후퇴";
-            AddEffectEntry(entries, string.Format("{0} {1}칸", direction, Mathf.Max(1, skill.selfMoveSteps)));
+            AddEffectEntry(entries, null, string.Format("{0} {1}칸", direction, Mathf.Max(1, skill.selfMoveSteps)));
         }
 
         if (skill.HasSelfStatusAfterUse())
-            AddEffectEntry(entries, "자가 " + FormatStatus(skill.selfApplyStatusAfterUse, skill.selfApplyStatusDurationTurns, 100f));
+            AddEffectEntry(entries, null, "자가 " + FormatStatus(skill.selfApplyStatusAfterUse, skill.selfApplyStatusDurationTurns, 100f));
 
         if (skill.alsoApplyToSelfWhenTargetingAlly)
-            AddEffectEntry(entries, "자신에게도 적용");
+            AddEffectEntry(entries, null, "자신에게도 적용");
 
         if (skill.disableAfterUseInBattle)
-            AddEffectEntry(entries, "전투당 1회");
-
-        return entries.Count > 0 ? string.Join(", ", entries) : "-";
+            AddEffectEntry(entries, null, "전투당 1회");
     }
 
-    private static string FormatEffectBlockForEffectLine(SkillDefinition skill, BattleEffectBlock block, bool hasDamage)
+    private static string FormatEffectBlock(SkillDefinition skill, BattleEffectBlock block)
     {
         if (block == null)
             return string.Empty;
@@ -281,35 +273,21 @@ public static class BattleSkillInfoFormatter
         switch (block.kind)
         {
             case BattleEffectKind.Damage:
-                // Damage coefficient belongs to Power.
-                return string.Empty;
-
+                return "피해 " + FormatEffectPower(block);
             case BattleEffectKind.Heal:
-                // For pure support heals, magnitude belongs to Power. For damage+drain, it is a rider effect.
-                if (!hasDamage)
-                    return string.Empty;
                 if (IsDrainSkill(skill))
                     return string.Format("준 HP 피해의 {0}% 회복", FormatPercentNumber(block.powerPercent));
                 return "회복 " + FormatEffectPower(block);
-
             case BattleEffectKind.Shield:
-                // For pure shield skills, magnitude belongs to Power. For damage+shield riders, show it as effect.
-                if (!hasDamage)
-                    return string.Empty;
                 return "보호막 " + FormatEffectPower(block);
-
             case BattleEffectKind.Buff:
                 return FormatTimedModifier(block, true);
-
             case BattleEffectKind.Debuff:
                 return FormatTimedModifier(block, false);
-
             case BattleEffectKind.ApplyStatus:
                 return FormatStatus(block.statusType, block.durationTurns, block.successChancePercent);
-
             case BattleEffectKind.RemoveStatus:
                 return BattleStatusUtility.GetDisplayName(block.statusType) + " 해제";
-
             default:
                 return string.Empty;
         }
@@ -322,7 +300,7 @@ public static class BattleSkillInfoFormatter
         string direction = isBuff ? "증가" : "감소";
 
         if (block.statModifierType == StatModifierType.IncomingDamageTakenPercent)
-            direction = isBuff ? "받는 피해 감소" : "받는 피해 증가";
+            direction = isBuff ? "방어 증가" : "방어 감소";
 
         string turnText = block.durationTurns > 0 ? string.Format(" {0}턴", block.durationTurns) : string.Empty;
 
@@ -351,25 +329,25 @@ public static class BattleSkillInfoFormatter
         if (block.flatValue > 0)
             return block.flatValue.ToString();
 
-        string basis = block.valueReference == EffectValueReference.TargetMaxHP ? "대상 최대 HP" : "DMG";
+        string basis = block.valueReference == EffectValueReference.TargetMaxHP ? "HP" : "DMG";
         if (block.useRandomPowerPercentRange)
             return string.Format("{0} {1}~{2}%", basis, block.GetMinPowerPercent(), block.GetMaxPowerPercent());
 
         return string.Format("{0} {1}%", basis, FormatPercentNumber(block.powerPercent));
     }
 
-    private static string GetStatModifierLabel(StatModifierType type)
+    public static string GetStatModifierLabel(StatModifierType type)
     {
         switch (type)
         {
-            case StatModifierType.DMG: return "DMG";
-            case StatModifierType.SPD: return "SPD";
-            case StatModifierType.HIT: return "HIT";
-            case StatModifierType.AC: return "AC";
-            case StatModifierType.IDT: return "IDT";
-            case StatModifierType.CRI: return "CRI";
-            case StatModifierType.CRD: return "CRD";
-            case StatModifierType.IncomingDamageTakenPercent: return "IDT";
+            case StatModifierType.DMG: return "피해";
+            case StatModifierType.SPD: return "속도";
+            case StatModifierType.HIT: return "명중";
+            case StatModifierType.AC: return "회피";
+            case StatModifierType.IDT: return "방어";
+            case StatModifierType.CRI: return "치명";
+            case StatModifierType.CRD: return "치명피해";
+            case StatModifierType.IncomingDamageTakenPercent: return "방어";
             case StatModifierType.PierceBackOne: return "관통";
             default: return "효과";
         }
@@ -394,13 +372,18 @@ public static class BattleSkillInfoFormatter
         return false;
     }
 
-    private static void AddEffectEntry(List<string> entries, string value)
+    private static void AddEffectEntry(List<SkillEffectDisplayEntry> entries, Sprite icon, string value)
     {
         if (entries == null || string.IsNullOrWhiteSpace(value))
             return;
 
-        if (!entries.Contains(value))
-            entries.Add(value);
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (entries[i] != null && entries[i].text == value && entries[i].icon == icon)
+                return;
+        }
+
+        entries.Add(new SkillEffectDisplayEntry(icon, value));
     }
 
     private static string FormatPercentNumber(float value)
@@ -408,25 +391,5 @@ public static class BattleSkillInfoFormatter
         return Mathf.Approximately(value, Mathf.Round(value))
             ? Mathf.RoundToInt(value).ToString()
             : value.ToString("0.#");
-    }
-
-    private static bool LooksLikeMechanicalSummary(string value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-            return false;
-
-        string compact = value.Replace(" ", string.Empty);
-        int score = 0;
-
-        if (compact.StartsWith("피해") || compact.StartsWith("적") || compact.StartsWith("자신") || compact.StartsWith("대상"))
-            score++;
-        if (compact.Contains("피해") || compact.Contains("회복") || compact.Contains("보호막") || compact.Contains("기절") || compact.Contains("출혈") || compact.Contains("화상") || compact.Contains("동상") || compact.Contains("실명"))
-            score++;
-        if (compact.Contains("%") || compact.Contains("턴") || compact.Contains("스택") || compact.Contains("DMG") || compact.Contains("HP"))
-            score++;
-        if (compact.Contains("쿨타임") || compact.Contains("명중") || compact.Contains("계수") || compact.Contains("확률"))
-            score++;
-
-        return score >= 2;
     }
 }

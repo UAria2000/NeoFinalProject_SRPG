@@ -287,7 +287,7 @@ public class BattleUIController : MonoBehaviour
         if (currentUnitInfoPanel != null) currentUnitInfoPanel.Hide();
         if (enemyInfoPanel != null) enemyInfoPanel.Hide();
         if (enemyDetailPopupUI != null) enemyDetailPopupUI.Hide();
-        if (actionWheelUI != null) actionWheelUI.HandleBlankLeftClick();
+        // 액션휠은 기존 규칙대로 우클릭/전용 버튼으로만 닫는다.
     }
 
     public void HandleCurrentActorClicked(BattleUnit unit)

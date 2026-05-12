@@ -8,6 +8,7 @@ public class BattleUnitView : MonoBehaviour
 {
     [Header("Core")]
     [SerializeField] private Image unitBodyImage;
+    [SerializeField] private Image attackMotionImage;
     [SerializeField] private TMP_Text labelText;
     [SerializeField] private Image hpFillImage;
     [SerializeField] private BattleStatusIconBarUI statusIconBar;
@@ -16,6 +17,9 @@ public class BattleUnitView : MonoBehaviour
     [SerializeField] private GameObject turnMark;
     [SerializeField] private GameObject targetMark;
     [SerializeField] private Image highlightImage;
+    [SerializeField] private Color currentTurnHighlightColor = new Color(0.996f, 0.855f, 0.451f, 1f); // #FEDA73
+    [SerializeField] private Color selectableHighlightColor = new Color(1f, 0.635f, 0.675f, 1f); // #FFA2AC
+    [SerializeField] private Color hoverHighlightColor = new Color(1f, 0.227f, 0.286f, 1f); // #FF3A49
     [SerializeField] private RectTransform hoverAnchor;
 
     [Header("Click Area")]
@@ -49,6 +53,10 @@ public class BattleUnitView : MonoBehaviour
     private Sprite bodyOverrideSprite;
     private Coroutine hitFlashRoutine;
     private Color baseBodyColor = Color.white;
+    private bool currentTurnHighlightActive;
+    private bool selectableHighlightActive;
+    private bool hoverHighlightActive;
+    private bool usingAttackMotionImage;
 
     public BattleUnit Unit { get; private set; }
     public RectTransform HoverAnchor => hoverAnchor != null ? hoverAnchor : rectTransform;
@@ -74,6 +82,10 @@ public class BattleUnitView : MonoBehaviour
         currentlyUsingFinishedVisual = false;
         bodyOverrideSprite = null;
         baseBodyColor = Color.white;
+        usingAttackMotionImage = false;
+        currentTurnHighlightActive = false;
+        selectableHighlightActive = false;
+        hoverHighlightActive = false;
 
         if (labelText != null)
             labelText.text = label;
@@ -82,6 +94,8 @@ public class BattleUnitView : MonoBehaviour
         SetTurnMark(false);
         SetTargetMark(false);
         SetHighlighted(false);
+        ConfigureAttackMotionImage(false);
+        ApplyHighlightSprite();
         SetActionOwnerRing(false);
         SetInfoSelectedRing(false);
         SetFinishedTurnVisual(false);
@@ -196,6 +210,7 @@ public class BattleUnitView : MonoBehaviour
     public void RefreshBattleVisualState(bool isCurrentActionOwner, bool isInfoSelected, bool isFinishedThisRound)
     {
         SetActionOwnerRing(isCurrentActionOwner);
+        SetCurrentTurnHighlight(isCurrentActionOwner);
         SetInfoSelectedRing(isInfoSelected);
         SetFinishedTurnVisual(isFinishedThisRound && !isCurrentActionOwner);
         RefreshHPInstant();
@@ -215,8 +230,56 @@ public class BattleUnitView : MonoBehaviour
 
     public void SetHighlighted(bool active)
     {
-        if (highlightImage != null)
-            highlightImage.gameObject.SetActive(active);
+        SetSelectableHighlight(active);
+    }
+
+    public void SetCurrentTurnHighlight(bool active)
+    {
+        currentTurnHighlightActive = active;
+        RefreshHighlightVisual();
+    }
+
+    public void SetSelectableHighlight(bool active)
+    {
+        selectableHighlightActive = active;
+        RefreshHighlightVisual();
+    }
+
+    public void SetHoverHighlight(bool active)
+    {
+        hoverHighlightActive = active;
+        RefreshHighlightVisual();
+    }
+
+    private void ApplyHighlightSprite()
+    {
+        if (highlightImage == null)
+            return;
+
+        Sprite sprite = Unit != null && Unit.ViewDefinition != null ? Unit.ViewDefinition.GetBattleHighlightSprite() : null;
+        highlightImage.sprite = sprite;
+        highlightImage.preserveAspect = true;
+        highlightImage.raycastTarget = false;
+        RefreshHighlightVisual();
+    }
+
+    private void RefreshHighlightVisual()
+    {
+        if (highlightImage == null)
+            return;
+
+        bool active = hoverHighlightActive || selectableHighlightActive || currentTurnHighlightActive;
+        highlightImage.gameObject.SetActive(active && highlightImage.sprite != null);
+
+        if (!active || highlightImage.sprite == null)
+            return;
+
+        if (hoverHighlightActive)
+            highlightImage.color = hoverHighlightColor;
+        else if (selectableHighlightActive)
+            highlightImage.color = selectableHighlightColor;
+        else
+            highlightImage.color = currentTurnHighlightColor;
     }
 
     public void SetActionOwnerRing(bool active)
@@ -267,6 +330,7 @@ public class BattleUnitView : MonoBehaviour
         if (sprite == null && Unit != null)
             sprite = Unit.BattleSprite;
 
+        unitBodyImage.gameObject.SetActive(!usingAttackMotionImage);
         unitBodyImage.sprite = sprite;
         ApplyBodyAlpha(currentlyUsingFinishedVisual);
         unitBodyImage.preserveAspect = true;
@@ -296,16 +360,55 @@ public class BattleUnitView : MonoBehaviour
     public void SetBodySpriteOverride(Sprite overrideSprite)
     {
         bodyOverrideSprite = overrideSprite;
+
+        if (overrideSprite != null && attackMotionImage != null)
+        {
+            usingAttackMotionImage = true;
+            ConfigureAttackMotionImage(true, overrideSprite);
+            if (unitBodyImage != null)
+                unitBodyImage.gameObject.SetActive(false);
+            return;
+        }
+
+        usingAttackMotionImage = false;
+        ConfigureAttackMotionImage(false);
         ApplyBodySprite(Unit != null && Unit.IsDead);
     }
 
     public void ClearBodySpriteOverride()
     {
-        if (bodyOverrideSprite == null)
+        if (bodyOverrideSprite == null && !usingAttackMotionImage)
             return;
 
         bodyOverrideSprite = null;
+        usingAttackMotionImage = false;
+        ConfigureAttackMotionImage(false);
+        if (unitBodyImage != null)
+            unitBodyImage.gameObject.SetActive(true);
         ApplyBodySprite(Unit != null && Unit.IsDead);
+    }
+
+    private void ConfigureAttackMotionImage(bool active, Sprite sprite = null)
+    {
+        if (attackMotionImage == null)
+            return;
+
+        attackMotionImage.gameObject.SetActive(active && sprite != null);
+        attackMotionImage.sprite = active ? sprite : null;
+        attackMotionImage.enabled = active && sprite != null;
+        attackMotionImage.preserveAspect = true;
+        attackMotionImage.raycastTarget = false;
+
+        if (!active || Unit == null || Unit.ViewDefinition == null)
+            return;
+
+        RectTransform rect = attackMotionImage.rectTransform;
+        rect.anchoredPosition = Unit.ViewDefinition.attackSpriteAnchoredPosition;
+        if (Unit.ViewDefinition.attackSpriteSizeDelta.x > 0f && Unit.ViewDefinition.attackSpriteSizeDelta.y > 0f)
+            rect.sizeDelta = Unit.ViewDefinition.attackSpriteSizeDelta;
+        rect.localScale = Unit.ViewDefinition.attackSpriteLocalScale == Vector3.zero
+            ? Vector3.one
+            : Unit.ViewDefinition.attackSpriteLocalScale;
     }
 
     public void SetPositionInstant(Vector2 anchoredPosition)

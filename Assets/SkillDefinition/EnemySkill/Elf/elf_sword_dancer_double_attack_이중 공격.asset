@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillId: elf_sword_dancer_double_attack
   skillName: "\uC774\uC911 \uACF5\uACA9"
-  description: "\uD53C\uD574 70%\uB85C \uAC19\uC740 \uB300\uC0C1\uC744 2\uD68C \uACF5\uACA9\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: e8f905b7a0470c340899ae482d7c2a17, type: 3}
+  description: "\uD53C\uD574 50%\uB85C \uAC19\uC740 \uB300\uC0C1\uC744 2\uD68C \uACF5\uACA9\uD569\uB2C8\uB2E4."
+  icon: {fileID: 21300000, guid: 99db52e72fe5a254d8a10f756f8a4bbc, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0
@@ -96,10 +96,10 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 70
+    powerPercent: 50
     useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
-    randomPowerPercentMax: 100
+    randomPowerPercentMin: 50
+    randomPowerPercentMax: 50
     flatValue: 0
     valueReference: 0
     durationTurns: 0

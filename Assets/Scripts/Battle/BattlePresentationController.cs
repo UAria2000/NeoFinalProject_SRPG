@@ -13,7 +13,7 @@ public class BattlePresentationController : MonoBehaviour
 
     [Header("Blank Battlefield Click")]
     [Tooltip("빈 전장 영역을 좌클릭했을 때 아군/적군 정보 패널과 적 상세 팝업을 닫을지 여부입니다. 끄면 외부 클릭으로 UI가 닫히지 않습니다.")]
-    [SerializeField] private bool closeInfoPanelsOnBlankBattlefieldLeftClick = false;
+    [SerializeField] private bool closeInfoPanelsOnBlankBattlefieldLeftClick = true;
 
     [Tooltip("빈 전장 영역을 좌클릭했을 때 현재 스킬/이동/아이템/포획 대상 선택을 취소할지 여부입니다. 우클릭 취소 구조라면 끄는 것을 추천합니다.")]
     [SerializeField] private bool cancelPendingActionOnBlankBattlefieldLeftClick = false;
@@ -260,10 +260,7 @@ public class BattlePresentationController : MonoBehaviour
             battleManager.ClearInfoSelections();
 
             if (uiController != null)
-            {
-                uiController.HideEnemyDetailPopup();
                 uiController.HandleBlankFieldLeftClick();
-            }
 
             changed = true;
         }
@@ -335,11 +332,26 @@ public class BattlePresentationController : MonoBehaviour
 
         if (skill != null && uiController != null)
             uiController.ShowPlayerSkillTooltip(skill, screenPosition);
+
+        if (skill != null && battleManager.CurrentState == TurnState.PlayerInput && unit == battleManager.CurrentActingUnit)
+        {
+            System.Collections.Generic.List<BattleUnit> validTargets = BattleTargeting.GetValidSkillTargets(
+                unit,
+                skill,
+                battleManager.AllyFormation,
+                battleManager.EnemyFormation);
+
+            if (viewManager != null)
+                viewManager.SetSelectableHighlights(validTargets);
+        }
     }
 
     public void OnPlayerSkillButtonHoverExit()
     {
         uiController?.HideSkillTooltip();
+
+        if (battleManager == null || battleManager.InputMode != BattleInputMode.WaitingForSkillTarget)
+            viewManager?.ClearSelectableHighlights();
     }
 
     public void OnFleeButtonHoverEnter(Vector3 screenPosition)

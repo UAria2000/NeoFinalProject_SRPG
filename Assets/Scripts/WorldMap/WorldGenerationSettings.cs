@@ -92,7 +92,69 @@ public class WorldGenerationSettings : ScriptableObject
     public IReadOnlyList<Sprite> GetFactionEnemyPortraitPool(FactionType faction)
     {
         FactionPresentation presentation = GetFactionPresentation(faction);
-        return presentation != null ? presentation.enemyPortraitPool : Array.Empty<Sprite>();
+        if (presentation == null)
+            return Array.Empty<Sprite>();
+
+        List<Sprite> result = new List<Sprite>();
+        if (presentation.enemyPortraitPool != null)
+        {
+            for (int i = 0; i < presentation.enemyPortraitPool.Count; i++)
+            {
+                if (presentation.enemyPortraitPool[i] != null)
+                    result.Add(presentation.enemyPortraitPool[i]);
+            }
+        }
+
+        if (presentation.units != null)
+        {
+            for (int i = 0; i < presentation.units.Count; i++)
+            {
+                FactionUnitPresentationEntry entry = presentation.units[i];
+                if (entry == null)
+                    continue;
+
+                UnitViewDefinition view = entry.unitViewDefinition;
+                if (view == null && entry.unitDefinition != null)
+                    view = entry.unitDefinition.defaultViewDefinition;
+
+                Sprite sprite = view != null ? view.GetSlotFaceSprite() : null;
+                if (sprite != null && !result.Contains(sprite))
+                    result.Add(sprite);
+            }
+        }
+
+        return result;
+    }
+
+    public Sprite GetFactionIcon(FactionType faction)
+    {
+        FactionPresentation presentation = GetFactionPresentation(faction);
+        return presentation != null ? presentation.factionIcon : null;
+    }
+
+    public bool TryGetFactionForUnit(UnitDefinition unitDefinition, UnitViewDefinition unitViewDefinition, out FactionType faction)
+    {
+        faction = FactionType.None;
+        for (int i = 0; i < factionPresentations.Count; i++)
+        {
+            FactionPresentation presentation = factionPresentations[i];
+            if (presentation == null)
+                continue;
+
+            if (presentation.ContainsUnit(unitDefinition, unitViewDefinition))
+            {
+                faction = presentation.faction;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Sprite GetFactionIconForUnit(UnitDefinition unitDefinition, UnitViewDefinition unitViewDefinition)
+    {
+        FactionType faction;
+        return TryGetFactionForUnit(unitDefinition, unitViewDefinition, out faction) ? GetFactionIcon(faction) : null;
     }
 
     public Sprite GetTileDisplayIcon(WorldTileData tile)
@@ -285,10 +347,40 @@ public class FactionPresentation
 {
     public FactionType faction = FactionType.None;
     public string displayName;
+    public Sprite factionIcon;
     public Sprite tileSprite;
     public Sprite unknownSprite;
     public Color fallbackColor = Color.white;
     public List<Sprite> enemyPortraitPool = new List<Sprite>();
+    [Tooltip("이 팩션에 속하는 유닛과 기본 ViewDefinition입니다. 적 정보 패널의 팩션 아이콘과 월드 타일 적 프리뷰 보정에 사용합니다.")]
+    public List<FactionUnitPresentationEntry> units = new List<FactionUnitPresentationEntry>();
+
+    public bool ContainsUnit(UnitDefinition unitDefinition, UnitViewDefinition unitViewDefinition)
+    {
+        if (units == null)
+            return false;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            FactionUnitPresentationEntry entry = units[i];
+            if (entry == null)
+                continue;
+
+            if (unitDefinition != null && entry.unitDefinition == unitDefinition)
+                return true;
+            if (unitViewDefinition != null && entry.unitViewDefinition == unitViewDefinition)
+                return true;
+        }
+
+        return false;
+    }
+}
+
+[Serializable]
+public class FactionUnitPresentationEntry
+{
+    public UnitDefinition unitDefinition;
+    public UnitViewDefinition unitViewDefinition;
 }
 
 [Serializable]

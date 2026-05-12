@@ -159,7 +159,10 @@ public class BattleViewManager : MonoBehaviour
             if (pair.Value == null) continue;
             pair.Value.SetTurnMark(false);
             pair.Value.SetTargetMark(false);
+            pair.Value.SetSelectableHighlight(false);
             pair.Value.SetHighlighted(false);
+            pair.Value.SetHoverHighlight(false);
+            pair.Value.SetCurrentTurnHighlight(false);
         }
     }
 
@@ -181,15 +184,61 @@ public class BattleViewManager : MonoBehaviour
         {
             BattleUnitView view = GetView(units[i]);
             if (view != null)
+            {
                 view.SetTargetMark(true);
+                view.SetSelectableHighlight(true);
+            }
         }
     }
 
     public void ClearTargetMarkers()
     {
         foreach (KeyValuePair<BattleUnit, BattleUnitView> pair in unitViews)
+        {
             if (pair.Value != null)
+            {
                 pair.Value.SetTargetMark(false);
+                pair.Value.SetSelectableHighlight(false);
+            }
+        }
+    }
+
+
+    public void SetSelectableHighlights(List<BattleUnit> units)
+    {
+        ClearSelectableHighlights();
+        if (units == null)
+            return;
+
+        for (int i = 0; i < units.Count; i++)
+        {
+            BattleUnitView view = GetView(units[i]);
+            if (view != null)
+                view.SetSelectableHighlight(true);
+        }
+    }
+
+    public void ClearSelectableHighlights()
+    {
+        foreach (KeyValuePair<BattleUnit, BattleUnitView> pair in unitViews)
+        {
+            if (pair.Value != null)
+                pair.Value.SetSelectableHighlight(false);
+        }
+    }
+
+    public void SetHoverHighlight(BattleUnit unit)
+    {
+        foreach (KeyValuePair<BattleUnit, BattleUnitView> pair in unitViews)
+        {
+            if (pair.Value != null)
+                pair.Value.SetHoverHighlight(pair.Key == unit);
+        }
+    }
+
+    public void ClearHoverHighlight()
+    {
+        SetHoverHighlight(null);
     }
 
     public void PlayEffect(GameObject prefab, Vector3 worldPosition, float duration = 2f)
@@ -263,7 +312,10 @@ public class BattleViewManager : MonoBehaviour
             if (unit == null || view == null)
                 continue;
 
-            bool isCurrent = manager.CurrentActingUnit == unit;
+            bool isCurrent = manager.CurrentActingUnit == unit &&
+                             manager.CurrentState != TurnState.ExecutingAction &&
+                             manager.CurrentState != TurnState.BattleEnded &&
+                             manager.InputMode != BattleInputMode.None;
             bool isInfoSelected = manager.SelectedAllyInfoUnit == unit || manager.SelectedEnemyInfoUnit == unit;
             bool isFinished = manager.HasUnitFinishedTurnThisRound(unit);
 
