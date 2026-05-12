@@ -15,11 +15,11 @@ MonoBehaviour:
   skillId: dragon_soldier_spear
   skillName: "\uC6A9\uC544\uBCD1 \uCC3D\uACA9"
   description: "\uD53C\uD574 100%."
-  icon: {fileID: 21300000, guid: 7180a95a75570b840bfe8148c8b2326e, type: 3}
+  icon: {fileID: 21300000, guid: 9ccdc4842410aa4448b1ddaba567f051, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0
-  skillClass: 2
+  skillClass: 1
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0

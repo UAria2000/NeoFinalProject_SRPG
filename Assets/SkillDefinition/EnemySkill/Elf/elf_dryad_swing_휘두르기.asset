@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: elf_dryad_swing
   skillName: "\uD718\uB450\uB974\uAE30"
   description: "\uD53C\uD574 100%. \uCD9C\uD608 30% \uD655\uB960 \uBD80\uC5EC."
-  icon: {fileID: 21300000, guid: e4047c367483d8d49a4c7eedfb0a8066, type: 3}
+  icon: {fileID: 21300000, guid: dfa0630f313b8ed4dbc833d5a58a574d, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0

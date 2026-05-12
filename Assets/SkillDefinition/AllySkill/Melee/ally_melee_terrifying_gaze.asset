@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: ally_melee_terrifying_gaze
   skillName: "\uACF5\uD3EC\uC758 \uC2DC\uC120"
   description: "\uD53C\uD574 110%. \uAE30\uC808 30%."
-  icon: {fileID: 21300000, guid: 6255cef486f8dd04780272c5c06af2d2, type: 3}
+  icon: {fileID: 21300000, guid: 9b1e8ac35a9aef9468e1d82b28d8200d, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0

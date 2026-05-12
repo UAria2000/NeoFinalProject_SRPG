@@ -19,7 +19,7 @@ MonoBehaviour:
     \uBCF4\uC815\uD569\uB2C8\uB2E4. \uC5EC\uB7EC \uC6A9\uC544\uBCD1\uC774 \uC788\uC5B4\uB3C4
     \uC911\uCCA9\uB418\uC9C0 \uC54A\uC73C\uBA70, \uD53C\uD574\uB9CC \uAC10\uC18C\uD558\uACE0
     \uC0C1\uD0DC\uC774\uC0C1\uC740 \uC815\uC0C1 \uC801\uC6A9\uB429\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 20e99451f4d7994478c0b32fb17a25fc, type: 3}
+  icon: {fileID: 21300000, guid: ae37208b8dbd9484ea764deecf00f719, type: 3}
   isBasicAttack: 0
   castType: 1
   activeRole: 3

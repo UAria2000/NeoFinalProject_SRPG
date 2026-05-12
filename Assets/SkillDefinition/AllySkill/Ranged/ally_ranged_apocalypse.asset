@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: ally_ranged_apocalypse
   skillName: "\uC885\uB9D0"
   description: "\uC801 \uC804\uCCB4 \uD53C\uD574 70%. \uD654\uC0C1 80%."
-  icon: {fileID: 21300000, guid: 134ea3e713efdc84c8eb0b3888f4e03b, type: 3}
+  icon: {fileID: 21300000, guid: 684eec95c294b1f4f9afa66c0608d540, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0
