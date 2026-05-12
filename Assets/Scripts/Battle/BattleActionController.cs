@@ -610,8 +610,16 @@ public class BattleActionController : MonoBehaviour
         if (view != null)
         {
             if (result.DidHit)
-                view.PlayHitFlash(battleManager != null ? battleManager.HitFlashDuration : 1f);
-            yield return StartCoroutine(view.AnimateHPChange(0.15f));
+            {
+                Coroutine hpRoutine = StartCoroutine(view.AnimateHPChange(0.15f));
+                yield return StartCoroutine(view.PlayHitReaction(battleManager != null ? battleManager.HitFlashDuration : 1f));
+                if (hpRoutine != null)
+                    yield return hpRoutine;
+            }
+            else
+            {
+                yield return StartCoroutine(view.AnimateHPChange(0.15f));
+            }
         }
 
         if (target.IsDead)

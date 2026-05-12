@@ -58,8 +58,8 @@ public class BattleUnitView : MonoBehaviour
     private bool selectableHighlightActive;
     private bool hoverHighlightActive;
     private bool usingAttackMotionImage;
-    private int highlightMotionBlockCount;
-    private bool hitFlashSuppressingHighlight;
+    private bool hitReactionActive;
+    private bool movementMotionActive;
 
     public BattleUnit Unit { get; private set; }
     public RectTransform HoverAnchor => hoverAnchor != null ? hoverAnchor : rectTransform;
@@ -86,8 +86,8 @@ public class BattleUnitView : MonoBehaviour
         bodyOverrideSprite = null;
         baseBodyColor = Color.white;
         usingAttackMotionImage = false;
-        highlightMotionBlockCount = 0;
-        hitFlashSuppressingHighlight = false;
+        hitReactionActive = false;
+        movementMotionActive = false;
         currentTurnHighlightActive = false;
         selectableHighlightActive = false;
         hoverHighlightActive = false;
@@ -274,7 +274,7 @@ public class BattleUnitView : MonoBehaviour
         if (highlightImage == null)
             return;
 
-        bool suppressedByMotion = highlightMotionBlockCount > 0;
+        bool suppressedByMotion = hitReactionActive || movementMotionActive || usingAttackMotionImage;
         bool active = !suppressedByMotion && (hoverHighlightActive || selectableHighlightActive || currentTurnHighlightActive);
         highlightImage.gameObject.SetActive(active && highlightImage.sprite != null);
 
@@ -287,18 +287,6 @@ public class BattleUnitView : MonoBehaviour
             highlightImage.color = selectableHighlightColor;
         else
             highlightImage.color = currentTurnHighlightColor;
-    }
-
-    private void BeginHighlightMotionBlock()
-    {
-        highlightMotionBlockCount++;
-        RefreshHighlightVisual();
-    }
-
-    private void EndHighlightMotionBlock()
-    {
-        highlightMotionBlockCount = Mathf.Max(0, highlightMotionBlockCount - 1);
-        RefreshHighlightVisual();
     }
 
     public void SetActionOwnerRing(bool active)
@@ -349,7 +337,7 @@ public class BattleUnitView : MonoBehaviour
         if (sprite == null && Unit != null)
             sprite = Unit.BattleSprite;
 
-        unitBodyImage.gameObject.SetActive(!usingAttackMotionImage);
+        unitBodyImage.gameObject.SetActive(!usingAttackMotionImage && !hitReactionActive);
         unitBodyImage.sprite = sprite;
         ApplyBodyAlpha(currentlyUsingFinishedVisual);
         unitBodyImage.preserveAspect = true;
@@ -384,14 +372,16 @@ public class BattleUnitView : MonoBehaviour
         {
             usingAttackMotionImage = true;
             ConfigureAttackMotionImage(true, overrideSprite);
-            if (unitBodyImage != null)
-                unitBodyImage.gameObject.SetActive(false);
+            RefreshPrimaryMotionVisibility();
+            RefreshHighlightVisual();
             return;
         }
 
         usingAttackMotionImage = false;
         ConfigureAttackMotionImage(false);
         ApplyBodySprite(Unit != null && Unit.IsDead);
+        RefreshPrimaryMotionVisibility();
+        RefreshHighlightVisual();
     }
 
     public void ClearBodySpriteOverride()
@@ -402,9 +392,9 @@ public class BattleUnitView : MonoBehaviour
         bodyOverrideSprite = null;
         usingAttackMotionImage = false;
         ConfigureAttackMotionImage(false);
-        if (unitBodyImage != null)
-            unitBodyImage.gameObject.SetActive(true);
         ApplyBodySprite(Unit != null && Unit.IsDead);
+        RefreshPrimaryMotionVisibility();
+        RefreshHighlightVisual();
     }
 
     private void ConfigureAttackMotionImage(bool active, Sprite sprite = null)
@@ -412,9 +402,10 @@ public class BattleUnitView : MonoBehaviour
         if (attackMotionImage == null)
             return;
 
-        attackMotionImage.gameObject.SetActive(active && sprite != null);
-        attackMotionImage.sprite = active ? sprite : null;
-        attackMotionImage.enabled = active && sprite != null;
+        bool show = active && sprite != null;
+        attackMotionImage.gameObject.SetActive(show && !hitReactionActive);
+        attackMotionImage.sprite = show ? sprite : null;
+        attackMotionImage.enabled = show;
         attackMotionImage.preserveAspect = true;
         attackMotionImage.raycastTarget = false;
 
@@ -456,6 +447,29 @@ public class BattleUnitView : MonoBehaviour
             : Unit.ViewDefinition.hitSpriteLocalScale;
     }
 
+
+    private void RefreshPrimaryMotionVisibility()
+    {
+        if (unitBodyImage != null)
+            unitBodyImage.gameObject.SetActive(!hitReactionActive && !usingAttackMotionImage);
+
+        if (attackMotionImage != null)
+        {
+            bool showAttack = !hitReactionActive && usingAttackMotionImage && attackMotionImage.sprite != null;
+            attackMotionImage.gameObject.SetActive(showAttack);
+            attackMotionImage.enabled = showAttack;
+        }
+    }
+
+    private void SetMotionHighlightSuppressed(bool suppressed)
+    {
+        if (movementMotionActive == suppressed)
+            return;
+
+        movementMotionActive = suppressed;
+        RefreshHighlightVisual();
+    }
+
     public void SetPositionInstant(Vector2 anchoredPosition)
     {
         if (rectTransform == null)
@@ -477,9 +491,8 @@ public class BattleUnitView : MonoBehaviour
         if (rectTransform == null)
             yield break;
 
-        BeginHighlightMotionBlock();
-
         Vector2 start = rectTransform.anchoredPosition;
+        SetMotionHighlightSuppressed(true);
         float elapsed = 0f;
         while (elapsed < duration)
         {
@@ -488,8 +501,7 @@ public class BattleUnitView : MonoBehaviour
             yield return null;
         }
         rectTransform.anchoredPosition = anchoredPosition;
-
-        EndHighlightMotionBlock();
+        SetMotionHighlightSuppressed(false);
     }
 
     public IEnumerator MoveToPosition(Vector3 anchoredPosition, float duration)
@@ -546,7 +558,7 @@ public class BattleUnitView : MonoBehaviour
         if (rectTransform == null)
             yield break;
 
-        BeginHighlightMotionBlock();
+        SetMotionHighlightSuppressed(true);
 
         bool usedTemporarySprite = temporaryBodySprite != null;
         if (usedTemporarySprite)
@@ -600,10 +612,10 @@ public class BattleUnitView : MonoBehaviour
 
         rectTransform.anchoredPosition = originalPos;
 
-        EndHighlightMotionBlock();
-
         if (usedTemporarySprite)
             ClearBodySpriteOverride();
+
+        SetMotionHighlightSuppressed(false);
     }
 
     private IEnumerator MoveAnchoredPosition(Vector2 from, Vector2 to, float duration)
@@ -633,27 +645,44 @@ public class BattleUnitView : MonoBehaviour
         if (!gameObject.activeInHierarchy || unitBodyImage == null)
             return;
 
+        StopHitReactionImmediate();
+        hitFlashRoutine = StartCoroutine(HitFlashRoutine(Mathf.Max(0.01f, duration)));
+    }
+
+    public IEnumerator PlayHitReaction(float duration)
+    {
+        if (!gameObject.activeInHierarchy || unitBodyImage == null)
+            yield break;
+
+        if (hitFlashRoutine != null)
+            yield return hitFlashRoutine;
+
+        hitFlashRoutine = StartCoroutine(HitFlashRoutine(Mathf.Max(0.01f, duration)));
+        yield return hitFlashRoutine;
+    }
+
+    private void StopHitReactionImmediate()
+    {
         if (hitFlashRoutine != null)
         {
             StopCoroutine(hitFlashRoutine);
             hitFlashRoutine = null;
-            if (hitFlashSuppressingHighlight)
-            {
-                hitFlashSuppressingHighlight = false;
-                EndHighlightMotionBlock();
-            }
         }
 
-        hitFlashRoutine = StartCoroutine(HitFlashRoutine(Mathf.Max(0.01f, duration)));
+        hitReactionActive = false;
+        ConfigureHitMotionImage(false);
+
+        if (unitBodyImage != null)
+            unitBodyImage.color = baseBodyColor;
+
+        RefreshPrimaryMotionVisibility();
+        RefreshHighlightVisual();
     }
 
     private IEnumerator HitFlashRoutine(float duration)
     {
         if (unitBodyImage == null)
             yield break;
-
-        BeginHighlightMotionBlock();
-        hitFlashSuppressingHighlight = true;
 
         Sprite originalSprite = unitBodyImage.sprite;
         Color originalColor = unitBodyImage.color;
@@ -666,13 +695,13 @@ public class BattleUnitView : MonoBehaviour
         flash.a = Mathf.Clamp01(hitFlashColor.a);
         Color flashColor = Color.Lerp(start, flash, flash.a);
 
+        hitReactionActive = true;
+        RefreshPrimaryMotionVisibility();
+        RefreshHighlightVisual();
+
         if (useDedicatedHitImage)
         {
             ConfigureHitMotionImage(true, hitSprite, flashColor);
-            if (unitBodyImage != null)
-                unitBodyImage.gameObject.SetActive(false);
-            if (attackMotionImage != null)
-                attackMotionImage.gameObject.SetActive(false);
         }
         else
         {
@@ -681,6 +710,7 @@ public class BattleUnitView : MonoBehaviour
                 unitBodyImage.sprite = hitSprite;
                 swappedBodySprite = true;
             }
+            unitBodyImage.gameObject.SetActive(true);
             unitBodyImage.color = flashColor;
         }
 
@@ -700,10 +730,6 @@ public class BattleUnitView : MonoBehaviour
         if (useDedicatedHitImage)
         {
             ConfigureHitMotionImage(false);
-            if (unitBodyImage != null)
-                unitBodyImage.gameObject.SetActive(!usingAttackMotionImage);
-            if (usingAttackMotionImage && attackMotionImage != null)
-                attackMotionImage.gameObject.SetActive(true);
         }
         else
         {
@@ -715,12 +741,9 @@ public class BattleUnitView : MonoBehaviour
         if (unitBodyImage != null && !useDedicatedHitImage && unitBodyImage.color.a == 0f)
             unitBodyImage.color = originalColor;
 
-        if (hitFlashSuppressingHighlight)
-        {
-            hitFlashSuppressingHighlight = false;
-            EndHighlightMotionBlock();
-        }
-
+        hitReactionActive = false;
+        RefreshPrimaryMotionVisibility();
+        RefreshHighlightVisual();
         hitFlashRoutine = null;
     }
 

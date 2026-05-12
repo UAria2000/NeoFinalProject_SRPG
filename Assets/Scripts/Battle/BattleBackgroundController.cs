@@ -28,10 +28,28 @@ public class BattleBackgroundController : MonoBehaviour
     }
 
 #if UNITY_EDITOR
+    private bool validateLayoutQueued;
+
     private void OnValidate()
     {
-        if (!Application.isPlaying)
-            ApplyReferenceLayout();
+        // RectTransform 값을 OnValidate 중에 직접 바꾸면 Unity가
+        // "SendMessage cannot be called during Awake, CheckConsistency, or OnValidate"
+        // 경고를 출력할 수 있습니다. 에디터 다음 틱으로 미뤄서 적용합니다.
+        if (Application.isPlaying || validateLayoutQueued)
+            return;
+
+        validateLayoutQueued = true;
+        UnityEditor.EditorApplication.delayCall += ApplyReferenceLayoutDelayedInEditor;
+    }
+
+    private void ApplyReferenceLayoutDelayedInEditor()
+    {
+        validateLayoutQueued = false;
+
+        if (this == null || Application.isPlaying)
+            return;
+
+        ApplyReferenceLayout();
     }
 #endif
 

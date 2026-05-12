@@ -84,6 +84,12 @@ public class WorldRunManager : MonoBehaviour
     private WorldMovementController movementController;
     private WorldTileData previousTileBeforeArrival;
     private bool worldSettlementQueued;
+
+    [Header("Manual Reusable Events")]
+    [SerializeField, Min(0.05f)] private float graveyardDoubleClickThreshold = 0.35f;
+
+    private int lastManualGraveyardClickTileId = -1;
+    private float lastManualGraveyardClickTime = -999f;
     private bool openingWorldSettlement;
 
     private string runtimeDifficultyId = "normal";
@@ -187,6 +193,14 @@ public class WorldRunManager : MonoBehaviour
         if (IsBusy || tile == null || CurrentTile == null || movementController == null)
             return;
 
+        if (IsManualEnterTile(tile))
+        {
+            HandleManualEnterTileClicked(tile);
+            return;
+        }
+
+        lastManualGraveyardClickTileId = -1;
+
         if (tile.tileId == CurrentTile.tileId)
         {
             ClearSelection();
@@ -211,6 +225,66 @@ public class WorldRunManager : MonoBehaviour
         SelectedTile = tile;
         RaiseSelectionChanged();
         RaiseWorldStateChanged();
+    }
+
+    private void HandleManualEnterTileClicked(WorldTileData tile)
+    {
+        float now = Time.unscaledTime;
+        bool isDoubleClick =
+            SelectedTile != null &&
+            SelectedTile.tileId == tile.tileId &&
+            lastManualGraveyardClickTileId == tile.tileId &&
+            now - lastManualGraveyardClickTime <= Mathf.Max(0.05f, graveyardDoubleClickThreshold);
+
+        if (isDoubleClick)
+        {
+            lastManualGraveyardClickTileId = -1;
+            TryEnterTileEvent(tile);
+            return;
+        }
+
+        SelectedTile = tile;
+        lastManualGraveyardClickTileId = tile.tileId;
+        lastManualGraveyardClickTime = now;
+        RaiseSelectionChanged();
+        RaiseWorldStateChanged();
+    }
+
+    public bool IsManualEnterTile(WorldTileData tile)
+    {
+        return tile != null && tile.IsPlayerOwned && tile.eventType == WorldTileEventType.Graveyard;
+    }
+
+    public bool CanEnterTileEvent(WorldTileData tile)
+    {
+        if (IsBusy || !IsManualEnterTile(tile))
+            return false;
+
+        return IsCurrentTile(tile) || CanMoveTo(tile);
+    }
+
+    public bool TryEnterSelectedTileEvent()
+    {
+        return TryEnterTileEvent(SelectedTile);
+    }
+
+    public bool TryEnterTileEvent(WorldTileData tile)
+    {
+        if (!CanEnterTileEvent(tile) || eventController == null)
+            return false;
+
+        if (!IsCurrentTile(tile))
+        {
+            MoveToTileInternal(tile, false);
+        }
+        else
+        {
+            SelectedTile = null;
+            RaiseSelectionChanged();
+            RaiseWorldStateChanged();
+        }
+
+        return eventController.TryHandleArrival(tile);
     }
 
     public void HandleBackgroundClicked()
@@ -2151,9 +2225,17 @@ public class WorldRunManager : MonoBehaviour
                 eventDescriptionText = saved.eventDescriptionText ?? string.Empty,
             };
 
-            tile.previewEnemyPortraits = RestoreSavedEnemyPreviewPortraits(tile, saved);
-            if (tile.IsCombatEvent && tile.previewEnemyPortraits.Count < 4)
-                tile.previewEnemyPortraits = BuildEnemyPreviewListForTile(tile);
+            if (tile.IsCombatEvent)
+            {
+                List<Sprite> rebuiltPreview = BuildEnemyPreviewListForTile(tile);
+                tile.previewEnemyPortraits = rebuiltPreview.Count > 0
+                    ? rebuiltPreview
+                    : RestoreSavedEnemyPreviewPortraits(tile, saved);
+            }
+            else
+            {
+                tile.previewEnemyPortraits = RestoreSavedEnemyPreviewPortraits(tile, saved);
+            }
 
             map.tiles.Add(tile);
 
@@ -2274,16 +2356,6 @@ public class WorldRunManager : MonoBehaviour
         {
             if (ordered[i].Key != null)
                 result.Add(ordered[i].Key);
-        }
-
-        if (result.Count == 0)
-            return result;
-
-        int repeatIndex = 0;
-        while (result.Count < 4)
-        {
-            result.Add(result[repeatIndex % result.Count]);
-            repeatIndex++;
         }
 
         return result;

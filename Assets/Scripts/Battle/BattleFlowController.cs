@@ -396,8 +396,10 @@ public class BattleFlowController : MonoBehaviour
             BattleUnitView dotView = viewManager != null ? viewManager.GetView(unit) : null;
             if (dotView != null)
             {
-                dotView.PlayHitFlash(battleManager != null ? battleManager.HitFlashDuration : 1f);
-                yield return StartCoroutine(dotView.AnimateHPChange(0.15f));
+                Coroutine hpRoutine = StartCoroutine(dotView.AnimateHPChange(0.15f));
+                yield return StartCoroutine(dotView.PlayHitReaction(battleManager != null ? battleManager.HitFlashDuration : 1f));
+                if (hpRoutine != null)
+                    yield return hpRoutine;
             }
         }
 

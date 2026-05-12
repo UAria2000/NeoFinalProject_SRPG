@@ -465,16 +465,6 @@ public class HexWorldGenerator
                 result.Add(ordered[i].Key);
         }
 
-        if (result.Count == 0)
-            return result;
-
-        int repeatIndex = 0;
-        while (result.Count < 4)
-        {
-            result.Add(result[repeatIndex % result.Count]);
-            repeatIndex++;
-        }
-
         return result;
     }
 
