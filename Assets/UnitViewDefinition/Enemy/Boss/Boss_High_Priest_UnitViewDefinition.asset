@@ -23,4 +23,4 @@ MonoBehaviour:
   attackSpriteSizeDelta: {x: 0, y: 0}
   attackSpriteLocalScale: {x: 1, y: 1, z: 1}
   deadBattleSprite: {fileID: 0}
-  viewPrefab: {fileID: 7130859592086966948, guid: b9472f85414df174c9999748dc7b6ab9, type: 3}
+  viewPrefab: {fileID: 7130859592086966948, guid: ae3303ffefd99b34c9487779e56e32d6, type: 3}
