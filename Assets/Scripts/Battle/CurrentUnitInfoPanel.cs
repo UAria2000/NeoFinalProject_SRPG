@@ -121,6 +121,7 @@ public class CurrentUnitInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text selectedSkillAccuracyText;
     [SerializeField] private TMP_Text selectedSkillCooldownText;
     [SerializeField] private TMP_Text selectedSkillEffectText;
+    [SerializeField] private SkillEffectListUI selectedSkillEffectList;
 
     private BattleUnit currentUnit;
     private InfoViewMode viewMode = InfoViewMode.MainStats;
@@ -472,7 +473,7 @@ public class CurrentUnitInfoPanel : MonoBehaviour
             selectedSkillDescriptionText.text = skill.description;
 
         if (selectedSkillPowerText != null)
-            selectedSkillPowerText.text = BattleSkillInfoFormatter.GetPowerValueText(skill);
+            selectedSkillPowerText.text = string.Empty;
 
         if (selectedSkillAccuracyText != null)
             selectedSkillAccuracyText.text = BattleSkillInfoFormatter.GetSuccessValueText(skill);
@@ -481,7 +482,8 @@ public class CurrentUnitInfoPanel : MonoBehaviour
             selectedSkillCooldownText.text = BattleSkillInfoFormatter.GetCooldownValueText(skill);
 
         if (selectedSkillEffectText != null)
-            selectedSkillEffectText.text = BattleSkillInfoFormatter.GetEffectValueText(skill);
+            selectedSkillEffectText.text = BattleSkillInfoFormatter.GetUnifiedEffectValueText(skill);
+        if (selectedSkillEffectList != null) selectedSkillEffectList.Show(skill);
 
         RefreshPositionHexes(skill);
     }

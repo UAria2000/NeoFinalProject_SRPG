@@ -55,12 +55,21 @@ MonoBehaviour:
   counterStanceIcon: {fileID: 21300000, guid: 1ae46050cf355ba48ad68a88486a7af7, type: 3}
   duelArenaIcon: {fileID: 21300000, guid: 2f94685d6b3b5d54a9cfb6a40c625092, type: 3}
   stealthIcon: {fileID: 0}
-  battleStanceIcon: {fileID: 0}
+  battleStanceIcon: {fileID: 21300000, guid: 5f10a4c83d87b364b81b4491f872c2a3, type: 3}
   huntingIcon: {fileID: 21300000, guid: 6ecbbe893c1e5e74f98be1368bfadeae, type: 3}
   lifeStealIcon: {fileID: 21300000, guid: 7f9799c8a4ec7b540a603d52a7c6693c, type: 3}
   endTurnGuardIcon: {fileID: 0}
   shieldIcon: {fileID: 21300000, guid: 8254af239e5cdf44188d0382f1c4db37, type: 3}
   eliteIcon: {fileID: 21300000, guid: 477f192f6fba0ae408e766e4e89f09e7, type: 3}
+  dmgStatIcon: {fileID: 21300000, guid: 7107ee90a6c949948b8dde77192a0c27, type: 3}
+  hitStatIcon: {fileID: 21300000, guid: a3b11415187367d40b7aafbe1858f848, type: 3}
+  acStatIcon: {fileID: 21300000, guid: 10d99e8321513ca4185b5be4ab716a88, type: 3}
+  idtStatIcon: {fileID: 21300000, guid: b67daec12ba416345a5dc1e28b5faad1, type: 3}
+  criStatIcon: {fileID: 21300000, guid: e535cb55fc9c8094f8ac9572637be06f, type: 3}
+  crdStatIcon: {fileID: 21300000, guid: 18e0bf0b9f4bafe4ea1741ae4a519d8e, type: 3}
+  spdStatIcon: {fileID: 21300000, guid: 6e364d538001c7d47a56419d893ce9da, type: 3}
+  statUpArrowSprite: {fileID: 21300000, guid: 443ed2f09caf92743a1c7a8b0ec0d895, type: 3}
+  statDownArrowSprite: {fileID: 21300000, guid: 14821848eb1c9c242925149a09006fbb, type: 3}
   stunIcon: {fileID: 21300000, guid: a9e3db904ef19634d9eeec59dcc6f93a, type: 3}
   bleedIcon: {fileID: 21300000, guid: 1a022f1463e32524fa91895c7892662b, type: 3}
   burnIcon: {fileID: 21300000, guid: fcf71605c9339a44581105f252f1e9ab, type: 3}
@@ -308,81 +317,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c37f57f53ed4a54e80a05dd5da0b831, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleClickable
---- !u!1 &4454006226975628093
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4271819638716965191}
-  - component: {fileID: 5600183053609744680}
-  - component: {fileID: 886971782858373620}
-  m_Layer: 5
-  m_Name: TurnMark
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &4271819638716965191
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4454006226975628093}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 257617718602889522}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 15, y: 305}
-  m_SizeDelta: {x: 30, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &5600183053609744680
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4454006226975628093}
-  m_CullTransparentMesh: 1
---- !u!114 &886971782858373620
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4454006226975628093}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: bc70ff3fc2b523d44ac5db2712941d90, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &4905345576870467967
 GameObject:
   m_ObjectHideFlags: 0
@@ -518,81 +452,6 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 0
   m_ConstraintCount: 2
---- !u!1 &7535457992161520733
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 9210216498065267660}
-  - component: {fileID: 2154689309347131879}
-  - component: {fileID: 3552209778591635239}
-  m_Layer: 5
-  m_Name: TargetMark
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!224 &9210216498065267660
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7535457992161520733}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 257617718602889522}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -15, y: 305}
-  m_SizeDelta: {x: 30, y: 30}
-  m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &2154689309347131879
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7535457992161520733}
-  m_CullTransparentMesh: 1
---- !u!114 &3552209778591635239
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7535457992161520733}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 8a4c4aa9256c5614eb73e23dc929a597, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 0
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
 --- !u!1 &8681024713014290357
 GameObject:
   m_ObjectHideFlags: 0
@@ -705,8 +564,6 @@ RectTransform:
   - {fileID: 147681396805468997}
   - {fileID: 3048236013354262831}
   - {fileID: 2022853459941967324}
-  - {fileID: 4271819638716965191}
-  - {fileID: 9210216498065267660}
   - {fileID: 6005599725473208488}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -766,12 +623,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BattleUnitView
   unitBodyImage: {fileID: 4194228097831425043}
+  attackMotionImage: {fileID: 0}
   labelText: {fileID: 0}
   hpFillImage: {fileID: 5159665266779880831}
   statusIconBar: {fileID: 6295820009280320748}
-  turnMark: {fileID: 4454006226975628093}
-  targetMark: {fileID: 7535457992161520733}
+  turnMark: {fileID: 0}
+  targetMark: {fileID: 0}
   highlightImage: {fileID: 0}
+  currentTurnHighlightColor: {r: 0.996, g: 0.855, b: 0.451, a: 1}
+  selectableHighlightColor: {r: 1, g: 0.635, b: 0.675, a: 1}
+  hoverHighlightColor: {r: 1, g: 0.227, b: 0.286, a: 1}
   hoverAnchor: {fileID: 6005599725473208488}
   clickableArea: {fileID: 6005599725473208488}
   clickableAreaGraphic: {fileID: 4909597030820901512}

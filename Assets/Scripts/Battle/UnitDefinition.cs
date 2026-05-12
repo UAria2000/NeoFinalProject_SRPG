@@ -9,6 +9,8 @@ public class UnitDefinition : ScriptableObject
     public string unitId;
     public string unitName;
     public CharacterRangeType rangeType = CharacterRangeType.Melee;
+    [Tooltip("이 유닛의 기본 전투/레기온 표시용 ViewDefinition입니다. PartyMemberData에 별도 ViewDefinition이 없을 때나 월드 팩션 프리뷰에서 사용합니다.")]
+    public UnitViewDefinition defaultViewDefinition;
 
     [Header("Legion Metadata")]
     [Tooltip("NFT/교환 가능 필터와 배지에 사용할 기본값. 인스턴스별 isExchangeable/isNft와 함께 true로 취급된다.")]

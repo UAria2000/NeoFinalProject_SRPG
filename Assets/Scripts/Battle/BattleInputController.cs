@@ -212,6 +212,8 @@ public class BattleInputController : MonoBehaviour
         battleManager.SelectedSkillSlotIndex = -1;
         battleManager.SetInputMode(BattleInputMode.WaitingForAction);
         battleManager.ClearTargetMarkers();
+        if (battleManager.ViewManager != null)
+            battleManager.ViewManager.ClearHoverHighlight();
         uiController.HideTargetPreview();
         uiController.HideSkillTooltip();
         uiController.HideFleeTooltip();
@@ -295,6 +297,8 @@ public class BattleInputController : MonoBehaviour
 
     public void OnUnitViewHoverExited(BattleUnitView hoveredView)
     {
+        if (battleManager != null && battleManager.ViewManager != null)
+            battleManager.ViewManager.ClearHoverHighlight();
         uiController.HideTargetPreview();
     }
 
@@ -318,7 +322,14 @@ public class BattleInputController : MonoBehaviour
             battleManager.EnemyFormation);
 
         if (!validTargets.Contains(hoveredUnit))
+        {
+            if (battleManager.ViewManager != null)
+                battleManager.ViewManager.ClearHoverHighlight();
             return;
+        }
+
+        if (battleManager.ViewManager != null)
+            battleManager.ViewManager.SetHoverHighlight(hoveredUnit);
 
         if (!skill.ShouldShowTargetPreview())
             return;
@@ -428,6 +439,8 @@ public class BattleInputController : MonoBehaviour
         battleManager.SelectedInventoryIndex = -1;
         battleManager.SelectedSkillSlotIndex = -1;
         battleManager.ClearTargetMarkers();
+        if (battleManager.ViewManager != null)
+            battleManager.ViewManager.ClearHoverHighlight();
         battleManager.SetInputMode(BattleInputMode.None);
         battleManager.SetTurnState(TurnState.ExecutingAction);
 

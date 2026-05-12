@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: human_paladin_brave_charge
   skillName: "\uC6A9\uAC10\uD55C \uB3CC\uC9C4"
   description: "\uD53C\uD574 60%. \uC0AC\uC6A9 \uD6C4 \uC804\uBC29 2\uCE78 \uC804\uC9C4\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 8c968e0454489054a99b89ee19934322, type: 3}
+  icon: {fileID: 21300000, guid: c4a6810c0310e9244bd4223bc2aba99a, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0

@@ -3,14 +3,16 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// 체력바 위에 표시되는 보호막/전투 기믹/상태이상 아이콘 1칸.
-/// 숫자는 보호막 수치 또는 상태이상 스택 수를 표시한다.
+/// 체력바 위에 표시되는 보호막/전투 기믹/상태이상/스탯 변화 아이콘 1칸.
+/// 숫자는 보호막 수치, 상태이상 스택, 또는 스탯 변화 지속 턴을 표시한다.
+/// 스탯 변화 아이콘만 Up/Down 화살표를 함께 표시한다.
 /// </summary>
 [DisallowMultipleComponent]
 public class BattleStatusIconUI : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private Image iconImage;
+    [SerializeField] private Image upDownImage;
     [SerializeField] private TMP_Text countText;
     [SerializeField] private GameObject countRoot;
 
@@ -40,6 +42,11 @@ public class BattleStatusIconUI : MonoBehaviour
 
     public void Set(Sprite icon, int count, bool showCount)
     {
+        Set(icon, count, showCount, null, false);
+    }
+
+    public void Set(Sprite icon, int count, bool showCount, Sprite arrowIcon, bool showArrow)
+    {
         AutoWireIfNeeded();
 
         if (iconImage != null)
@@ -48,6 +55,16 @@ public class BattleStatusIconUI : MonoBehaviour
             iconImage.enabled = icon != null;
             iconImage.preserveAspect = true;
             iconImage.raycastTarget = false;
+        }
+
+        bool arrowActive = showArrow && arrowIcon != null;
+        if (upDownImage != null)
+        {
+            upDownImage.gameObject.SetActive(arrowActive);
+            upDownImage.sprite = arrowActive ? arrowIcon : null;
+            upDownImage.enabled = arrowActive;
+            upDownImage.preserveAspect = true;
+            upDownImage.raycastTarget = false;
         }
 
         bool countActive = showCount && countText != null;
@@ -68,6 +85,13 @@ public class BattleStatusIconUI : MonoBehaviour
         {
             iconImage.sprite = null;
             iconImage.enabled = false;
+        }
+
+        if (upDownImage != null)
+        {
+            upDownImage.sprite = null;
+            upDownImage.enabled = false;
+            upDownImage.gameObject.SetActive(false);
         }
 
         if (countRoot != null)
@@ -93,6 +117,13 @@ public class BattleStatusIconUI : MonoBehaviour
 
         if (iconImage == null)
             iconImage = GetComponentInChildren<Image>(true);
+
+        if (upDownImage == null)
+        {
+            Transform arrow = transform.Find("UpDownImage");
+            if (arrow != null)
+                upDownImage = arrow.GetComponent<Image>();
+        }
 
         if (countText == null)
         {

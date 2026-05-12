@@ -28,6 +28,8 @@ public class EnemyInfoPanel : MonoBehaviour
     [SerializeField] private Image hpFillImage;
     [SerializeField] private Slider hpSlider;
     [SerializeField] private Color enemyNameColor = new Color(0.2941f, 0.6353f, 0.9569f, 1f); // #4BA2F4
+    [SerializeField] private Image factionIconImage;
+    [SerializeField] private WorldGenerationSettings worldGenerationSettings;
 
     [Header("Badges")]
     [SerializeField] private GameObject nftBadgeRoot;
@@ -128,6 +130,7 @@ public class EnemyInfoPanel : MonoBehaviour
     [SerializeField] private TMP_Text selectedSkillAccuracyText;
     [SerializeField] private TMP_Text selectedSkillCooldownText;
     [SerializeField] private TMP_Text selectedSkillEffectText;
+    [SerializeField] private SkillEffectListUI selectedSkillEffectList;
 
     [Header("Last Will Description")]
     [SerializeField] private TMP_Text lastWillTitleText;
@@ -336,6 +339,8 @@ public class EnemyInfoPanel : MonoBehaviour
             nameValueText.color = enemyNameColor;
         }
 
+        RefreshFactionIcon(enemy);
+
         if (levelValueText != null)
             levelValueText.text = enemy.CurrentLevel.ToString();
 
@@ -345,6 +350,32 @@ public class EnemyInfoPanel : MonoBehaviour
             hpValueText.text = $"{enemy.CurrentHP}/{enemy.MaxHP}";
 
         RefreshHpBar(enemy);
+    }
+
+
+    private void RefreshFactionIcon(BattleUnit enemy)
+    {
+        if (factionIconImage == null)
+            return;
+
+        WorldGenerationSettings settings = worldGenerationSettings;
+        if (settings == null)
+        {
+            WorldRunManager worldRunManager = FindFirstObjectByType<WorldRunManager>();
+            if (worldRunManager != null)
+                settings = worldRunManager.Settings;
+        }
+
+        Sprite icon = settings != null && enemy != null
+            ? settings.GetFactionIconForUnit(enemy.Definition, enemy.ViewDefinition)
+            : null;
+
+        factionIconImage.gameObject.SetActive(icon != null);
+        factionIconImage.sprite = icon;
+        factionIconImage.enabled = icon != null;
+        factionIconImage.color = icon != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+        factionIconImage.preserveAspect = true;
+        factionIconImage.raycastTarget = false;
     }
 
     private void RefreshOriginalLevel(BattleUnit enemy)
@@ -556,7 +587,7 @@ public class EnemyInfoPanel : MonoBehaviour
             selectedSkillDescriptionText.text = skill.description;
 
         if (selectedSkillPowerText != null)
-            selectedSkillPowerText.text = BattleSkillInfoFormatter.GetPowerValueText(skill);
+            selectedSkillPowerText.text = string.Empty;
 
         if (selectedSkillAccuracyText != null)
             selectedSkillAccuracyText.text = BattleSkillInfoFormatter.GetSuccessValueText(skill);
@@ -565,7 +596,8 @@ public class EnemyInfoPanel : MonoBehaviour
             selectedSkillCooldownText.text = BattleSkillInfoFormatter.GetCooldownValueText(skill);
 
         if (selectedSkillEffectText != null)
-            selectedSkillEffectText.text = BattleSkillInfoFormatter.GetEffectValueText(skill);
+            selectedSkillEffectText.text = BattleSkillInfoFormatter.GetUnifiedEffectValueText(skill);
+        if (selectedSkillEffectList != null) selectedSkillEffectList.Show(skill);
 
         RefreshPositionHexes(skill);
     }

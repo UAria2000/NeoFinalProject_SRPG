@@ -26,6 +26,17 @@ public class BattleStatusIconBarUI : MonoBehaviour
     [SerializeField] private Sprite shieldIcon;
     [SerializeField] private Sprite eliteIcon;
 
+    [Header("Stat Modifier Icons")]
+    [SerializeField] private Sprite dmgStatIcon;
+    [SerializeField] private Sprite hitStatIcon;
+    [SerializeField] private Sprite acStatIcon;
+    [SerializeField] private Sprite idtStatIcon;
+    [SerializeField] private Sprite criStatIcon;
+    [SerializeField] private Sprite crdStatIcon;
+    [SerializeField] private Sprite spdStatIcon;
+    [SerializeField] private Sprite statUpArrowSprite;
+    [SerializeField] private Sprite statDownArrowSprite;
+
     [Header("Ailment Icons")]
     [SerializeField] private Sprite stunIcon;
     [SerializeField] private Sprite bleedIcon;
@@ -48,12 +59,16 @@ public class BattleStatusIconBarUI : MonoBehaviour
         public Sprite icon;
         public int count;
         public bool showCount;
+        public Sprite arrowIcon;
+        public bool showArrow;
 
-        public Entry(Sprite icon, int count, bool showCount)
+        public Entry(Sprite icon, int count, bool showCount, Sprite arrowIcon, bool showArrow)
         {
             this.icon = icon;
             this.count = count;
             this.showCount = showCount;
+            this.arrowIcon = arrowIcon;
+            this.showArrow = showArrow;
         }
     }
 
@@ -85,6 +100,8 @@ public class BattleStatusIconBarUI : MonoBehaviour
             AddAilment(unit, StatusEffectType.Hunting, huntingIcon);
             AddAilment(unit, StatusEffectType.LifeSteal, lifeStealIcon);
 
+            AddTimedModifierEntries(unit);
+
             if (unit.HasElitePermanentBuff)
                 AddEntry(eliteIcon, unit.ElitePermanentAllStatsBuffPercent, eliteIcon != null && unit.ElitePermanentAllStatsBuffPercent > 0);
 
@@ -112,7 +129,7 @@ public class BattleStatusIconBarUI : MonoBehaviour
             {
                 Entry entry = entries[i];
                 icon.gameObject.SetActive(true);
-                icon.Set(entry.icon, entry.count, entry.showCount);
+                icon.Set(entry.icon, entry.count, entry.showCount, entry.arrowIcon, entry.showArrow);
                 PositionIcon(icon.RectTransform, i, entries.Count);
             }
             else
@@ -158,10 +175,63 @@ public class BattleStatusIconBarUI : MonoBehaviour
 
     private void AddEntry(Sprite icon, int count, bool showCount)
     {
+        AddEntry(icon, count, showCount, null, false);
+    }
+
+    private void AddEntry(Sprite icon, int count, bool showCount, Sprite arrowIcon, bool showArrow)
+    {
         if (icon == null)
             return;
 
-        entries.Add(new Entry(icon, Mathf.Max(0, count), showCount));
+        entries.Add(new Entry(icon, Mathf.Max(0, count), showCount, arrowIcon, showArrow && arrowIcon != null));
+    }
+
+    private void AddTimedModifierEntries(BattleUnit unit)
+    {
+        if (unit == null || unit.TimedModifiers == null)
+            return;
+
+        for (int i = 0; i < unit.TimedModifiers.Count; i++)
+        {
+            BattleTimedModifierInstance modifier = unit.TimedModifiers[i];
+            if (modifier == null || modifier.remainingTurns <= 0 || modifier.magnitude == 0)
+                continue;
+
+            Sprite statIcon = GetStatIcon(modifier.statModifierType);
+            if (statIcon == null)
+                continue;
+
+            bool isUp = IsPositiveModifierShownAsUp(modifier);
+            Sprite arrow = isUp ? statUpArrowSprite : statDownArrowSprite;
+            AddEntry(statIcon, modifier.remainingTurns, true, arrow, true);
+        }
+    }
+
+    private Sprite GetStatIcon(StatModifierType type)
+    {
+        switch (type)
+        {
+            case StatModifierType.DMG: return dmgStatIcon;
+            case StatModifierType.HIT: return hitStatIcon;
+            case StatModifierType.AC: return acStatIcon;
+            case StatModifierType.IDT: return idtStatIcon;
+            case StatModifierType.CRI: return criStatIcon;
+            case StatModifierType.CRD: return crdStatIcon;
+            case StatModifierType.SPD: return spdStatIcon;
+            case StatModifierType.IncomingDamageTakenPercent: return idtStatIcon;
+            default: return null;
+        }
+    }
+
+    private bool IsPositiveModifierShownAsUp(BattleTimedModifierInstance modifier)
+    {
+        if (modifier == null)
+            return true;
+
+        if (modifier.statModifierType == StatModifierType.IncomingDamageTakenPercent)
+            return modifier.magnitude < 0;
+
+        return modifier.magnitude > 0;
     }
 
     private void EnsurePool(int count)

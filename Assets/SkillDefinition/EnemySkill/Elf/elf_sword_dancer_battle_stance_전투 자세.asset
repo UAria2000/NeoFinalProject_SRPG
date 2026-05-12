@@ -17,7 +17,7 @@ MonoBehaviour:
   description: "3\uD134\uAC04 DMG 20% \uC0C1\uC2B9. \uC804\uD22C \uC790\uC138 \uC911\uC5D0\uB294
     \uC911\uBCF5 \uC0AC\uC6A9\uB418\uC9C0 \uC54A\uC73C\uBA70, \uAC80\uBB34 \uC0AC\uC6A9
     \uC870\uAC74\uC778 \uC804\uD22C \uC790\uC138\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: a348086c841eba74dbe172d855bf91a9, type: 3}
+  icon: {fileID: 21300000, guid: 5f10a4c83d87b364b81b4491f872c2a3, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 1
