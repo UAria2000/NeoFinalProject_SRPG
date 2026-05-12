@@ -227,6 +227,7 @@ public class SkillDefinition : ScriptableObject
     public bool disableAfterUseInBattle = false;
 
     [Header("Visual Effects")]
+    public Sprite attackMotionSprite;
     public GameObject castEffectPrefab; // 시전 시 사용자 위치에서 발생
     public GameObject hitEffectPrefab;  // 타격 시 대상 위치에서 발생
 
@@ -243,6 +244,14 @@ public class SkillDefinition : ScriptableObject
             if (effects[i] != null && effects[i].kind == BattleEffectKind.Damage)
                 return true;
         return false;
+    }
+
+    public Sprite GetAttackMotionSprite(UnitViewDefinition fallbackViewDefinition)
+    {
+        if (attackMotionSprite != null)
+            return attackMotionSprite;
+
+        return fallbackViewDefinition != null ? fallbackViewDefinition.GetAttackBattleSprite() : null;
     }
 
     public bool CanBeUsedFromSlot(int slotIndex)

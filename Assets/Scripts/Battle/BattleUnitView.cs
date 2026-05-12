@@ -41,6 +41,7 @@ public class BattleUnitView : MonoBehaviour
 
     [Header("Hit Flash")]
     [SerializeField] private Color hitFlashColor = new Color(1f, 0f, 0f, 0.65f);
+    [SerializeField] private float hitSpriteHoldRatio = 0.65f;
 
     [Header("Deprecated - Not Used")]
     [Tooltip("폐기 예정. 더 이상 턴 예정/완료 표시로 사용하지 않습니다.")]
@@ -52,6 +53,7 @@ public class BattleUnitView : MonoBehaviour
     private bool currentlyUsingFinishedVisual;
     private Sprite bodyOverrideSprite;
     private Coroutine hitFlashRoutine;
+    private Coroutine hitReactionRoutine;
     private Color baseBodyColor = Color.white;
     private bool currentTurnHighlightActive;
     private bool selectableHighlightActive;
@@ -518,6 +520,27 @@ public class BattleUnitView : MonoBehaviour
         hitFlashRoutine = StartCoroutine(HitFlashRoutine(Mathf.Max(0.01f, duration)));
     }
 
+    public void PlayHitReaction(float duration)
+    {
+        if (!gameObject.activeInHierarchy || unitBodyImage == null)
+            return;
+
+        Sprite hitSprite = Unit != null && Unit.ViewDefinition != null
+            ? Unit.ViewDefinition.GetHitBattleSprite()
+            : null;
+
+        if (hitSprite == null)
+        {
+            PlayHitFlash(duration);
+            return;
+        }
+
+        if (hitReactionRoutine != null)
+            StopCoroutine(hitReactionRoutine);
+
+        hitReactionRoutine = StartCoroutine(HitReactionRoutine(hitSprite, Mathf.Max(0.01f, duration)));
+    }
+
     private IEnumerator HitFlashRoutine(float duration)
     {
         if (unitBodyImage == null)
@@ -538,6 +561,19 @@ public class BattleUnitView : MonoBehaviour
 
         unitBodyImage.color = baseBodyColor;
         hitFlashRoutine = null;
+    }
+
+    private IEnumerator HitReactionRoutine(Sprite hitSprite, float duration)
+    {
+        SetBodySpriteOverride(hitSprite);
+        PlayHitFlash(duration);
+
+        float holdDuration = Mathf.Clamp01(hitSpriteHoldRatio) * duration;
+        if (holdDuration > 0f)
+            yield return new WaitForSeconds(holdDuration);
+
+        ClearBodySpriteOverride();
+        hitReactionRoutine = null;
     }
 
     public IEnumerator PlayAttackMove(Vector3 targetAnchoredPosition, float moveRatio, float maxDistance, float duration)

@@ -269,7 +269,7 @@ public class AllySkillGeneratorWindow : EditorWindow
         meteor.description = "적 전체 광역 피해. 현재 구현은 각 대상 40% 피해로 임시 처리. 화상 70%.";
         list.Add(meteor);
 
-        SkillDefinition rift = CreateAttack(folder, "hero_dimensional_rift", "차원 균열", SkillClass.Unique, CharacterRangeType.Mid, 0, 3, 0, 3, 1, 100,
+        SkillDefinition rift = CreateAttack(folder, "hero_dimensional_rift", "차원균열", SkillClass.Unique, CharacterRangeType.Mid, 0, 3, 0, 3, 1, 100,
             StatusEffectType.Stun, 70f, 1);
         rift.activeGimmick = ActiveSkillGimmick.RandomRepositionTargetsOnHit;
         rift.randomRepositionChancePercent = 80f;

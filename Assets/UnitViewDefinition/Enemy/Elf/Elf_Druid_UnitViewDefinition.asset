@@ -17,7 +17,8 @@ MonoBehaviour:
   deadSlotFaceSprite: {fileID: 0}
   deadBustPortraitSprite: {fileID: 0}
   battleSprite: {fileID: 21300000, guid: 92c1d159541c4c44fa5a92a6bac35bc0, type: 3}
-  attackBattleSprite: {fileID: 0}
+  attackBattleSprite: {fileID: -5677983399355808681, guid: b5aa5b9dd91688d4586434089de475d0, type: 3}
+  hitBattleSprite: {fileID: 64606782745312269, guid: 8f1c082b880b201498b0ca0cfe5fd70f, type: 3}
   battleHighlightSprite: {fileID: 21300000, guid: a00118e993d4a2544b89e56339f6a3ac, type: 3}
   attackSpriteAnchoredPosition: {x: 0, y: 0}
   attackSpriteSizeDelta: {x: 0, y: 0}

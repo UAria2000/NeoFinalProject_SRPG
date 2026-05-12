@@ -59,7 +59,8 @@ public class BattleActionController : MonoBehaviour
         }
 
         int rolledPrimaryDamagePercent = BattleCalculator.RollSkillDamagePowerPercent(skill);
-        Sprite attackSprite = actor != null && actor.ViewDefinition != null ? actor.ViewDefinition.GetAttackBattleSprite() : null;
+        UnitViewDefinition actorViewDefinition = actor != null ? actor.ViewDefinition : null;
+        Sprite attackSprite = skill.GetAttackMotionSprite(actorViewDefinition);
 
         if (skill.resolutionMode == SkillResolutionMode.Attack && skill.HasDamageEffect())
         {
@@ -600,7 +601,7 @@ public class BattleActionController : MonoBehaviour
         if (view != null)
         {
             if (result.DidHit)
-                view.PlayHitFlash(Mathf.Max(0.05f, battleManager.AttackMoveDuration * 0.5f));
+                view.PlayHitReaction(Mathf.Max(0.05f, battleManager.AttackMoveDuration * 0.5f));
             yield return StartCoroutine(view.AnimateHPChange(0.15f));
         }
 

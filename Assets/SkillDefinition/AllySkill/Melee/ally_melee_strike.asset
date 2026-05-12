@@ -105,7 +105,8 @@ MonoBehaviour:
     durationTurns: 0
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
+  attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
-  hitEffectPrefab: {fileID: 5691736663297753136, guid: e3154417192c1904eb89807a5a6626ae, type: 3}
+  hitEffectPrefab: {fileID: 165964024477834777, guid: 99a8ceff253f8ee469e5f2f0eafc6aa0, type: 3}
   useSfx: {fileID: 0}
   hitSfx: {fileID: 0}

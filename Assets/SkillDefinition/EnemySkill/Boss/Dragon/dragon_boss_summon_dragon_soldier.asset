@@ -95,6 +95,7 @@ MonoBehaviour:
   dragonSoldierProtectionIdtPercent: 99
   effects: []
   disableAfterUseInBattle: 0
+  attackMotionSprite: {fileID: 3357876929666266747, guid: f85a36529ee19fc4fb51537ba5e855e6, type: 3}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 5691736663297753136, guid: e3154417192c1904eb89807a5a6626ae, type: 3}
   useSfx: {fileID: 0}
