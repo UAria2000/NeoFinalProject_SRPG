@@ -15,11 +15,11 @@ MonoBehaviour:
   skillId: human_boss_judge_basic
   skillName: "\uC2EC\uD310\uC758 \uCCA0\uD1F4"
   description: "\uD53C\uD574 100%."
-  icon: {fileID: 21300000, guid: 515e1ce43c2542942a35c252d9d291a9, type: 3}
+  icon: {fileID: 21300000, guid: 3529ed3d69bf1dc4b8cc71cc77d6f442, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0
-  skillClass: 2
+  skillClass: 1
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0

@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: elf_dryad_root
   skillName: "\uBFCC\uB9AC\uBC15\uAE30"
   description: "\uC790\uC2E0\uC5D0\uAC8C 2\uD134\uAC04 \uB3C4\uBC1C\uC744 \uBD80\uC5EC\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 43b56a9e4a6efd0478246f265c35d107, type: 3}
+  icon: {fileID: 21300000, guid: 1fe205f2323ef424f845c0e8470ded6d, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 3

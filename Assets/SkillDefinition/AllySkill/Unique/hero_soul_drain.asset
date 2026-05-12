@@ -16,7 +16,7 @@ MonoBehaviour:
   skillName: "\uC601\uD63C \uCC29\uCDE8"
   description: "\uD53C\uD574 120%. \uC900 HP \uD53C\uD574\uC758 25% \uD68C\uBCF5
     \uBC0F 2\uD134\uAC04 DMG +20%."
-  icon: {fileID: 21300000, guid: 7127e4f84985fd148b2bcaec1463f018, type: 3}
+  icon: {fileID: 21300000, guid: 15cee118fc1b34d40a4a3a1da34a9fce, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0

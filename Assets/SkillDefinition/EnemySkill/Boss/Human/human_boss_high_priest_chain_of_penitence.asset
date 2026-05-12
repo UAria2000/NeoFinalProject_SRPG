@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillId: human_boss_high_priest_chain_of_penitence
   skillName: "\uCC38\uD68C\uC758 \uC0AC\uC2AC"
-  description: "\uD53C\uD574 70%. \uCD9C\uD608 70%, \uB3D9\uC0C1 5\uC2A4\uD0DD 70%."
-  icon: {fileID: 21300000, guid: 5b83ba3aa45bc1348ae40a354820db6b, type: 3}
+  description: "\uD53C\uD574 70%. \uCD9C\uD608 70%, \uB3D9\uC0C1 70%."
+  icon: {fileID: 21300000, guid: 8ec7fe66c9e77d94bb0ab7774deca717, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0
@@ -128,7 +128,7 @@ MonoBehaviour:
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
-    durationTurns: 5
+    durationTurns: 1
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   castEffectPrefab: {fileID: 0}

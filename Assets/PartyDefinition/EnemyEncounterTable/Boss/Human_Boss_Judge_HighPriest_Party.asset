@@ -43,7 +43,10 @@ MonoBehaviour:
       stunResistDelta: 0
       frostResistDelta: 0
       blindResistDelta: 0
-    learnedSkills: []
+    learnedSkills:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
     equippedItems: []
     battleLootDrops: []
     persistentCurrentHP: -1

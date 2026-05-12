@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillId: ally_mid_surge_of_calamity
   skillName: "\uC7AC\uC559\uC758 \uC1C4\uB3C4"
-  description: "\uD53C\uD574 100%. \uC0AC\uB0E5 \uD45C\uC2DD 5\uC2A4\uD0DD \uBD80\uC5EC.
+  description: "\uD53C\uD574 100%. \uC0AC\uB0E5 \uD45C\uC2DD \uC2A4\uD0DD \uBD80\uC5EC.
     \uD45C\uC2DD \uB300\uC0C1 \uACF5\uACA9 \uC2DC \uD53C\uD574 \uACC4\uC218 +30%."
-  icon: {fileID: 21300000, guid: b15f80662ca70b34dbcbf6f988315205, type: 3}
+  icon: {fileID: 21300000, guid: f6ee5fb0a137b2d4db80b1a65a13ec38, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0
@@ -116,7 +116,7 @@ MonoBehaviour:
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
-    durationTurns: 5
+    durationTurns: 1
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   castEffectPrefab: {fileID: 0}

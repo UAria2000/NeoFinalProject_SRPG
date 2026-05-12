@@ -15,11 +15,11 @@ MonoBehaviour:
   skillId: dragon_boss_stomp
   skillName: "\uC9D3\uBC1F\uAE30"
   description: "\uC801 1~2\uC5F4 \uAD11\uC5ED \uD53C\uD574 100%."
-  icon: {fileID: 21300000, guid: 86965aa8c0787654fb2a523eec009bba, type: 3}
+  icon: {fileID: 21300000, guid: 37f4955f129ea954682654542100419b, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0
-  skillClass: 4
+  skillClass: 1
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0

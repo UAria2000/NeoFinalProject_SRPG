@@ -16,7 +16,7 @@ MonoBehaviour:
   skillName: "\uC640\uC77C\uB4DC \uD5CC\uD2B8"
   description: "\uC544\uAD70 \uC804\uCCB4\uC5D0\uAC8C \uBA85\uC911 +10% 2\uC2A4\uD0DD
     \uBC84\uD504."
-  icon: {fileID: 21300000, guid: e8aba512f1c2d5049aa64aa73124f1ea, type: 3}
+  icon: {fileID: 21300000, guid: 2560a7f6b5847434e9b35f044c7eaa7a, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 1

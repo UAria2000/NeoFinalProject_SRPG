@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillId: ally_melee_menacing_charge
   skillName: "\uC704\uD611\uC801\uC778 \uB3CC\uC9C4"
-  description: "\uC801 1\uC5F4 \uACF5\uACA9. \uBA85\uC911 \uC5EC\uBD80\uC640 \uBB34\uAD00\uD558\uAC8C
-    \uBCF8\uC778 2\uCE78 \uC804\uC9C4 \uD6C4 1\uD134 \uB3C4\uBC1C."
-  icon: {fileID: 21300000, guid: ec931c94a7bc77b4bb7b27cf2637e202, type: 3}
+  description: "\uC801 1\uC5F4\uC560 100% \uD53C\uD574. \uBCF8\uC778 2\uCE78 \uC804\uC9C4
+    \uD6C4 1\uD134 \uB3C4\uBC1C."
+  icon: {fileID: 21300000, guid: 2b0a0ca9b23fbf5429fc9162b67251c8, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0

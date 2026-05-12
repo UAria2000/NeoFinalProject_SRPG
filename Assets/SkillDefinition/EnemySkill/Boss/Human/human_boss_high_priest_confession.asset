@@ -15,9 +15,8 @@ MonoBehaviour:
   skillId: human_boss_high_priest_confession
   skillName: "\uACE0\uD574\uC131\uC0AC"
   description: "\uC544\uAD70 \uC804\uCCB4\uC5D0\uAC8C \uAC01 \uB300\uC0C1 \uCD5C\uB300
-    \uCCB4\uB825\uC758 20% \uBCF4\uD638\uB9C9\uC744 \uBD80\uC5EC\uD569\uB2C8\uB2E4.
-    \uBCF4\uD638\uB9C9\uC740 \uC601\uAD6C \uC218\uCE58\uD615\uC73C\uB85C \uB204\uC801\uB429\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 15d7637aa6561f248a93d5c4e8621d43, type: 3}
+    \uCCB4\uB825\uC758 20% \uBCF4\uD638\uB9C9\uC744 \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+  icon: {fileID: 21300000, guid: 869f02c642456e64a8e01eef15b30527, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 1
