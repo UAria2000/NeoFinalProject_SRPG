@@ -15,6 +15,7 @@ public class WorldTileSaveData
     public bool isPlayerStart;
     public bool isResolved;
     public bool isIconDisabled;
+    public string eventDescriptionText;
 
     public List<string> previewEnemyPortraitSpriteNames = new List<string>();
 
@@ -35,6 +36,7 @@ public class WorldTileSaveData
             isPlayerStart = tile.isPlayerStart,
             isResolved = tile.isResolved,
             isIconDisabled = tile.isIconDisabled,
+            eventDescriptionText = tile.eventDescriptionText ?? string.Empty,
         };
 
         if (tile.previewEnemyPortraits != null)

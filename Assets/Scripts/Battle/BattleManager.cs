@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class BattleManager : MonoBehaviour
 {
@@ -56,7 +57,18 @@ public class BattleManager : MonoBehaviour
     [SerializeField] private float moveAnimationDuration = 0.35f;
     [SerializeField] private float attackMoveRatio = 0.45f;
     [SerializeField] private float attackMoveMaxDistance = 260f;
+    [Tooltip("기존 호환용 총 공격 이동 시간입니다. 새 연출은 아래 3단계 시간을 우선 사용합니다.")]
     [SerializeField] private float attackMoveDuration = 0.55f;
+    [Header("Attack Timing")]
+    [SerializeField, Min(0f)] private float attackApproachDuration = 1f;
+    [FormerlySerializedAs("attackImpactHoldDuration")]
+    [SerializeField, Min(0f)] private float attackHoldDuration = 1f;
+    [SerializeField, Min(0f)] private float attackReturnDuration = 1f;
+    [Tooltip("공격자가 목표 지점에 도착한 뒤 실제 피해/효과가 들어가기까지의 대기 시간입니다.")]
+    [FormerlySerializedAs("attackImpactDelayAfterArrive")]
+    [SerializeField, Min(0f)] private float attackImpactDelayAfterArrival = 0f;
+    [Tooltip("피격/도트 피해 시 붉게 점등하고 피격 모션을 유지하는 시간입니다.")]
+    [SerializeField, Min(0.01f)] private float hitFlashDuration = 1f;
 
     [Header("Popup Log")]
     [SerializeField] private GameObject popupLogPanel;
@@ -140,7 +152,12 @@ public class BattleManager : MonoBehaviour
     public float MoveAnimationDuration { get { return moveAnimationDuration; } }
     public float AttackMoveRatio { get { return attackMoveRatio; } }
     public float AttackMoveMaxDistance { get { return attackMoveMaxDistance; } }
-    public float AttackMoveDuration { get { return attackMoveDuration; } }
+    public float AttackApproachDuration { get { return Mathf.Max(0.01f, attackApproachDuration); } }
+    public float AttackHoldDuration { get { return Mathf.Max(0f, attackHoldDuration); } }
+    public float AttackReturnDuration { get { return Mathf.Max(0.01f, attackReturnDuration); } }
+    public float AttackImpactDelayAfterArrival { get { return Mathf.Max(0f, attackImpactDelayAfterArrival); } }
+    public float AttackMoveDuration { get { return AttackApproachDuration + AttackHoldDuration + AttackReturnDuration; } }
+    public float HitFlashDuration { get { return Mathf.Max(0.01f, hitFlashDuration); } }
 
     public BattlePartyRuntimeState GetActiveAllyPartyState()
     {

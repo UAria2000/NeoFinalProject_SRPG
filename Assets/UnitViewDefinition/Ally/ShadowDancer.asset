@@ -17,10 +17,14 @@ MonoBehaviour:
   deadSlotFaceSprite: {fileID: 21300000, guid: 99461f69de12b85489e256c5462f4fef, type: 3}
   deadBustPortraitSprite: {fileID: 21300000, guid: e433050e6c4435247992593a8621c237, type: 3}
   battleSprite: {fileID: 21300000, guid: 8dbef2162bd4a7a4a85761d34a49b116, type: 3}
-  attackBattleSprite: {fileID: 0}
+  attackBattleSprite: {fileID: 21300000, guid: 95432e265c00dc042b6f9bb9ffeef1b2, type: 3}
+  hitBattleSprite: {fileID: 21300000, guid: 2893ba4199ba24d40ae9dd018249e9b2, type: 3}
   battleHighlightSprite: {fileID: 21300000, guid: 3728fafad79416a4aa886f834231afdb, type: 3}
   attackSpriteAnchoredPosition: {x: 0, y: 0}
   attackSpriteSizeDelta: {x: 0, y: 0}
   attackSpriteLocalScale: {x: 1, y: 1, z: 1}
+  hitSpriteAnchoredPosition: {x: 0, y: 0}
+  hitSpriteSizeDelta: {x: 0, y: 0}
+  hitSpriteLocalScale: {x: 1, y: 1, z: 1}
   deadBattleSprite: {fileID: 21300000, guid: eadc82109ff8f9743a9a22c82ecaa2cb, type: 3}
   viewPrefab: {fileID: 7130859592086966948, guid: ee9a83c96ca771f4c82291cb33aef195, type: 3}

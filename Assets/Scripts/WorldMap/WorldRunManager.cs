@@ -83,6 +83,8 @@ public class WorldRunManager : MonoBehaviour
     private WorldRevealController revealController;
     private WorldMovementController movementController;
     private WorldTileData previousTileBeforeArrival;
+    private bool worldSettlementQueued;
+    private bool openingWorldSettlement;
 
     private string runtimeDifficultyId = "normal";
     public string RuntimeDifficultyId => runtimeDifficultyId;
@@ -199,7 +201,7 @@ public class WorldRunManager : MonoBehaviour
 
         if (SelectedTile != null && SelectedTile.tileId == tile.tileId)
         {
-            if (movementController.CanMoveTo(CurrentTile, tile))
+            if (CanMoveTo(tile))
             {
                 MoveToTileInternal(tile, true);
                 return;
@@ -295,6 +297,7 @@ public class WorldRunManager : MonoBehaviour
     public void TryShowQueuedQuestCompletionPopup()
     {
         questController?.TryShowQueuedCompletionPopup();
+        TryOpenQueuedWorldSettlementIfReady();
     }
 
     public void ResolveCombatDefeat(WorldTileData tile, bool returnToStartTile)
@@ -1391,7 +1394,8 @@ public class WorldRunManager : MonoBehaviour
 
     public void HandleWorldConquestButtonPressed()
     {
-        eventController?.OpenWorldSettlementFromMap();
+        QueueWorldSettlementIfAvailable();
+        TryOpenQueuedWorldSettlementIfReady();
     }
 
     public void RefreshConquestButtonState()
@@ -1399,7 +1403,36 @@ public class WorldRunManager : MonoBehaviour
         if (conquestConditionRoot != null)
             conquestConditionRoot.SetActive(true);
         if (worldConquestButton != null)
-            worldConquestButton.gameObject.SetActive(IsWorldConquestAvailable());
+            worldConquestButton.gameObject.SetActive(false);
+
+        QueueWorldSettlementIfAvailable();
+    }
+
+    private void QueueWorldSettlementIfAvailable()
+    {
+        if (MapData == null || openingWorldSettlement)
+            return;
+
+        if (IsWorldConquestAvailable())
+            worldSettlementQueued = true;
+    }
+
+    public void TryOpenQueuedWorldSettlementIfReady()
+    {
+        if (!worldSettlementQueued || openingWorldSettlement)
+            return;
+        if (eventController == null || IsBusy)
+            return;
+
+        worldSettlementQueued = false;
+        openingWorldSettlement = true;
+        eventController.OpenWorldSettlementFromMap();
+    }
+
+    public void NotifyWorldSettlementPopupClosed()
+    {
+        openingWorldSettlement = false;
+        worldSettlementQueued = false;
     }
 
     public void ResetWorldRunStateForNewWorld()
@@ -2049,6 +2082,47 @@ public class WorldRunManager : MonoBehaviour
         return true;
     }
 
+    public string GetTileEventDescription(WorldTileData tile)
+    {
+        if (tile == null)
+            return string.Empty;
+
+        if (tile.eventType == WorldTileEventType.Quest)
+            EnsureQuestDescriptionForTile(tile);
+
+        if (!string.IsNullOrWhiteSpace(tile.eventDescriptionText))
+            return tile.eventDescriptionText;
+
+        return generationSettings != null ? generationSettings.GetOrCreateTileDescription(tile) : string.Empty;
+    }
+
+    private void EnsureQuestDescriptionForTile(WorldTileData tile)
+    {
+        if (tile == null || tile.eventType != WorldTileEventType.Quest || questController == null || MapData == null)
+            return;
+
+        WorldQuestState quest = questController.GetOrCreateQuestForTile(tile, MapData);
+        if (quest != null && quest.definition != null)
+            ApplyQuestDescriptionToTile(tile, quest.definition.questType, false);
+    }
+
+    public void ApplyQuestDescriptionToTile(WorldTileData tile, WorldQuestType questType)
+    {
+        ApplyQuestDescriptionToTile(tile, questType, true);
+    }
+
+    private void ApplyQuestDescriptionToTile(WorldTileData tile, WorldQuestType questType, bool overwriteExisting)
+    {
+        if (tile == null || generationSettings == null)
+            return;
+        if (!overwriteExisting && !string.IsNullOrWhiteSpace(tile.eventDescriptionText))
+            return;
+
+        string description = generationSettings.GetRandomQuestDescription(questType);
+        if (!string.IsNullOrWhiteSpace(description))
+            tile.eventDescriptionText = description;
+    }
+
     private WorldMapData BuildMapDataFromSave(ActiveWorldRunSaveData saveData)
     {
         if (saveData == null || saveData.tiles == null || saveData.tiles.Count == 0)
@@ -2074,10 +2148,11 @@ public class WorldRunManager : MonoBehaviour
                 isPlayerStart = saved.isPlayerStart,
                 isResolved = saved.isResolved,
                 isIconDisabled = saved.isIconDisabled,
+                eventDescriptionText = saved.eventDescriptionText ?? string.Empty,
             };
 
             tile.previewEnemyPortraits = RestoreSavedEnemyPreviewPortraits(tile, saved);
-            if (tile.IsCombatEvent && tile.previewEnemyPortraits.Count == 0)
+            if (tile.IsCombatEvent && tile.previewEnemyPortraits.Count < 4)
                 tile.previewEnemyPortraits = BuildEnemyPreviewListForTile(tile);
 
             map.tiles.Add(tile);
@@ -2109,9 +2184,9 @@ public class WorldRunManager : MonoBehaviour
 
     private List<Sprite> BuildEnemyPreviewListForTile(WorldTileData tile)
     {
-        List<Sprite> sourcePool = new List<Sprite>();
+        Dictionary<Sprite, int> weights = new Dictionary<Sprite, int>();
         if (tile == null || generationSettings == null || !tile.IsCombatEvent)
-            return sourcePool;
+            return new List<Sprite>();
 
         bool isBoss = tile.eventType == WorldTileEventType.Boss;
         FactionBattleConfig config = generationSettings.GetFactionBattleConfig(tile.nativeFaction);
@@ -2119,46 +2194,96 @@ public class WorldRunManager : MonoBehaviour
         {
             if (isBoss)
             {
-                AddPreviewSpritesFromPartyDefinition(sourcePool, config.bossPartyDefinition);
-                AddPreviewSpritesFromEncounterTable(sourcePool, config.bossEncounterTable);
+                AddWeightedPreviewSpritesFromPartyDefinition(weights, config.bossPartyDefinition, 100);
+                AddWeightedPreviewSpritesFromEncounterTable(weights, config.bossEncounterTable);
             }
             else
             {
-                AddPreviewSpritesFromEncounterTable(sourcePool, config.battleTier1Table);
-                AddPreviewSpritesFromEncounterTable(sourcePool, config.battleTier2Table);
-                AddPreviewSpritesFromEncounterTable(sourcePool, config.battleTier3Table);
-                AddPreviewSpritesFromEncounterTable(sourcePool, config.eliteTier1Table);
-                AddPreviewSpritesFromEncounterTable(sourcePool, config.eliteTier2Table);
-                AddPreviewSpritesFromEncounterTable(sourcePool, config.eliteTier3Table);
+                AddWeightedPreviewSpritesFromEncounterTable(weights, config.battleTier1Table);
+                AddWeightedPreviewSpritesFromEncounterTable(weights, config.battleTier2Table);
+                AddWeightedPreviewSpritesFromEncounterTable(weights, config.battleTier3Table);
+                AddWeightedPreviewSpritesFromEncounterTable(weights, config.eliteTier1Table);
+                AddWeightedPreviewSpritesFromEncounterTable(weights, config.eliteTier2Table);
+                AddWeightedPreviewSpritesFromEncounterTable(weights, config.eliteTier3Table);
             }
         }
 
-        if (sourcePool.Count == 0)
+        if (weights.Count == 0)
         {
             IReadOnlyList<Sprite> fallbackPool = generationSettings.GetFactionEnemyPortraitPool(tile.nativeFaction);
             if (fallbackPool != null)
             {
                 for (int i = 0; i < fallbackPool.Count; i++)
-                {
-                    if (fallbackPool[i] != null)
-                        sourcePool.Add(fallbackPool[i]);
-                }
+                    AddWeightedPreviewSprite(weights, fallbackPool[i], 1);
             }
         }
 
+        return BuildTopFourPreviewPortraits(weights);
+    }
+
+    private void AddWeightedPreviewSpritesFromEncounterTable(Dictionary<Sprite, int> target, EnemyEncounterTable table)
+    {
+        if (target == null || table == null || table.entries == null)
+            return;
+
+        for (int i = 0; i < table.entries.Count; i++)
+        {
+            EnemyEncounterEntry entry = table.entries[i];
+            if (entry == null || !entry.enabled || entry.unitViewDefinition == null)
+                continue;
+
+            AddWeightedPreviewSprite(target, entry.unitViewDefinition.GetSlotFaceSprite(), Mathf.Max(1, entry.weight));
+        }
+    }
+
+    private void AddWeightedPreviewSpritesFromPartyDefinition(Dictionary<Sprite, int> target, PartyDefinition party, int weightPerMember)
+    {
+        if (target == null || party == null || party.members == null)
+            return;
+
+        for (int i = 0; i < party.members.Count; i++)
+        {
+            PartyMemberData member = party.members[i];
+            if (member == null || member.unitViewDefinition == null)
+                continue;
+
+            AddWeightedPreviewSprite(target, member.unitViewDefinition.GetSlotFaceSprite(), Mathf.Max(1, weightPerMember));
+        }
+    }
+
+    private void AddWeightedPreviewSprite(Dictionary<Sprite, int> target, Sprite sprite, int weight)
+    {
+        if (target == null || sprite == null)
+            return;
+
+        int current;
+        target.TryGetValue(sprite, out current);
+        target[sprite] = current + Mathf.Max(1, weight);
+    }
+
+    private List<Sprite> BuildTopFourPreviewPortraits(Dictionary<Sprite, int> weights)
+    {
         List<Sprite> result = new List<Sprite>();
-        if (sourcePool.Count == 0)
+        if (weights == null || weights.Count == 0)
             return result;
 
-        int minCount = Mathf.Clamp(generationSettings.enemyPortraitMinCount, 1, 6);
-        int maxCount = Mathf.Clamp(generationSettings.enemyPortraitMaxCount, minCount, 6);
-        int count = isBoss ? 1 : UnityEngine.Random.Range(minCount, maxCount + 1);
+        List<KeyValuePair<Sprite, int>> ordered = new List<KeyValuePair<Sprite, int>>(weights);
+        ordered.Sort((a, b) => b.Value.CompareTo(a.Value));
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < ordered.Count && result.Count < 4; i++)
         {
-            Sprite sprite = sourcePool[UnityEngine.Random.Range(0, sourcePool.Count)];
-            if (sprite != null)
-                result.Add(sprite);
+            if (ordered[i].Key != null)
+                result.Add(ordered[i].Key);
+        }
+
+        if (result.Count == 0)
+            return result;
+
+        int repeatIndex = 0;
+        while (result.Count < 4)
+        {
+            result.Add(result[repeatIndex % result.Count]);
+            repeatIndex++;
         }
 
         return result;
@@ -2646,6 +2771,7 @@ public class WorldRunManager : MonoBehaviour
             worldTopHudUI.Refresh();
 
         questController?.TryShowQueuedCompletionPopup();
+        TryOpenQueuedWorldSettlementIfReady();
     }
 
     private void RaiseSelectionChanged()

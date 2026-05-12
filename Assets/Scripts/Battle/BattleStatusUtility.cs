@@ -7,7 +7,8 @@ public static class BattleStatusUtility
 {
     public const int MaxStack = 99;
     public const int BleedCurrentHpDamagePercentPerStack = 5;
-    public const int BurnIdtPenaltyPercentPerStack = 10;
+    public const int BurnIdtPenaltyPercentPerStack = 5;
+    public const int BurnMaxHpDamagePercentPerStack = 2;
     public const int FrostAcSpdPenaltyPercentPerStack = 10;
     public const int BlindFinalHitChancePenaltyPercent = 30;
     public const int HuntingTargetBonusCritChancePercentPerStack = 5;

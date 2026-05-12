@@ -68,13 +68,23 @@ public class BattleActionController : MonoBehaviour
                 BattleUnitView targetView = viewManager.GetView(clickedTarget);
                 if (actorView != null && targetView != null)
                 {
+                    BattleStageCameraController stageCamera = battleManager != null && battleManager.PresentationController != null
+                        ? battleManager.PresentationController.StageCameraController
+                        : null;
+
                     yield return StartCoroutine(actorView.PlayAttackMoveWithImpact(
                         targetView.AnchoredPosition,
                         battleManager.AttackMoveRatio,
                         battleManager.AttackMoveMaxDistance,
-                        battleManager.AttackMoveDuration,
+                        battleManager.AttackApproachDuration,
+                        battleManager.AttackHoldDuration,
+                        battleManager.AttackReturnDuration,
+                        battleManager.AttackImpactDelayAfterArrival,
                         attackSprite,
-                        () => ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent)));
+                        () => ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent),
+                        () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackApproachDuration),
+                        () => stageCamera?.FocusUnitSmooth(clickedTarget, battleManager.AttackHoldDuration),
+                        () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackReturnDuration)));
                 }
                 else
                 {
@@ -600,7 +610,7 @@ public class BattleActionController : MonoBehaviour
         if (view != null)
         {
             if (result.DidHit)
-                view.PlayHitFlash(Mathf.Max(0.05f, battleManager.AttackMoveDuration * 0.5f));
+                view.PlayHitFlash(battleManager != null ? battleManager.HitFlashDuration : 1f);
             yield return StartCoroutine(view.AnimateHPChange(0.15f));
         }
 

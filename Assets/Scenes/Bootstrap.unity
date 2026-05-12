@@ -3315,8 +3315,8 @@ MonoBehaviour:
   bgmVolume: 0.7
   sfxVolume: 1
   uiVolume: 1
-  buttonHoverSfx: {fileID: 8300000, guid: 090ab73ef74438f488d51e3ebcf0d7e8, type: 3}
-  buttonClickSfx: {fileID: 8300000, guid: 028552387cda2cb439fd02184a617062, type: 3}
+  buttonHoverSfx: {fileID: 0}
+  buttonClickSfx: {fileID: 0}
   autoBindButtons: 1
   bootstrapBgm: {fileID: 0}
   worldMapBgm: {fileID: 0}

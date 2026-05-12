@@ -142,9 +142,9 @@ public class SelectedTileInfoPanel : MonoBehaviour
                 : tile.eventType.ToString();
 
         if (eventDescriptionText != null)
-            eventDescriptionText.text = settings != null
-                ? settings.GetEventDescription(tile.eventType)
-                : string.Empty;
+            eventDescriptionText.text = runManager != null
+                ? runManager.GetTileEventDescription(tile)
+                : (settings != null ? settings.GetOrCreateTileDescription(tile) : string.Empty);
 
         if (moveButtonLabelText != null)
             moveButtonLabelText.text = "점령";
@@ -180,8 +180,7 @@ public class SelectedTileInfoPanel : MonoBehaviour
             if (portrait == null && unknownText == null)
                 continue;
 
-            int revealCount = runManager != null ? runManager.RevealedEnemyPreviewCount : enemyPortraitSlots.Count;
-            bool canRevealSlot = !isUnknownTile && i < revealCount;
+            bool canRevealSlot = !isUnknownTile && i < 4;
             bool hasSprite =
                 showPreview &&
                 canRevealSlot &&
@@ -202,7 +201,7 @@ public class SelectedTileInfoPanel : MonoBehaviour
 
             if (unknownText != null)
             {
-                bool showQuestion = showPreview && !hasSprite;
+                bool showQuestion = showPreview && i < 4 && !hasSprite;
                 unknownText.gameObject.SetActive(showQuestion);
                 if (showQuestion)
                     unknownText.text = "?";

@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: human_paladin
   unitName: "\uC131\uAE30\uC0AC"
   rangeType: 0
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -62,5 +63,5 @@ MonoBehaviour:
   canBeDecomposed: 0
   decomposeShardReward: 1
   canBeCaptured: 1
-  capturableEnemyNftChancePercent: 0
+  capturableEnemyNftChancePercent: 8
   captureRewardItem: {fileID: 11400000, guid: 46952be8aa2e48645b359b084a4dca5d, type: 2}

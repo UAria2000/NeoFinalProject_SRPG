@@ -120,6 +120,7 @@ public class BattlePresentationController : MonoBehaviour
                 ? battleManager.SelectedEnemyInfoUnit
                 : null;
 
+        uiController.RefreshRoundText();
         uiController.RefreshInfoPanels(selectedAlly, selectedEnemy);
         uiController.RefreshActionButtons(actingAlly, canPlayerAct);
         uiController.RefreshActionWheel(actingAlly, canPlayerAct);

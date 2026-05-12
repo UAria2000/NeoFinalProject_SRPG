@@ -385,6 +385,21 @@ public class BattleFlowController : MonoBehaviour
         BattleTurnStartStatusResult result = unit.ResolveTurnStartStatuses();
         if (result.bleedDamage > 0)
             logController.AppendBattleLog(logController.BuildTurnStartBleedLog(unit, result.bleedDamage));
+        if (result.burnDamage > 0)
+            logController.AppendBattleLog(logController.BuildTurnStartBurnLog(unit, result.burnDamage));
+
+        if (result.TotalDotDamage > 0)
+        {
+            if (viewManager != null)
+                viewManager.ShowFloatingText(unit, result.TotalDotDamage.ToString(), new Color(1f, 0.2f, 0.2f, 1f), 1f);
+
+            BattleUnitView dotView = viewManager != null ? viewManager.GetView(unit) : null;
+            if (dotView != null)
+            {
+                dotView.PlayHitFlash(battleManager != null ? battleManager.HitFlashDuration : 1f);
+                yield return StartCoroutine(dotView.AnimateHPChange(0.15f));
+            }
+        }
 
         if (unit.IsDead)
         {
@@ -495,14 +510,7 @@ private void ClearInvalidDuelLocks()
 
         bool mainAlive = !battleManager.MainPlayerDeadThisBattle &&
                          (captureController == null || captureController.IsMainPlayerAliveInBattle());
-        if (!mainAlive)
-        {
-            battleManager.SetPendingWorldFailure(true);
-            battleManager.SetBattleResult(BattleResultType.WorldFailure);
-            return;
-        }
-
-        battleManager.SetPendingWorldFailure(false);
+        battleManager.SetPendingWorldFailure(!mainAlive);
 
         if (alliesAlive && enemiesAlive)
             battleManager.SetBattleResult(BattleResultType.None);

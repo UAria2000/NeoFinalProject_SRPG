@@ -9,6 +9,7 @@ public class WorldBattleBridge : MonoBehaviour
     [SerializeField] private BattleManager battleManager;
     [SerializeField] private RandomEnemyEncounterBootstrapper encounterBootstrapper;
     [SerializeField] private WorldQuestController questController;
+    [SerializeField] private BattleBackgroundController battleBackgroundController;
 
     [Header("Transition Roots")]
     [SerializeField] private GameObject worldMapRoot;
@@ -117,6 +118,11 @@ public class WorldBattleBridge : MonoBehaviour
         if (waitOneFrameAfterBattleRootActivation)
             yield return null;
 
+        if (battleBackgroundController == null)
+            battleBackgroundController = UnityEngine.Object.FindFirstObjectByType<BattleBackgroundController>();
+        if (battleBackgroundController != null)
+            battleBackgroundController.ApplyBackground(settings, tile.nativeFaction, tile.eventType);
+
         BattlePartyRuntimeState allyState = runManager.GetOrCreatePlayerPartyRuntimeState();
         battleManager.SetWorldRunManager(runManager);
         battleManager.SetAllyRuntimePartyState(allyState);
@@ -215,7 +221,7 @@ public class WorldBattleBridge : MonoBehaviour
         if (runManager != null)
             runManager.RemoveDeadPartyMembersFromActiveParty();
 
-        bool openSettlementAfterReturn = result == BattleResultType.WorldFailure;
+        bool openSettlementAfterReturn = result == BattleResultType.WorldFailure || (battleManager != null && battleManager.MainPlayerDeadThisBattle);
 
         if (pendingTile != null && runManager != null && !pendingCombatOutcomeCommitted)
         {
@@ -235,7 +241,13 @@ public class WorldBattleBridge : MonoBehaviour
             yield return screenFader.FadeIn(battleExitFadeInDuration);
 
         if (openSettlementAfterReturn)
+        {
             yield return StartCoroutine(OpenSettlementRoutine(false));
+        }
+        else if (runManager != null)
+        {
+            runManager.TryOpenQueuedWorldSettlementIfReady();
+        }
     }
 
     private IEnumerator ShowBattleResultRoutine(BattleResultType result)
@@ -473,6 +485,7 @@ public class WorldBattleBridge : MonoBehaviour
             worldSettlementPopupUI.Open(summary, () =>
             {
                 runManager.FinalizeWorldSettlement(summary);
+                runManager.NotifyWorldSettlementPopupClosed();
                 waiting = false;
                 ReturnToTitleSceneIfAvailable();
             });
@@ -481,6 +494,7 @@ public class WorldBattleBridge : MonoBehaviour
         else
         {
             runManager.FinalizeWorldSettlement(summary);
+            runManager.NotifyWorldSettlementPopupClosed();
             ReturnToTitleSceneIfAvailable();
         }
     }

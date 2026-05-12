@@ -18,6 +18,8 @@ public class UnitViewDefinition : ScriptableObject
     public Sprite battleSprite;
     [Tooltip("공격/스킬 사용 중 잠깐 교체할 전신 스프라이트입니다. 비워두면 기본 battleSprite를 사용합니다.")]
     public Sprite attackBattleSprite;
+    [Tooltip("피격/도트 피해 중 1초간 교체할 전신 스프라이트입니다. 비워두면 기본 battleSprite를 사용합니다.")]
+    public Sprite hitBattleSprite;
 
     [Header("Battle Highlight")]
     [Tooltip("전투 중 현재 턴/선택 가능/호버 상태를 표시할 유닛별 하이라이트 이미지입니다.")]
@@ -30,6 +32,14 @@ public class UnitViewDefinition : ScriptableObject
     public Vector2 attackSpriteSizeDelta = Vector2.zero;
     [Tooltip("공격 모션 전용 Image의 localScale입니다.")]
     public Vector3 attackSpriteLocalScale = Vector3.one;
+
+    [Header("Hit Motion Transform")]
+    [Tooltip("피격 모션 전용 Image의 RectTransform anchoredPosition입니다.")]
+    public Vector2 hitSpriteAnchoredPosition = Vector2.zero;
+    [Tooltip("0 이하 값이면 피격 모션 이미지의 크기를 프리팹 기본값으로 유지합니다.")]
+    public Vector2 hitSpriteSizeDelta = Vector2.zero;
+    [Tooltip("피격 모션 전용 Image의 localScale입니다.")]
+    public Vector3 hitSpriteLocalScale = Vector3.one;
 
     [Header("Dead Battle")]
     public Sprite deadBattleSprite;
@@ -55,6 +65,13 @@ public class UnitViewDefinition : ScriptableObject
     {
         if (attackBattleSprite != null)
             return attackBattleSprite;
+        return GetBattleSprite(false);
+    }
+
+    public Sprite GetHitBattleSprite()
+    {
+        if (hitBattleSprite != null)
+            return hitBattleSprite;
         return GetBattleSprite(false);
     }
 

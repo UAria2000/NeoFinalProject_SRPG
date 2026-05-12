@@ -14,6 +14,7 @@ public class WorldTileData
     public bool isPlayerStart;
     public bool isResolved;
     public bool isIconDisabled;
+    [TextArea(2, 6)] public string eventDescriptionText;
     public List<Sprite> previewEnemyPortraits = new List<Sprite>();
 
     public bool IsPlayerOwned => currentOwner == FactionType.Player;

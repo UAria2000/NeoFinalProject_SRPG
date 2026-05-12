@@ -193,6 +193,9 @@ public class WorldQuestController : MonoBehaviour
         if (picked.questType == WorldQuestType.CaptureSpecificTile)
             state.assignedTargetTileId = PickTargetCaptureTileId(mapData, sourceTile.tileId);
 
+        if (runManager != null)
+            runManager.ApplyQuestDescriptionToTile(sourceTile, picked.questType);
+
         generatedQuestByTileId[sourceTile.tileId] = state;
         return state;
     }
