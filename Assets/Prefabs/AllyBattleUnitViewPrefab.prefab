@@ -559,10 +559,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 257617718602889522}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 640, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 228.57, y: 0}
+  m_SizeDelta: {x: 1097.142, y: 640}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4470092692521240494
 CanvasRenderer:
@@ -691,7 +691,7 @@ GameObject:
   - component: {fileID: 5194035128658323767}
   - component: {fileID: 7130859592086966948}
   m_Layer: 5
-  m_Name: BattleUnitViewPrefab
+  m_Name: AllyBattleUnitViewPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
