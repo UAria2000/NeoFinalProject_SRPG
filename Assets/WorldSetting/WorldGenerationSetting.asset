@@ -21,22 +21,62 @@ MonoBehaviour:
   factionPresentations:
   - faction: 1
     displayName: Player
+    factionIcon: {fileID: 0}
     tileSprite: {fileID: 21300000, guid: 0cdbea9abb603a44790e296a0108bf9c, type: 3}
     unknownSprite: {fileID: 0}
     fallbackColor: {r: 0.24705884, g: 0.19607845, b: 0.25490198, a: 1}
     enemyPortraitPool: []
+    units: []
   - faction: 2
     displayName: Human
+    factionIcon: {fileID: 21300000, guid: 3379fef3f30b0fc478b6a3ac54f53af6, type: 3}
     tileSprite: {fileID: 21300000, guid: cf71423dbdef7c54b99bffbda7875fdf, type: 3}
     unknownSprite: {fileID: 21300000, guid: 192ba255d8780914e9afba134643de18, type: 3}
     fallbackColor: {r: 0.25882354, g: 0.41176474, b: 0.63529414, a: 0}
     enemyPortraitPool: []
+    units:
+    - unitDefinition: {fileID: 11400000, guid: 83113651f23ab764da7fe1ee602f2244, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 9a22dfa0610538241928ed44fb3541b7, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: e481c36b18018804fbd8314d5fcd130b, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 884c6bbcae83f4e40b36b3465524afbe, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 12b0e6cdc3fc73c4984184cf70a13a9d, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: c0187cae7e099854f89407657ce96b5f, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 0a4d3cb1f896d0e4a8ef8642b5ec12ae, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 17a7054f707b6814dbcc355c9b6cb89b, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 48d57a4072b3ec644be9b5de9b2a9adc, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: b56d36666c55cf44aa3a7e317eddbff3, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 943d4694e9d1e504db5b2e5e2c2015db, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: c4c0b1e48c9202f4e8de19e8435af085, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: ccdba768332ce6148b95711d11bbba7f, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 6f5058f316f5bd949b0b799707e197ba, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 0de3def49d4e33b47a081a3f3e2aa671, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: a36af4934b8ff394495454593ff6b071, type: 2}
   - faction: 3
     displayName: Elf
+    factionIcon: {fileID: 21300000, guid: f55e399fec786584195876c000569509, type: 3}
     tileSprite: {fileID: 21300000, guid: b343e2b9a70d71d45af9f572dfbed86e, type: 3}
     unknownSprite: {fileID: 21300000, guid: 71d51341ad4fe8e47bbbf143f729c447, type: 3}
     fallbackColor: {r: 0.47058827, g: 0.6784314, b: 0.30980393, a: 0}
     enemyPortraitPool: []
+    units:
+    - unitDefinition: {fileID: 11400000, guid: d1967db3ed2359a45b6778f911d12716, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 41649f522faee514ca2cfe95235bae45, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: ba683f17cb99cd24c9408467f5e59b5a, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 1630232acd8c3f54faee78604d504173, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 40158b9943007ec45b583ed33b726404, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 059ae0431fc01b444bb6dd2449c6c5bd, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 219062074960def4b9f4c8d86b8101a7, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 770b58c85908a544581ae6d244b4e252, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 79a071ce171eb1c4580813a42d6d07d7, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 52a99dbf6c1649c488a0f7753ddd7a7f, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: c5513644a0c48e647b36e110ff6a6238, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 83e0fd59479296f478fe71e1c6822c59, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 1fc54ee31e01ab54fb5634119565a292, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 60017d53c596c3548a76cc1d7395e5d4, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: 440c342bd307cc940a4241adab6782a6, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: f7eae2bcf21afdc4581bb3b809df16ff, type: 2}
+    - unitDefinition: {fileID: 11400000, guid: c9a6bb9a40a77384eb9108136a6425f9, type: 2}
+      unitViewDefinition: {fileID: 11400000, guid: 659e89f33a1605c46b9ebbeba7099790, type: 2}
   eventWeightSettings: {fileID: 11400000, guid: 82ff351194af72e41b858f3570803be3, type: 2}
   eventPresentations:
   - eventType: 1

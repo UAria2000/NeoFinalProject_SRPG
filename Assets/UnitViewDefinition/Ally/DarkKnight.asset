@@ -18,5 +18,9 @@ MonoBehaviour:
   deadBustPortraitSprite: {fileID: 21300000, guid: ea23e73e536425c4fa74d190d81d5c0b, type: 3}
   battleSprite: {fileID: 21300000, guid: b697c0d97611b1c458ad3838d7e85d01, type: 3}
   attackBattleSprite: {fileID: 0}
+  battleHighlightSprite: {fileID: 21300000, guid: a9b1f83586d74714093b80386555b14e, type: 3}
+  attackSpriteAnchoredPosition: {x: 0, y: 0}
+  attackSpriteSizeDelta: {x: 0, y: 0}
+  attackSpriteLocalScale: {x: 1, y: 1, z: 1}
   deadBattleSprite: {fileID: 21300000, guid: 1a64be75ded8da542a5f41b0294bcf00, type: 3}
   viewPrefab: {fileID: 7130859592086966948, guid: edca2cd44571b8f4c80b0dfce99d6e95, type: 3}
