@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61f1fb06c31e02446a44ea0f1253b30c, type: 3}
+  m_Name: Item_KnightCaptured
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: item_knight_captured
+  itemName: "\uBD99\uC7A1\uD78C \uAE30\uC0AC"
+  description: 
+  icon: {fileID: 21300000, guid: ceacd74548d125242ae9e3483668763a, type: 3}
+  targetTeam: 1
+  targetScope: 0
+  itemTier: 1
+  usableInBattle: 0
+  baseSoulValue: 0
+  consumeOnUse: 0
+  consumeTurnOnUse: 1
+  mainUICategory: 2
+  canAssignToSharedConsumableSlot: 0
+  equipmentMaxHpBonus: 0
+  equipmentDmgBonus: 0
+  equipmentSpdBonus: 0
+  equipmentIdtBonus: 0
+  equipmentHitBonus: 0
+  equipmentAcBonus: 0
+  equipmentCriBonus: 0
+  equipmentCrdBonus: 0
+  equipmentAllResistBonus: 0
+  equipmentBurnResistBonus: 0
+  equipmentBleedResistBonus: 0
+  equipmentStunResistBonus: 0
+  equipmentFrostResistBonus: 0
+  equipmentBlindResistBonus: 0
+  equipmentStartShieldPercentOfMaxHP: 0
+  isPrisonerItem: 1
+  convertedAllyUnitDefinition: {fileID: 11400000, guid: bc284180f1aeef24aaee9e01ffd98d39, type: 2}
+  convertedAllyUnitViewDefinition: {fileID: 11400000, guid: bfef10c8d06c9114a8228c690e1e3049, type: 2}
+  useItemIconAsPrisonerPortrait: 1
+  effects: []

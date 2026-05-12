@@ -1,0 +1,398 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+public struct AttackResult
+{
+    public AttackResultType ResultType;
+    public int Damage;
+    public float CritChance;
+    public float HitChance;
+    public float GrazeChance;
+    public float MissChance;
+
+    public bool DidHit
+    {
+        get
+        {
+            return ResultType == AttackResultType.Crit ||
+                   ResultType == AttackResultType.Hit ||
+                   ResultType == AttackResultType.Graze;
+        }
+    }
+}
+
+public static class BattleCalculator
+{
+    public const float HitScaleK = 1.5f;
+    public const float MinHitChance = 5f;
+    public const float MaxHitChance = 95f;
+
+    public const float BaseMissRatio = 0.3f;
+    public const float MissRatioA = 0.02f;
+    public const float MinMissRatio = 0.1f;
+    public const float MaxMissRatio = 0.9f;
+
+    public static AttackResult ResolveAttack(BattleUnit attacker, BattleUnit target, SkillDefinition skill)
+    {
+        return ResolveAttack(attacker, target, skill, -1f, -1f);
+    }
+
+    public static AttackResult ResolveAttack(BattleUnit attacker, BattleUnit target, SkillDefinition skill, float accuracyCoefficientOverridePercent, float damagePowerPercentOverride)
+    {
+        float accuracyPercent = accuracyCoefficientOverridePercent >= 0f
+            ? accuracyCoefficientOverridePercent
+            : (skill != null ? skill.accuracyCoefficientPercent : 100f);
+
+        float effectiveHit = attacker.HIT * (accuracyPercent * 0.01f);
+        float acStat = target.AC;
+
+        float totalHitChance = ApplyBlindFinalHitPenalty(CalculateTotalHitChance(effectiveHit, acStat), attacker);
+        float failChance = 100f - totalHitChance;
+
+        float missRatio = CalculateMissRatio(effectiveHit, acStat);
+        float grazeRatio = 1f - missRatio;
+
+        float missChance = failChance * missRatio;
+        float grazeChance = skill != null && skill.allowGraze ? failChance * grazeRatio : 0f;
+        if (skill != null && !skill.allowGraze)
+            missChance = failChance;
+
+        float critRate = skill != null && skill.allowCrit ? Mathf.Clamp(GetEffectiveCritRate(attacker, target), 0f, 100f) : 0f;
+        float critChance = totalHitChance * (critRate / 100f);
+        float normalHitChance = totalHitChance - critChance;
+
+        float roll = Random.Range(0f, 100f);
+
+        AttackResultType resultType;
+        if (roll < critChance)
+            resultType = AttackResultType.Crit;
+        else if (roll < critChance + normalHitChance)
+            resultType = AttackResultType.Hit;
+        else if (roll < critChance + normalHitChance + grazeChance)
+            resultType = AttackResultType.Graze;
+        else
+            resultType = AttackResultType.Miss;
+
+        int baseRollDamage = RollDamageFromUnitDmg(attacker.DMG);
+        int damage = 0;
+
+        float damageMultiplier = GetTotalDamageMultiplier(skill, damagePowerPercentOverride);
+        int scaledDamage = Mathf.Max(0, Mathf.FloorToInt(baseRollDamage * damageMultiplier));
+
+        switch (resultType)
+        {
+            case AttackResultType.Crit:
+                damage = CalculateCritDamage(scaledDamage, attacker.CRD);
+                break;
+            case AttackResultType.Hit:
+                damage = CalculateHitDamage(scaledDamage);
+                break;
+            case AttackResultType.Graze:
+                damage = CalculateGrazeDamage(scaledDamage);
+                break;
+            case AttackResultType.Miss:
+                damage = 0;
+                break;
+        }
+
+        AttackResult result = new AttackResult();
+        result.ResultType = resultType;
+        result.Damage = damage;
+        result.CritChance = critChance;
+        result.HitChance = normalHitChance;
+        result.GrazeChance = grazeChance;
+        result.MissChance = missChance;
+        return result;
+    }
+
+    public static TargetPreviewData BuildSkillPreview(BattleUnit attacker, BattleUnit target, SkillDefinition skill)
+    {
+        TargetPreviewData data = new TargetPreviewData();
+        if (attacker == null || target == null || skill == null)
+            return data;
+
+        if (skill.resolutionMode == SkillResolutionMode.Attack && skill.HasDamageEffect())
+        {
+            data.showHitChance = true;
+            data.showDamageRange = true;
+
+            float effectiveHit = attacker.HIT * (skill.accuracyCoefficientPercent * 0.01f);
+            float totalHitChance = ApplyBlindFinalHitPenalty(CalculateTotalHitChance(effectiveHit, target.AC), attacker);
+            float critChance = skill.allowCrit ? totalHitChance * (Mathf.Clamp(GetEffectiveCritRate(attacker, target), 0f, 100f) / 100f) : 0f;
+            float normalHitChance = Mathf.Max(0f, totalHitChance - critChance);
+
+            data.hitChancePercent = Mathf.RoundToInt(critChance + normalHitChance);
+
+            int minBase;
+            int maxBase;
+            GetDamageVarianceRange(attacker.DMG, out minBase, out maxBase);
+
+            int minPercent;
+            int maxPercent;
+            GetSkillDamagePowerPercentRange(skill, out minPercent, out maxPercent);
+            if (skill.HasShieldedTargetDamageBonus() && target.CurrentShield > 0)
+            {
+                int shieldedPower = Mathf.RoundToInt(skill.GetShieldedTargetDamagePowerPercent());
+                minPercent = Mathf.Max(minPercent, shieldedPower);
+                maxPercent = Mathf.Max(maxPercent, shieldedPower);
+            }
+
+            data.damageMin = Mathf.Max(0, Mathf.FloorToInt(minBase * (minPercent * 0.01f)));
+            data.damageMax = Mathf.Max(0, Mathf.FloorToInt(maxBase * (maxPercent * 0.01f)));
+
+            AppendStatusChances(data, target, skill.effects, data.hitChancePercent * 0.01f);
+        }
+        else
+        {
+            data.showSuccessOnly = true;
+
+            int maxChance = 0;
+            for (int i = 0; i < skill.effects.Count; i++)
+            {
+                BattleEffectBlock block = skill.effects[i];
+                if (block == null) continue;
+
+                int finalChance = CalculateEffectSuccessChance(block, target);
+                if (finalChance > maxChance)
+                    maxChance = finalChance;
+            }
+            data.successPercent = maxChance;
+            AppendStatusChances(data, target, skill.effects);
+        }
+
+        return data;
+    }
+
+    public static int RollSkillDamagePowerPercent(SkillDefinition skill)
+    {
+        if (skill == null || skill.effects == null)
+            return 100;
+
+        int totalPercent = 0;
+        bool hasDamageBlock = false;
+
+        for (int i = 0; i < skill.effects.Count; i++)
+        {
+            BattleEffectBlock block = skill.effects[i];
+            if (block == null || block.kind != BattleEffectKind.Damage)
+                continue;
+
+            totalPercent += block.GetRolledPowerPercent();
+            hasDamageBlock = true;
+        }
+
+        return hasDamageBlock ? totalPercent : 100;
+    }
+
+    public static void GetSkillDamagePowerPercentRange(SkillDefinition skill, out int minPercent, out int maxPercent)
+    {
+        minPercent = 100;
+        maxPercent = 100;
+
+        if (skill == null || skill.effects == null)
+            return;
+
+        int minTotal = 0;
+        int maxTotal = 0;
+        bool hasDamageBlock = false;
+
+        for (int i = 0; i < skill.effects.Count; i++)
+        {
+            BattleEffectBlock block = skill.effects[i];
+            if (block == null || block.kind != BattleEffectKind.Damage)
+                continue;
+
+            minTotal += block.GetMinPowerPercent();
+            maxTotal += block.GetMaxPowerPercent();
+            hasDamageBlock = true;
+        }
+
+        if (hasDamageBlock)
+        {
+            minPercent = minTotal;
+            maxPercent = maxTotal;
+        }
+    }
+
+    private static float GetEffectiveCritRate(BattleUnit attacker, BattleUnit target)
+    {
+        if (attacker == null)
+            return 0f;
+
+        int crit = attacker.CRI;
+        if (target != null)
+        {
+            int huntingStacks = target.GetStatusStackCount(StatusEffectType.Hunting);
+            if (huntingStacks > 0)
+                crit += huntingStacks * BattleStatusUtility.HuntingTargetBonusCritChancePercentPerStack;
+        }
+
+        return crit;
+    }
+
+    public static int CalculateFleeChancePercent(BattleUnit actor, BattleFormation enemyFormation)
+    {
+        if (actor == null)
+            return 0;
+
+        int evadePercent = Mathf.RoundToInt(actor.AC);
+        float averageEnemySpeed = CalculateAverageSpeed(enemyFormation);
+        bool isFastEnough = actor.SPD >= averageEnemySpeed;
+
+        int chance = evadePercent + (isFastEnough ? 25 : 0);
+        return Mathf.Clamp(chance, 0, 100);
+    }
+
+    public static float CalculateAverageSpeed(BattleFormation formation)
+    {
+        if (formation == null)
+            return 0f;
+
+        List<BattleUnit> units = formation.GetAliveUnits();
+        if (units == null || units.Count <= 0)
+            return 0f;
+
+        float total = 0f;
+        for (int i = 0; i < units.Count; i++)
+            total += units[i].SPD;
+
+        return total / units.Count;
+    }
+
+    public static int CalculateEffectSuccessChance(BattleEffectBlock block, BattleUnit target)
+    {
+        if (block == null)
+            return 0;
+
+        int baseChance = CalculateBaseEffectSuccessChance(block);
+        if (target == null || !block.affectedByResistance)
+            return baseChance;
+
+        int resistPassChance = CalculateResistancePassChance(block, target);
+        return Mathf.RoundToInt(baseChance * (resistPassChance * 0.01f));
+    }
+
+    public static int CalculateBaseEffectSuccessChance(BattleEffectBlock block)
+    {
+        if (block == null)
+            return 0;
+
+        return Mathf.Clamp(Mathf.RoundToInt(block.successChancePercent), 0, 100);
+    }
+
+    public static int CalculateResistancePassChance(BattleEffectBlock block, BattleUnit target)
+    {
+        if (block == null || target == null || !block.affectedByResistance)
+            return 100;
+
+        int resist = target.GetResistance(block.statusType);
+        return Mathf.Clamp(100 - resist, 0, 100);
+    }
+
+    public static bool RollEffectSuccess(BattleEffectBlock block, BattleUnit target, out bool baseChancePassed, out bool resistancePassed, out int finalChancePercent)
+    {
+        baseChancePassed = false;
+        resistancePassed = true;
+        finalChancePercent = CalculateEffectSuccessChance(block, target);
+
+        int baseChance = CalculateBaseEffectSuccessChance(block);
+        baseChancePassed = Random.Range(0f, 100f) < baseChance;
+        if (!baseChancePassed)
+            return false;
+
+        if (block != null && target != null && block.affectedByResistance)
+        {
+            int resistPassChance = CalculateResistancePassChance(block, target);
+            resistancePassed = Random.Range(0f, 100f) < resistPassChance;
+            return resistancePassed;
+        }
+
+        return true;
+    }
+
+    public static float ApplyBlindFinalHitPenalty(float totalHitChance, BattleUnit attacker)
+    {
+        int penalty = attacker != null ? attacker.BlindFinalHitPenaltyPercent : 0;
+        return Mathf.Clamp(totalHitChance - penalty, MinHitChance, MaxHitChance);
+    }
+
+    public static float CalculateTotalHitChance(float hit, float ac)
+    {
+        float delta = hit - ac;
+        return Mathf.Clamp(50f + (delta * HitScaleK), MinHitChance, MaxHitChance);
+    }
+
+    public static float CalculateMissRatio(float hit, float ac)
+    {
+        return Mathf.Clamp(
+            BaseMissRatio + MissRatioA * (ac - hit),
+            MinMissRatio,
+            MaxMissRatio
+        );
+    }
+
+    public static int CalculateHitDamage(int baseDamage)
+    {
+        return Mathf.Max(0, baseDamage);
+    }
+
+    public static int CalculateGrazeDamage(int baseDamage)
+    {
+        return Mathf.Max(1, Mathf.RoundToInt(baseDamage * 0.25f));
+    }
+
+    public static int CalculateCritDamage(int baseDamage, int critDamagePercent)
+    {
+        float multiplier = Mathf.Max(0f, critDamagePercent) / 100f;
+        return Mathf.Max(1, Mathf.RoundToInt(baseDamage * multiplier));
+    }
+
+    public static int RollDamageFromUnitDmg(int unitDamage)
+    {
+        int minValue;
+        int maxValue;
+        GetDamageVarianceRange(unitDamage, out minValue, out maxValue);
+        return Random.Range(minValue, maxValue + 1);
+    }
+
+    public static void GetDamageVarianceRange(int unitDamage, out int minValue, out int maxValue)
+    {
+        int variance = Mathf.FloorToInt(unitDamage * 0.1f);
+        minValue = unitDamage - variance;
+        maxValue = unitDamage + variance;
+        if (minValue < 0) minValue = 0;
+        if (maxValue < minValue) maxValue = minValue;
+    }
+
+    public static float GetTotalDamageMultiplier(SkillDefinition skill, float damagePowerPercentOverride)
+    {
+        if (damagePowerPercentOverride >= 0f)
+            return damagePowerPercentOverride * 0.01f;
+
+        return RollSkillDamagePowerPercent(skill) * 0.01f;
+    }
+
+    public static void AppendStatusChances(TargetPreviewData data, BattleUnit target, List<BattleEffectBlock> effects, float gateChanceMultiplier = 1f)
+    {
+        if (data == null || effects == null)
+            return;
+
+        gateChanceMultiplier = Mathf.Clamp01(gateChanceMultiplier);
+
+        for (int i = 0; i < effects.Count; i++)
+        {
+            BattleEffectBlock block = effects[i];
+            if (block == null) continue;
+            if (block.statusType == StatusEffectType.None) continue;
+            if (block.kind != BattleEffectKind.ApplyStatus) continue;
+
+            int effectChance = CalculateEffectSuccessChance(block, target);
+
+            StatusChancePreviewData preview = new StatusChancePreviewData();
+            preview.icon = block.displayIcon;
+            preview.statusType = BattleStatusUtility.Normalize(block.statusType);
+            preview.successPercent = Mathf.Clamp(Mathf.RoundToInt(effectChance * gateChanceMultiplier), 0, 100);
+            data.statusChances.Add(preview);
+        }
+    }
+}
