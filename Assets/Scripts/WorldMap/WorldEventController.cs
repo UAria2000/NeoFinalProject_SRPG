@@ -160,12 +160,12 @@ public class WorldEventController : MonoBehaviour
 
         popupOpen = true;
         string title = settings != null ? settings.GetEventDisplayName(tile.eventType) : "묘지";
-        string description = settings != null ? settings.GetEventDescription(tile.eventType) : string.Empty;
+        string description = runManager != null ? runManager.GetTileEventDescription(tile) : (settings != null ? settings.GetOrCreateTileDescription(tile) : string.Empty);
 
         if (runManager != null)
             runManager.ResolveMapEvent(tile, true, true, false);
 
-        graveyardPopupUI.Open(title, description, () => popupOpen = false);
+        graveyardPopupUI.Open(title, description, () => { popupOpen = false; runManager?.TryOpenQueuedWorldSettlementIfReady(); });
         return true;
     }
 
@@ -186,7 +186,7 @@ public class WorldEventController : MonoBehaviour
             body,
             string.IsNullOrWhiteSpace(restConfirmText) ? defaultConfirmText : restConfirmText,
             () => ConfirmRestEvent(tile),
-            () => popupOpen = false);
+            () => { popupOpen = false; runManager?.TryOpenQueuedWorldSettlementIfReady(); });
 
         return true;
     }
@@ -216,7 +216,7 @@ public class WorldEventController : MonoBehaviour
             treasure,
             runManager,
             () => ConfirmTreasureEvent(tile),
-            () => popupOpen = false);
+            () => { popupOpen = false; runManager?.TryOpenQueuedWorldSettlementIfReady(); });
 
         return true;
     }
@@ -246,6 +246,8 @@ public class WorldEventController : MonoBehaviour
 
         if (tile != null)
             pendingTreasureByTileId.Remove(tile.tileId);
+
+        runManager?.TryOpenQueuedWorldSettlementIfReady();
     }
 
     private WorldTreasureResult GetOrCreateTreasureForTile(WorldTileData tile)
@@ -467,7 +469,7 @@ public class WorldEventController : MonoBehaviour
     {
         StringBuilder sb = new StringBuilder();
         if (settings != null)
-            sb.Append(settings.GetEventDescription(tile.eventType));
+            sb.Append(runManager != null ? runManager.GetTileEventDescription(tile) : settings.GetOrCreateTileDescription(tile));
 
         if (!string.IsNullOrWhiteSpace(treasureSuffix))
             sb.Append(treasureSuffix);
@@ -567,6 +569,8 @@ public class WorldEventController : MonoBehaviour
 
         if (runManager != null)
             runManager.ResolveMapEvent(tile, true, markResolved, disableIcon);
+
+        runManager?.TryOpenQueuedWorldSettlementIfReady();
     }
 
     private void ConfirmRestEvent(WorldTileData tile)
@@ -592,6 +596,8 @@ public class WorldEventController : MonoBehaviour
 
         if (runManager != null)
             runManager.ResolveMapEvent(tile, true, markResolved, disableIcon);
+
+        runManager?.TryOpenQueuedWorldSettlementIfReady();
     }
 
     private void ApplyImmediateEventEffects(WorldTileData tile)
@@ -616,7 +622,7 @@ public class WorldEventController : MonoBehaviour
     {
         StringBuilder sb = new StringBuilder();
         if (settings != null)
-            sb.Append(settings.GetEventDescription(tile.eventType));
+            sb.Append(runManager != null ? runManager.GetTileEventDescription(tile) : settings.GetOrCreateTileDescription(tile));
 
         switch (tile.eventType)
         {
@@ -640,7 +646,7 @@ public class WorldEventController : MonoBehaviour
     {
         StringBuilder sb = new StringBuilder();
         if (settings != null)
-            sb.Append(settings.GetEventDescription(tile.eventType));
+            sb.Append(runManager != null ? runManager.GetTileEventDescription(tile) : settings.GetOrCreateTileDescription(tile));
 
         if (!string.IsNullOrWhiteSpace(restDescriptionSuffix))
             sb.Append(restDescriptionSuffix);

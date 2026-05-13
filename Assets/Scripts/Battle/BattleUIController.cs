@@ -15,6 +15,13 @@ public class BattleUIController : MonoBehaviour
     [SerializeField] private BattleTurnOrderStripUI turnOrderStripUI;
     [SerializeField] private BattleBackgroundClickCatcherUI backgroundClickCatcherUI;
 
+    [Header("Battle Settings Panel")]
+    [SerializeField] private Button settingsButton;
+    [SerializeField] private GameObject settingsDimRoot;
+    [SerializeField] private Button settingsDimButton;
+    [Tooltip("월드맵에서 쓰는 설정 패널 프리팹/오브젝트를 전투 UI 안에도 배치한 뒤 연결합니다.")]
+    [SerializeField] private MainUIPanelBase settingsPanel;
+
     [Header("Bottom Portrait Slots")]
     [SerializeField] private BattleBottomPortraitBarUI allyBottomPortraitBarUI;
     [SerializeField] private BattleBottomPortraitBarUI enemyBottomPortraitBarUI;
@@ -69,8 +76,14 @@ public class BattleUIController : MonoBehaviour
     {
         battleManager = manager;
 
-        if (turnStartText != null)
-            turnStartText.gameObject.SetActive(false);
+        RefreshRoundText();
+
+        if (settingsPanel != null)
+            settingsPanel.ClosePanel();
+        if (settingsDimRoot != null)
+            settingsDimRoot.SetActive(false);
+        BindButton(settingsButton, OpenSettingsPanel);
+        BindButton(settingsDimButton, CloseSettingsPanel);
 
         if (enemyDetailPopupUI != null)
             enemyDetailPopupUI.Hide();
@@ -270,8 +283,43 @@ public class BattleUIController : MonoBehaviour
 
     public void RefreshTurnOrderStrip(IReadOnlyList<BattleUnit> order, int currentCursor)
     {
+        RefreshRoundText();
         if (turnOrderStripUI != null)
             turnOrderStripUI.Refresh(order, currentCursor);
+    }
+
+    public void RefreshRoundText()
+    {
+        if (turnStartText == null)
+            return;
+
+        turnStartText.gameObject.SetActive(true);
+        int round = battleManager != null ? Mathf.Max(0, battleManager.CurrentRound) : 0;
+        turnStartText.text = round > 0 ? $"Round {round}" : "Round 0";
+    }
+
+    public void OpenSettingsPanel()
+    {
+        if (settingsPanel == null)
+            return;
+
+        settingsPanel.OpenPanel();
+        if (settingsDimRoot != null)
+            settingsDimRoot.SetActive(true);
+    }
+
+    public void CloseSettingsPanel()
+    {
+        if (settingsPanel != null && settingsPanel.IsOpen)
+            settingsPanel.ClosePanel();
+
+        if (settingsDimRoot != null)
+            settingsDimRoot.SetActive(false);
+    }
+
+    public bool IsSettingsPanelOpen()
+    {
+        return settingsPanel != null && settingsPanel.IsOpen;
     }
 
     public void RefreshBottomPortraitBars(BattleManager manager)
@@ -405,13 +453,25 @@ public class BattleUIController : MonoBehaviour
 
     public IEnumerator ShowTurnStartTextRoutine(int round)
     {
-        if (turnStartText == null)
-            yield break;
+        RefreshRoundText();
+        if (turnStartText != null)
+        {
+            turnStartText.gameObject.SetActive(true);
+            turnStartText.text = $"Round {Mathf.Max(0, round)}";
+        }
 
-        turnStartText.gameObject.SetActive(true);
-        turnStartText.text = $"Round {round}";
-        yield return new WaitForSeconds(turnStartTextShowTime);
-        turnStartText.gameObject.SetActive(false);
+        // 라운드 표시는 전투 중 항상 켜 둔다. 기존 코루틴 호출부 호환을 위해 한 프레임만 반환한다.
+        yield return null;
+    }
+
+    private static void BindButton(Button button, UnityEngine.Events.UnityAction action)
+    {
+        if (button == null)
+            return;
+
+        button.onClick.RemoveAllListeners();
+        if (action != null)
+            button.onClick.AddListener(action);
     }
 
     private void RefreshCancelButtonState()

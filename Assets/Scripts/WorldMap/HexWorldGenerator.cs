@@ -270,6 +270,7 @@ public class HexWorldGenerator
 
         WorldTileData selected = candidates[Random.Range(0, candidates.Count)];
         selected.eventType = WorldTileEventType.Graveyard;
+        selected.eventDescriptionText = settings.GetOrCreateTileDescription(selected);
         selected.previewEnemyPortraits.Clear();
         return true;
     }
@@ -294,6 +295,7 @@ public class HexWorldGenerator
 
         WorldTileData selected = candidates[Random.Range(0, candidates.Count)];
         selected.eventType = WorldTileEventType.Boss;
+        selected.eventDescriptionText = settings.GetOrCreateTileDescription(selected);
         selected.previewEnemyPortraits = BuildEnemyPreviewList(faction, true);
         return true;
     }
@@ -320,6 +322,7 @@ public class HexWorldGenerator
             WorldTileData tile = unassigned[i];
             WorldTileEventType eventType = PickWeightedEventType(weights, tile, blockedNearCenterIds);
             tile.eventType = eventType;
+            tile.eventDescriptionText = settings.GetOrCreateTileDescription(tile);
             tile.previewEnemyPortraits = tile.IsCombatEvent
                 ? BuildEnemyPreviewList(tile.nativeFaction, eventType == WorldTileEventType.Boss)
                 : new List<Sprite>();
@@ -373,61 +376,41 @@ public class HexWorldGenerator
 
     private List<Sprite> BuildEnemyPreviewList(FactionType faction, bool isBoss)
     {
-        List<Sprite> sourcePool = new List<Sprite>();
+        Dictionary<Sprite, int> weights = new Dictionary<Sprite, int>();
 
-        // 1순위: 실제 전투 설정에서 slotFaceSprite를 수집
         FactionBattleConfig config = settings.GetFactionBattleConfig(faction);
         if (config != null)
         {
             if (isBoss)
             {
-                AddSpritesFromPartyDefinition(sourcePool, config.bossPartyDefinition);
-                AddSpritesFromEncounterTable(sourcePool, config.bossEncounterTable);
+                AddWeightedSpritesFromPartyDefinition(weights, config.bossPartyDefinition, 100);
+                AddWeightedSpritesFromEncounterTable(weights, config.bossEncounterTable);
             }
             else
             {
-                AddSpritesFromEncounterTable(sourcePool, config.battleTier1Table);
-                AddSpritesFromEncounterTable(sourcePool, config.battleTier2Table);
-                AddSpritesFromEncounterTable(sourcePool, config.battleTier3Table);
-                AddSpritesFromEncounterTable(sourcePool, config.eliteTier1Table);
-                AddSpritesFromEncounterTable(sourcePool, config.eliteTier2Table);
-                AddSpritesFromEncounterTable(sourcePool, config.eliteTier3Table);
+                AddWeightedSpritesFromEncounterTable(weights, config.battleTier1Table);
+                AddWeightedSpritesFromEncounterTable(weights, config.battleTier2Table);
+                AddWeightedSpritesFromEncounterTable(weights, config.battleTier3Table);
+                AddWeightedSpritesFromEncounterTable(weights, config.eliteTier1Table);
+                AddWeightedSpritesFromEncounterTable(weights, config.eliteTier2Table);
+                AddWeightedSpritesFromEncounterTable(weights, config.eliteTier3Table);
             }
         }
 
-        // 2순위: 기존 팩션별 portrait pool fallback
-        if (sourcePool.Count == 0)
+        if (weights.Count == 0)
         {
             IReadOnlyList<Sprite> fallbackPool = settings.GetFactionEnemyPortraitPool(faction);
             if (fallbackPool != null)
             {
                 for (int i = 0; i < fallbackPool.Count; i++)
-                {
-                    if (fallbackPool[i] != null)
-                        sourcePool.Add(fallbackPool[i]);
-                }
+                    AddWeightedSprite(weights, fallbackPool[i], 1);
             }
         }
 
-        List<Sprite> result = new List<Sprite>();
-        if (sourcePool.Count == 0)
-            return result;
-
-        int minCount = Mathf.Clamp(settings.enemyPortraitMinCount, 1, 6);
-        int maxCount = Mathf.Clamp(settings.enemyPortraitMaxCount, minCount, 6);
-        int count = isBoss ? 1 : Random.Range(minCount, maxCount + 1);
-
-        for (int i = 0; i < count; i++)
-        {
-            Sprite sprite = sourcePool[Random.Range(0, sourcePool.Count)];
-            if (sprite != null)
-                result.Add(sprite);
-        }
-
-        return result;
+        return BuildTopFourPortraits(weights);
     }
 
-    private void AddSpritesFromEncounterTable(List<Sprite> target, EnemyEncounterTable table)
+    private void AddWeightedSpritesFromEncounterTable(Dictionary<Sprite, int> target, EnemyEncounterTable table)
     {
         if (target == null || table == null || table.entries == null)
             return;
@@ -438,17 +421,11 @@ public class HexWorldGenerator
             if (entry == null || !entry.enabled || entry.unitViewDefinition == null)
                 continue;
 
-            Sprite sprite = entry.unitViewDefinition.GetSlotFaceSprite();
-            if (sprite == null)
-                continue;
-
-            int repeat = Mathf.Max(1, entry.weight);
-            for (int r = 0; r < repeat; r++)
-                target.Add(sprite);
+            AddWeightedSprite(target, entry.unitViewDefinition.GetSlotFaceSprite(), Mathf.Max(1, entry.weight));
         }
     }
 
-    private void AddSpritesFromPartyDefinition(List<Sprite> target, PartyDefinition party)
+    private void AddWeightedSpritesFromPartyDefinition(Dictionary<Sprite, int> target, PartyDefinition party, int weightPerMember)
     {
         if (target == null || party == null || party.members == null)
             return;
@@ -459,10 +436,36 @@ public class HexWorldGenerator
             if (member == null || member.unitViewDefinition == null)
                 continue;
 
-            Sprite sprite = member.unitViewDefinition.GetSlotFaceSprite();
-            if (sprite != null)
-                target.Add(sprite);
+            AddWeightedSprite(target, member.unitViewDefinition.GetSlotFaceSprite(), Mathf.Max(1, weightPerMember));
         }
+    }
+
+    private void AddWeightedSprite(Dictionary<Sprite, int> target, Sprite sprite, int weight)
+    {
+        if (target == null || sprite == null)
+            return;
+
+        int current;
+        target.TryGetValue(sprite, out current);
+        target[sprite] = current + Mathf.Max(1, weight);
+    }
+
+    private List<Sprite> BuildTopFourPortraits(Dictionary<Sprite, int> weights)
+    {
+        List<Sprite> result = new List<Sprite>();
+        if (weights == null || weights.Count == 0)
+            return result;
+
+        List<KeyValuePair<Sprite, int>> ordered = new List<KeyValuePair<Sprite, int>>(weights);
+        ordered.Sort((a, b) => b.Value.CompareTo(a.Value));
+
+        for (int i = 0; i < ordered.Count && result.Count < 4; i++)
+        {
+            if (ordered[i].Key != null)
+                result.Add(ordered[i].Key);
+        }
+
+        return result;
     }
 
     private List<FactionType> GetValidEnemyFactions()

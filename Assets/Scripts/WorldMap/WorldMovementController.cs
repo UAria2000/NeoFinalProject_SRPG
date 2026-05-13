@@ -20,7 +20,7 @@ public class WorldMovementController
         if (targetTile.IsPlayerOwned)
             return true;
 
-        return mapData.AreNeighbors(currentTile, targetTile);
+        return IsAdjacentToAnyPlayerOwnedTile(targetTile);
     }
 
     public bool IsAdjacentReachable(WorldTileData currentTile, WorldTileData targetTile)
@@ -31,23 +31,42 @@ public class WorldMovementController
         if (targetTile.IsPlayerOwned)
             return false;
 
-        return mapData.AreNeighbors(currentTile, targetTile);
+        return IsAdjacentToAnyPlayerOwnedTile(targetTile);
     }
 
     public List<WorldTileData> GetAdjacentReachableTiles(WorldTileData currentTile)
     {
         List<WorldTileData> result = new List<WorldTileData>();
-        if (mapData == null || currentTile == null)
+        if (mapData == null)
             return result;
 
-        List<WorldTileData> neighbors = mapData.GetNeighbors(currentTile);
-        for (int i = 0; i < neighbors.Count; i++)
+        IReadOnlyList<WorldTileData> tiles = mapData.Tiles;
+        for (int i = 0; i < tiles.Count; i++)
         {
-            WorldTileData tile = neighbors[i];
-            if (tile != null && !tile.IsPlayerOwned)
+            WorldTileData tile = tiles[i];
+            if (tile != null && !tile.IsPlayerOwned && IsAdjacentToAnyPlayerOwnedTile(tile))
                 result.Add(tile);
         }
 
         return result;
+    }
+
+    private bool IsAdjacentToAnyPlayerOwnedTile(WorldTileData targetTile)
+    {
+        if (mapData == null || targetTile == null)
+            return false;
+
+        IReadOnlyList<WorldTileData> tiles = mapData.Tiles;
+        for (int i = 0; i < tiles.Count; i++)
+        {
+            WorldTileData owned = tiles[i];
+            if (owned == null || !owned.IsPlayerOwned)
+                continue;
+
+            if (mapData.AreNeighbors(owned, targetTile))
+                return true;
+        }
+
+        return false;
     }
 }

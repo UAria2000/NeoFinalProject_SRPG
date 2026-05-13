@@ -1106,9 +1106,17 @@ public class BattleUnit
         int bleedStacks = GetStatusStackCount(StatusEffectType.Bleed);
         if (bleedStacks > 0)
         {
-            int bleedDamagePerStack = Mathf.Max(1, Mathf.CeilToInt(hpAtTurnStart * 0.05f));
+            int bleedDamagePerStack = Mathf.Max(1, Mathf.CeilToInt(hpAtTurnStart * (BattleStatusUtility.BleedCurrentHpDamagePercentPerStack * 0.01f)));
             int totalBleedDamage = bleedDamagePerStack * bleedStacks;
             result.bleedDamage = ApplyDirectHpDamage(totalBleedDamage);
+        }
+
+        int burnStacks = GetStatusStackCount(StatusEffectType.Burn);
+        if (!IsDead && burnStacks > 0)
+        {
+            int burnDamagePerStack = Mathf.Max(1, Mathf.CeilToInt(MaxHP * (BattleStatusUtility.BurnMaxHpDamagePercentPerStack * 0.01f)));
+            int totalBurnDamage = burnDamagePerStack * burnStacks;
+            result.burnDamage = ApplyDirectHpDamage(totalBurnDamage);
         }
 
         if (!IsDead && HasStatus(StatusEffectType.Stun))
@@ -1255,6 +1263,8 @@ public class BattleUnit
 public class BattleTurnStartStatusResult
 {
     public int bleedDamage;
+    public int burnDamage;
     public bool wasStunned;
+    public int TotalDotDamage { get { return Mathf.Max(0, bleedDamage) + Mathf.Max(0, burnDamage); } }
     public readonly List<StatusEffectType> expiredStatuses = new List<StatusEffectType>();
 }

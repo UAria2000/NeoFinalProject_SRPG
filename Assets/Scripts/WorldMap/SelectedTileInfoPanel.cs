@@ -19,6 +19,9 @@ public class SelectedTileInfoPanel : MonoBehaviour
     [SerializeField] private Button moveButton;
     [SerializeField] private TMP_Text moveButtonLabelText;
     [SerializeField] private Button closeButton;
+    [SerializeField] private string moveButtonText = "이동";
+    [SerializeField] private string conquerButtonText = "점령";
+    [SerializeField] private string enterEventButtonText = "입장";
 
     [Header("Unknown Tile")]
     [SerializeField] private Sprite unknownTileIconSprite;
@@ -106,7 +109,15 @@ public class SelectedTileInfoPanel : MonoBehaviour
         if (moveButton == null)
             return;
 
-        moveButton.interactable = runManager != null && !runManager.IsBusy && runManager.CanMoveTo(currentTile);
+        if (runManager == null || runManager.IsBusy || currentTile == null)
+        {
+            moveButton.interactable = false;
+            return;
+        }
+
+        moveButton.interactable = runManager.IsManualEnterTile(currentTile)
+            ? runManager.CanEnterTileEvent(currentTile)
+            : runManager.CanMoveTo(currentTile);
     }
 
     private void ApplyUnknownTileView()
@@ -123,7 +134,7 @@ public class SelectedTileInfoPanel : MonoBehaviour
             eventDescriptionText.text = unknownDescriptionText;
 
         if (moveButtonLabelText != null)
-            moveButtonLabelText.text = "이동";
+            moveButtonLabelText.text = moveButtonText;
     }
 
     private void ApplyKnownTileView(WorldTileData tile)
@@ -142,12 +153,14 @@ public class SelectedTileInfoPanel : MonoBehaviour
                 : tile.eventType.ToString();
 
         if (eventDescriptionText != null)
-            eventDescriptionText.text = settings != null
-                ? settings.GetEventDescription(tile.eventType)
-                : string.Empty;
+            eventDescriptionText.text = runManager != null
+                ? runManager.GetTileEventDescription(tile)
+                : (settings != null ? settings.GetOrCreateTileDescription(tile) : string.Empty);
 
         if (moveButtonLabelText != null)
-            moveButtonLabelText.text = "점령";
+            moveButtonLabelText.text = runManager != null && runManager.IsManualEnterTile(tile)
+                ? enterEventButtonText
+                : (tile != null && tile.IsPlayerOwned ? moveButtonText : conquerButtonText);
     }
 
     private void SetAllTileIcons(Sprite sprite)
@@ -180,8 +193,7 @@ public class SelectedTileInfoPanel : MonoBehaviour
             if (portrait == null && unknownText == null)
                 continue;
 
-            int revealCount = runManager != null ? runManager.RevealedEnemyPreviewCount : enemyPortraitSlots.Count;
-            bool canRevealSlot = !isUnknownTile && i < revealCount;
+            bool canRevealSlot = !isUnknownTile && i < 4;
             bool hasSprite =
                 showPreview &&
                 canRevealSlot &&
@@ -202,7 +214,7 @@ public class SelectedTileInfoPanel : MonoBehaviour
 
             if (unknownText != null)
             {
-                bool showQuestion = showPreview && !hasSprite;
+                bool showQuestion = showPreview && isUnknownTile && i < 4 && !hasSprite;
                 unknownText.gameObject.SetActive(showQuestion);
                 if (showQuestion)
                     unknownText.text = "?";
@@ -215,7 +227,11 @@ public class SelectedTileInfoPanel : MonoBehaviour
         if (runManager == null || runManager.IsBusy)
             return;
 
-        if (runManager.TryMoveToSelectedTile())
+        bool handled = runManager.IsManualEnterTile(currentTile)
+            ? runManager.TryEnterSelectedTileEvent()
+            : runManager.TryMoveToSelectedTile();
+
+        if (handled)
             HidePanel();
     }
 }

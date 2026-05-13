@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: human_priest
   unitName: "\uC0AC\uC81C"
   rangeType: 2
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -62,5 +63,5 @@ MonoBehaviour:
   canBeDecomposed: 0
   decomposeShardReward: 1
   canBeCaptured: 1
-  capturableEnemyNftChancePercent: 0
+  capturableEnemyNftChancePercent: 8
   captureRewardItem: {fileID: 11400000, guid: 8f03032dd35fbe04e8a76cfc5d0e08bb, type: 2}

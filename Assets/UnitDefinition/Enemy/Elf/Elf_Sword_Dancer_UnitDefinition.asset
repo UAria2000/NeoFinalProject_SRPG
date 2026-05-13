@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: elf_sword_dancer
   unitName: "\uAC80\uC758 \uBB34\uD76C"
   rangeType: 1
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -62,5 +63,5 @@ MonoBehaviour:
   canBeDecomposed: 0
   decomposeShardReward: 1
   canBeCaptured: 1
-  capturableEnemyNftChancePercent: 0
+  capturableEnemyNftChancePercent: 8
   captureRewardItem: {fileID: 11400000, guid: 3653663d10d9df148878faffe6d8bf9f, type: 2}
