@@ -148,6 +148,7 @@ public class BattleActionWheelUI : MonoBehaviour
     [SerializeField] private string unusableLabel = "사용불가";
     [SerializeField] private string noItemLabel = "미지정";
     [SerializeField] private string noAmountLabel = "수량없음";
+    [SerializeField] private string itemUsedThisTurnLabel = "사용 완료";
     [SerializeField] private string moveUnavailableLabel = "이동불가";
     [SerializeField] private string notImplementedLabel = "미구현";
     [SerializeField] private string noManaLabel = "마나부족";
@@ -751,6 +752,9 @@ public class BattleActionWheelUI : MonoBehaviour
 
         if (!TryGetActionWheelItem(out _, out InventoryStackData stack))
             return MakeDisabledButton(label, icon, configuredItem == null ? noItemLabel : noAmountLabel);
+
+        if (battleManager != null && !battleManager.CanUseConsumableThisTurn(currentActor))
+            return MakeDisabledButton(label, icon, itemUsedThisTurnLabel);
 
         List<BattleUnit> validTargets = BattleTargeting.GetValidItemTargets(
             currentActor,

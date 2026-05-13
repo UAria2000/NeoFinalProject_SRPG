@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: dragon_soldier
   unitName: "\uC6A9\uC544\uBCD1"
   rangeType: 0
+  defaultViewDefinition: {fileID: 11400000, guid: bfef10c8d06c9114a8228c690e1e3049, type: 2}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -29,9 +30,9 @@ MonoBehaviour:
   ac: 32
   cri: 1
   crd: 150
-  burnResist: 0
+  burnResist: 50
   bleedResist: 0
-  stunResist: 0
+  stunResist: 20
   frostResist: 0
   blindResist: 0
   basicAttack: {fileID: 11400000, guid: 87df48f0ec71af34092eabc9c70e0d8f, type: 2}

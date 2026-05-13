@@ -377,39 +377,14 @@ public class BattleFormation
     {
         List<BattleUnit> moved = new List<BattleUnit>();
 
-        for (int i = 0; i < slots.Length; i++)
-        {
-            if (slots[i] != null && slots[i].IsDead)
-                slots[i] = null;
-        }
-
         BattleUnit[] nextSlots = new BattleUnit[4];
-        bool[] fixedIndices = new bool[4];
-
-        for (int i = 0; i < slots.Length; i++)
-        {
-            BattleUnit unit = slots[i];
-            if (unit != null && unit.IsPositionMovementLocked)
-            {
-                nextSlots[i] = unit;
-                fixedIndices[i] = true;
-                unit.SlotIndex = i;
-            }
-        }
-
         int writeIndex = 0;
 
         for (int readIndex = 0; readIndex < slots.Length; readIndex++)
         {
             BattleUnit unit = slots[readIndex];
-            if (unit == null)
+            if (unit == null || unit.IsDead)
                 continue;
-
-            if (unit.IsPositionMovementLocked)
-                continue;
-
-            while (writeIndex < nextSlots.Length && fixedIndices[writeIndex])
-                writeIndex++;
 
             if (writeIndex >= nextSlots.Length)
                 break;

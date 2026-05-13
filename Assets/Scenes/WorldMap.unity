@@ -21392,7 +21392,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -497, y: -838.67}
-  m_SizeDelta: {x: 200, y: 100}
+  m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &473175045
 MonoBehaviour:
@@ -39491,6 +39491,8 @@ MonoBehaviour:
   attackReturnDuration: 1
   attackImpactDelayAfterArrival: 0
   hitFlashDuration: 1
+  supportSkillPreImpactDelay: 0.35
+  supportSkillPostImpactDelay: 0.65
   popupLogPanel: {fileID: 907927938}
   inventoryMaxSlotCount: 8
   maxCaptureAttemptsPerEnemyInstance: 3
@@ -45927,7 +45929,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 200, y: 100}
+  m_SizeDelta: {x: 300, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &1018464808
 CanvasGroup:
@@ -45961,17 +45963,17 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uACF5\uACA9\n1234567890"
+  m_text: "\uACF5\uACA9\n123456789"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: f2d0d9329c4296445aa76c2a1d5e45de, type: 2}
-  m_sharedMaterial: {fileID: -5774136478279350197, guid: f2d0d9329c4296445aa76c2a1d5e45de, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e4da9601fff730f4f896adf6235c9070, type: 2}
+  m_sharedMaterial: {fileID: 3175436900351816329, guid: e4da9601fff730f4f896adf6235c9070, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4281672413
+  m_fontColor: {r: 0.8666667, g: 0.13333334, b: 0.20784314, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -45988,8 +45990,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 40
+  m_fontSizeBase: 40
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -62308,7 +62310,7 @@ MonoBehaviour:
     questType: 0
     targetCount: 10
     enabled: 1
-    soulReward: 1000
+    soulReward: 100
     experienceReward: 0
     itemRewards:
     - item: {fileID: 11400000, guid: dc8e2206841c82046aa61dcee0403866, type: 2}
@@ -62319,7 +62321,7 @@ MonoBehaviour:
     questType: 1
     targetCount: 1
     enabled: 1
-    soulReward: 2000
+    soulReward: 150
     experienceReward: 0
     itemRewards:
     - item: {fileID: 11400000, guid: a01278100cf52804d9ef3ab0e66f4788, type: 2}
@@ -62330,7 +62332,7 @@ MonoBehaviour:
     questType: 2
     targetCount: 1
     enabled: 1
-    soulReward: 5000
+    soulReward: 200
     experienceReward: 0
     itemRewards:
     - item: {fileID: 11400000, guid: c502a72c53c25474995dc0028e4a3398, type: 2}
@@ -62341,7 +62343,7 @@ MonoBehaviour:
     questType: 3
     targetCount: 1
     enabled: 1
-    soulReward: 10000
+    soulReward: 250
     experienceReward: 0
     itemRewards:
     - item: {fileID: 11400000, guid: 67df33319600fa84e8425dba18260c5f, type: 2}
@@ -73613,10 +73615,10 @@ MonoBehaviour:
   endTurnLabel: "\uD134 \uB118\uAE40"
   basicAttackFallbackLabel: "\uD3C9\uD0C0"
   emptySkillLabel: '-'
-  captureLabel: "\uD3EC\uD68D"
-  fleeLabel: "\uB3C4\uC8FC"
-  preventDeathLabel: "\uC0DD\uC874"
-  teamBuffLabel: "\uBC84\uD504"
+  captureLabel: "\uD0C0\uB77D"
+  fleeLabel: "\uD1F4\uAC01"
+  preventDeathLabel: "\uAD6C\uC6D0"
+  teamBuffLabel: "\uACE0\uB300\uC758 \uD798"
   cancelLabel: "\uCDE8\uC18C"
   noTargetLabel: "\uB300\uC0C1\uC5C6\uC74C"
   invalidPositionLabel: "\uC704\uCE58\uBD88\uAC00"
@@ -73625,6 +73627,7 @@ MonoBehaviour:
   unusableLabel: "\uC0AC\uC6A9\uBD88\uAC00"
   noItemLabel: "\uBBF8\uC9C0\uC815"
   noAmountLabel: "\uC218\uB7C9\uC5C6\uC74C"
+  itemUsedThisTurnLabel: "\uC0AC\uC6A9 \uC644\uB8CC"
   moveUnavailableLabel: "\uC774\uB3D9\uBD88\uAC00"
   notImplementedLabel: "\uBBF8\uAD6C\uD604"
   noManaLabel: "\uB9C8\uB098\uBD80\uC871"

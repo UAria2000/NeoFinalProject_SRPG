@@ -50,7 +50,7 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 50
+    powerPercent: 20
     useRandomPowerPercentRange: 0
     randomPowerPercentMin: 0
     randomPowerPercentMax: 0

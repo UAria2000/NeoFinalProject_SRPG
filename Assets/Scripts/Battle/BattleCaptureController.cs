@@ -25,23 +25,8 @@ public class BattleCaptureController : MonoBehaviour
 
     public void InitializeCaptureAttempts()
     {
+        // 포획 횟수 제한은 제거되었다. 포획 가능 여부는 마나/대상 조건만 사용한다.
         remainingCaptureAttemptsByUnit.Clear();
-
-        List<BattleUnit> enemies = battleManager != null && battleManager.EnemyFormation != null
-            ? battleManager.EnemyFormation.GetAllUnits()
-            : null;
-
-        if (enemies == null)
-            return;
-
-        for (int i = 0; i < enemies.Count; i++)
-        {
-            BattleUnit enemy = enemies[i];
-            if (enemy == null)
-                continue;
-
-            remainingCaptureAttemptsByUnit[enemy] = Mathf.Max(0, maxCaptureAttemptsPerEnemyInstance);
-        }
     }
 
     public void NotifyUnitLeftBattle(BattleUnit unit)
@@ -161,9 +146,6 @@ public class BattleCaptureController : MonoBehaviour
         if (target.Definition.captureRewardItem == null)
             return false;
 
-        if (GetRemainingCaptureAttempts(target) <= 0)
-            return false;
-
         if (!HasInventorySpaceForCapture())
             return false;
 
@@ -172,31 +154,19 @@ public class BattleCaptureController : MonoBehaviour
 
     public int GetRemainingCaptureAttempts(BattleUnit target)
     {
-        if (target == null)
-            return 0;
-
-        return remainingCaptureAttemptsByUnit.TryGetValue(target, out int value)
-            ? Mathf.Max(0, value)
-            : 0;
+        // 횟수 제한 삭제. 기존 UI/로그 호환을 위해 큰 값을 반환한다.
+        return target != null ? 999 : 0;
     }
 
     public bool TryConsumeCaptureAttempt(BattleUnit target)
     {
-        int remaining = GetRemainingCaptureAttempts(target);
-        if (remaining <= 0)
-            return false;
-
-        remainingCaptureAttemptsByUnit[target] = remaining - 1;
-        return true;
+        // 횟수 제한 삭제. 실제 비용은 BattleManager.TrySpendManaForAction(Capture)에서 처리한다.
+        return target != null;
     }
 
     public void RefundCaptureAttempt(BattleUnit target)
     {
-        if (target == null)
-            return;
-
-        int remaining = GetRemainingCaptureAttempts(target);
-        remainingCaptureAttemptsByUnit[target] = Mathf.Min(maxCaptureAttemptsPerEnemyInstance, remaining + 1);
+        // 횟수 제한 삭제로 환불할 카운터가 없다.
     }
 
     public int GetCaptureChancePercent(BattleUnit target)

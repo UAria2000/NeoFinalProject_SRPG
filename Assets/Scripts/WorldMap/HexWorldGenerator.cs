@@ -106,6 +106,57 @@ public class HexWorldGenerator
     private int[] CreateFactionAllocations(int availableTileCount, int factionCount)
     {
         int[] result = new int[factionCount];
+        if (availableTileCount <= 0 || factionCount <= 0)
+            return result;
+
+        if (!settings.randomizeFactionTileRatios || factionCount == 1)
+            return CreateEvenFactionAllocations(availableTileCount, factionCount);
+
+        float[] weights = CreateBoundedRandomFactionWeights(factionCount);
+        float totalWeight = 0f;
+        for (int i = 0; i < weights.Length; i++)
+            totalWeight += Mathf.Max(0.0001f, weights[i]);
+
+        int assigned = 0;
+        float[] fractional = new float[factionCount];
+        for (int i = 0; i < factionCount; i++)
+        {
+            float exact = availableTileCount * (weights[i] / totalWeight);
+            int count = Mathf.FloorToInt(exact);
+
+            // 각 팩션은 최소 1개 시드 타일이 필요하다.
+            if (availableTileCount >= factionCount)
+                count = Mathf.Max(1, count);
+
+            result[i] = count;
+            assigned += count;
+            fractional[i] = exact - Mathf.Floor(exact);
+        }
+
+        while (assigned > availableTileCount)
+        {
+            int index = FindLargestAllocationIndexAboveMinimum(result, availableTileCount >= factionCount ? 1 : 0);
+            if (index < 0)
+                break;
+            result[index]--;
+            assigned--;
+        }
+
+        while (assigned < availableTileCount)
+        {
+            int index = FindLargestFractionIndex(fractional, result);
+            result[index]++;
+            fractional[index] = 0f;
+            assigned++;
+        }
+
+        EnforceFactionAllocationBounds(result, availableTileCount);
+        return result;
+    }
+
+    private int[] CreateEvenFactionAllocations(int availableTileCount, int factionCount)
+    {
+        int[] result = new int[factionCount];
         int baseCount = availableTileCount / factionCount;
         int remainder = availableTileCount % factionCount;
 
@@ -121,6 +172,117 @@ public class HexWorldGenerator
             result[indices[i]]++;
 
         return result;
+    }
+
+    private float[] CreateBoundedRandomFactionWeights(int factionCount)
+    {
+        float[] weights = new float[factionCount];
+        float maxRatio = Mathf.Max(1f, settings.maxFactionTileRatio);
+        float maxShare = Mathf.Clamp(settings.maxSingleFactionTileShare, 0.01f, 1f);
+
+        for (int attempt = 0; attempt < 100; attempt++)
+        {
+            float total = 0f;
+            for (int i = 0; i < factionCount; i++)
+            {
+                weights[i] = Random.Range(1f, maxRatio);
+                total += weights[i];
+            }
+
+            if (total <= 0f)
+                continue;
+
+            float largestShare = 0f;
+            for (int i = 0; i < factionCount; i++)
+                largestShare = Mathf.Max(largestShare, weights[i] / total);
+
+            if (largestShare <= maxShare || factionCount <= 2)
+                return weights;
+        }
+
+        // 이론상 maxRatio 2:1이면 3개 이상 팩션에서 66%를 넘기 어렵지만,
+        // 설정값을 극단적으로 바꿨을 때도 안전하게 균등 분배로 폴백한다.
+        for (int i = 0; i < factionCount; i++)
+            weights[i] = 1f;
+        return weights;
+    }
+
+    private int FindLargestFractionIndex(float[] fractional, int[] allocations)
+    {
+        int bestIndex = 0;
+        float bestValue = -1f;
+        for (int i = 0; i < fractional.Length; i++)
+        {
+            float value = fractional[i];
+            if (value > bestValue)
+            {
+                bestValue = value;
+                bestIndex = i;
+            }
+            else if (Mathf.Approximately(value, bestValue) && allocations[i] < allocations[bestIndex])
+            {
+                bestIndex = i;
+            }
+        }
+        return bestIndex;
+    }
+
+    private int FindLargestAllocationIndexAboveMinimum(int[] allocations, int minimum)
+    {
+        int bestIndex = -1;
+        int bestValue = int.MinValue;
+        for (int i = 0; i < allocations.Length; i++)
+        {
+            if (allocations[i] <= minimum)
+                continue;
+
+            if (allocations[i] > bestValue)
+            {
+                bestValue = allocations[i];
+                bestIndex = i;
+            }
+        }
+        return bestIndex;
+    }
+
+    private void EnforceFactionAllocationBounds(int[] allocations, int totalTileCount)
+    {
+        if (allocations == null || allocations.Length <= 1 || totalTileCount <= 0)
+            return;
+
+        float maxRatio = Mathf.Max(1f, settings.maxFactionTileRatio);
+        float maxShare = Mathf.Clamp(settings.maxSingleFactionTileShare, 0.01f, 1f);
+        int minimum = totalTileCount >= allocations.Length ? 1 : 0;
+        int guard = Mathf.Max(10, totalTileCount * allocations.Length * 4);
+
+        while (guard-- > 0)
+        {
+            int maxIndex = 0;
+            int minIndex = 0;
+            for (int i = 1; i < allocations.Length; i++)
+            {
+                if (allocations[i] > allocations[maxIndex])
+                    maxIndex = i;
+                if (allocations[i] < allocations[minIndex])
+                    minIndex = i;
+            }
+
+            int maxValue = allocations[maxIndex];
+            int minValue = allocations[minIndex];
+            float ratio = minValue > 0 ? maxValue / (float)minValue : float.PositiveInfinity;
+            float share = maxValue / (float)totalTileCount;
+            bool violatesRatio = ratio > maxRatio + 0.0001f;
+            bool violatesShare = allocations.Length >= 3 && share > maxShare + 0.0001f;
+
+            if (!violatesRatio && !violatesShare)
+                break;
+
+            if (maxValue <= minimum)
+                break;
+
+            allocations[maxIndex]--;
+            allocations[minIndex]++;
+        }
     }
 
     private bool AssignFactionTerritories(WorldMapData mapData, List<FactionType> enemyFactions, int[] allocations)

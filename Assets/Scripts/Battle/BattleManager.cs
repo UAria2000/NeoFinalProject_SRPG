@@ -28,6 +28,7 @@ public class BattleManager : MonoBehaviour
 
     private readonly BattleRewardSummary currentBattleRewardSummary = new BattleRewardSummary();
     private readonly HashSet<BattleUnit> suppressedUntilNextRoundUnits = new HashSet<BattleUnit>();
+    private readonly HashSet<BattleUnit> consumableUsedThisTurnUnits = new HashSet<BattleUnit>();
 
     [Header("Exploration")]
     [SerializeField] private bool autoStartBattleOnStart = true;
@@ -69,6 +70,12 @@ public class BattleManager : MonoBehaviour
     [SerializeField, Min(0f)] private float attackImpactDelayAfterArrival = 0f;
     [Tooltip("피격/도트 피해 시 붉게 점등하고 피격 모션을 유지하는 시간입니다.")]
     [SerializeField, Min(0.01f)] private float hitFlashDuration = 1f;
+
+    [Header("Support Skill Timing")]
+    [Tooltip("피해 없는 버프/디버프/보호막/회복형 스킬에서 모션 스프라이트로 바뀐 뒤 효과가 적용되기 전 대기 시간입니다.")]
+    [SerializeField, Min(0f)] private float supportSkillPreImpactDelay = 0.35f;
+    [Tooltip("피해 없는 버프/디버프/보호막/회복형 스킬의 효과 적용 후 모션 스프라이트를 유지하는 시간입니다.")]
+    [SerializeField, Min(0f)] private float supportSkillPostImpactDelay = 0.65f;
 
     [Header("Popup Log")]
     [SerializeField] private GameObject popupLogPanel;
@@ -158,6 +165,8 @@ public class BattleManager : MonoBehaviour
     public float AttackImpactDelayAfterArrival { get { return Mathf.Max(0f, attackImpactDelayAfterArrival); } }
     public float AttackMoveDuration { get { return AttackApproachDuration + AttackHoldDuration + AttackReturnDuration; } }
     public float HitFlashDuration { get { return Mathf.Max(0.01f, hitFlashDuration); } }
+    public float SupportSkillPreImpactDelay { get { return Mathf.Max(0f, supportSkillPreImpactDelay); } }
+    public float SupportSkillPostImpactDelay { get { return Mathf.Max(0f, supportSkillPostImpactDelay); } }
 
     public BattlePartyRuntimeState GetActiveAllyPartyState()
     {
@@ -231,6 +240,27 @@ public class BattleManager : MonoBehaviour
     public void SetWorldRunManager(WorldRunManager manager)
     {
         worldRunManager = manager;
+    }
+
+    public void ResetConsumableUseForTurn(BattleUnit unit)
+    {
+        if (unit == null)
+            return;
+
+        consumableUsedThisTurnUnits.Remove(unit);
+    }
+
+    public bool CanUseConsumableThisTurn(BattleUnit unit)
+    {
+        return unit != null && !unit.IsDead && !consumableUsedThisTurnUnits.Contains(unit);
+    }
+
+    public void MarkConsumableUsedThisTurn(BattleUnit unit)
+    {
+        if (unit == null)
+            return;
+
+        consumableUsedThisTurnUnits.Add(unit);
     }
 
     public void ApplyElitePermanentBuffToEnemies(int percent)
@@ -743,6 +773,7 @@ public class BattleManager : MonoBehaviour
         SelectedAllyInfoUnit = null;
         currentRoundTurnOrder.Clear();
         suppressedUntilNextRoundUnits.Clear();
+        consumableUsedThisTurnUnits.Clear();
         CurrentRoundTurnCursor = -1;
 
         ResetSelections();

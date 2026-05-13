@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: elf_spirit_deer
   unitName: "\uC815\uB839 \uC0AC\uC2B4"
   rangeType: 0
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -55,8 +56,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 46315d16cbcbf2945b78f5387892c044, type: 2}
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 30
-  lastWillTextTable: {fileID: 0}
+  lastWillChancePercent: 8
+  lastWillTextTable: {fileID: 11400000, guid: 9ff260059128e3a40b772c0df391eb32, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 180
   canBeDecomposed: 0

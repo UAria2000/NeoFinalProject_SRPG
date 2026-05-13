@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: human_guard
   unitName: "\uACBD\uBE44\uBCD1"
   rangeType: 0
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -55,8 +56,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 57425b02a3ab6ba4a8143835869737a1, type: 2}
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 30
-  lastWillTextTable: {fileID: 0}
+  lastWillChancePercent: 8
+  lastWillTextTable: {fileID: 11400000, guid: bc5025a809afa084ab2522cca5e3c4ad, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 145
   canBeDecomposed: 0

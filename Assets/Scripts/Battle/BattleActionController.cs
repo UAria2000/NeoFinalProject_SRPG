@@ -107,6 +107,10 @@ public class BattleActionController : MonoBehaviour
             if (actorView != null && attackSprite != null)
                 actorView.SetBodySpriteOverride(attackSprite);
 
+            float preImpactDelay = battleManager != null ? battleManager.SupportSkillPreImpactDelay : 0f;
+            if (preImpactDelay > 0f)
+                yield return new WaitForSeconds(preImpactDelay);
+
             for (int i = 0; i < targets.Count; i++)
             {
                 BattleUnit primaryTarget = targets[i];
@@ -146,6 +150,11 @@ public class BattleActionController : MonoBehaviour
                     }
                 }
             }
+
+            float postImpactDelay = battleManager != null ? battleManager.SupportSkillPostImpactDelay : 0f;
+            if (postImpactDelay > 0f)
+                yield return new WaitForSeconds(postImpactDelay);
+
             if (actorView != null && attackSprite != null)
                 actorView.ClearBodySpriteOverride();
         }
@@ -207,6 +216,12 @@ public class BattleActionController : MonoBehaviour
 
         ItemDefinition item = stack.item;
 
+        if (!battleManager.CanUseConsumableThisTurn(actor))
+        {
+            battleManager.OnActionExecutionFinished(false);
+            yield break;
+        }
+
         BattleFormation ownFormation = actor.Team == TeamType.Ally
             ? battleManager.AllyFormation
             : battleManager.EnemyFormation;
@@ -245,8 +260,9 @@ public class BattleActionController : MonoBehaviour
                 allyInventory.RemoveAt(inventoryIndex);
         }
 
+        battleManager.MarkConsumableUsedThisTurn(actor);
         yield return StartCoroutine(battleManager.HandleDeathsAndCompressionRoutine());
-        battleManager.OnActionExecutionFinished(item.consumeTurnOnUse);
+        battleManager.OnActionExecutionFinished(false);
     }
 
     public IEnumerator ExecuteCapture(BattleUnit actor, BattleUnit target)
