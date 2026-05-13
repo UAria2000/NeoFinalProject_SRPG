@@ -6,14 +6,13 @@
 
 대상 환경:
 
-- 프로젝트 경로: `C:\UnityProject\FinalProject_SRPG`
+- 프로젝트 경로: `C:\UnityProject\NeoFinalProject_SRPG`
 - Unity Editor: `6000.3.2f1`
 - OS: Windows
 - MCP 클라이언트: Codex, VS Code OpenAI ChatGPT 확장 내부 `codex.exe`
-- 관련 패키지: `com.unity.ai.assistant`
+- 관련 패키지: `com.unity.ai.assistant` `2.7.0-pre.3`
 
-현재 새 프로젝트 폴더의 `Packages\manifest.json`에 `com.unity.ai.assistant`가 없을 수 있다.
-Unity AI Assistant를 다시 설치한 뒤 아래 절차를 적용한다.
+`Packages\manifest.json`에 `com.unity.ai.assistant`가 없거나 Unity 패키지 캐시가 재생성된 경우, Unity AI Assistant를 다시 설치한 뒤 아래 절차를 적용한다.
 
 ## 발생 증상
 
@@ -34,7 +33,7 @@ Unity Editor 내부 상태:
 
 ```text
 Successfully set up discovery for 1 debug tools + 0 Unity tools
-Connecting to named pipe: \\.\pipe\unity-mcp-a485f8f3-...
+Connecting to named pipe: \\.\pipe\unity-mcp-...
 Named pipe connection error: ECONNREFUSED
 Unity not available at startup
 ```
@@ -183,3 +182,13 @@ Codex 실행 파일이 Unity에서 공식 인식된 앱으로 분류되지 않�
 - 기존 Codex 채팅에는 Unity MCP 도구가 즉시 추가되지 않을 수 있음.
 - Unity MCP 설정에서 `codex-mcp-client`가 여러 개 보이면 오래된 Codex 프로세스가 남은 상태일 수 있음.
 - 사용하지 않는 VS Code/Codex 창을 닫고 Unity MCP Server 화면에서 불필요한 연결을 `Revoke`할 수 있음.
+
+## 현재 프로젝트 적용 메모
+
+- 현재 bridge 파일: `C:\Users\home\.unity\mcp\connections\bridge-3929f1dd-30472.json`
+- 현재 pipe 경로: `\\.\pipe\unity-mcp-3929f1dd-30472`
+- 현재 Unity Editor PID: `30472`
+- 현재 패치 대상: `Library\PackageCache\com.unity.ai.assistant@198d71476a35\Modules\Unity.AI.MCP.Editor\Connection\NamedPipeListener.cs`
+- 2026-05-13 기준, Unity AI Assistant 패키지 캐시 재생성으로 SDDL 패치가 사라져 재적용함.
+- 2026-05-13 재시작 후 직접 pipe 테스트 결과: `connected=True`.
+- 2026-05-13 연결 승인 기록: `Library\AI.MCP\connections-v2.asset`에 `Status: 1`, `ValidationReason: Approved by user` 확인.
