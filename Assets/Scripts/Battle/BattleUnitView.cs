@@ -43,6 +43,10 @@ public class BattleUnitView : MonoBehaviour
     [Header("Hit Flash")]
     [SerializeField] private Color hitFlashColor = new Color(1f, 0f, 0f, 0.65f);
 
+    [Header("Effect Anchors")]
+    [SerializeField, Range(0f, 1f)] private float hitEffectHeightNormalized = 0.62f;
+    [SerializeField] private Vector2 hitEffectOffset;
+
     [Header("Deprecated - Not Used")]
     [Tooltip("폐기 예정. 더 이상 턴 예정/완료 표시로 사용하지 않습니다.")]
     [SerializeField] private Image upcomingGrayOverlayImage;
@@ -63,6 +67,29 @@ public class BattleUnitView : MonoBehaviour
 
     public BattleUnit Unit { get; private set; }
     public RectTransform HoverAnchor => hoverAnchor != null ? hoverAnchor : rectTransform;
+    public Vector3 HitEffectAnchorPosition
+    {
+        get
+        {
+            RectTransform sourceRect = unitBodyImage != null ? unitBodyImage.rectTransform : rectTransform;
+            if (sourceRect == null)
+                return transform.position;
+
+            Vector3[] corners = new Vector3[4];
+            sourceRect.GetWorldCorners(corners);
+
+            Vector3 bottomCenter = (corners[0] + corners[3]) * 0.5f;
+            Vector3 topCenter = (corners[1] + corners[2]) * 0.5f;
+            Vector3 anchor = Vector3.Lerp(bottomCenter, topCenter, hitEffectHeightNormalized);
+
+            if (rectTransform != null)
+                anchor += rectTransform.TransformVector(hitEffectOffset);
+            else
+                anchor += new Vector3(hitEffectOffset.x, hitEffectOffset.y, 0f);
+
+            return anchor;
+        }
+    }
     public RectTransform ClickableArea => clickableArea;
     public Vector2 AnchoredPosition
     {
@@ -588,7 +615,7 @@ public class BattleUnitView : MonoBehaviour
         onHoldStarted?.Invoke();
 
         float hold = Mathf.Max(0f, holdDuration);
-        float delay = Mathf.Clamp(impactDelayAfterArrival, 0f, hold);
+        float delay = Mathf.Max(0f, impactDelayAfterArrival);
         if (delay > 0f)
             yield return new WaitForSeconds(delay);
 

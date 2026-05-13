@@ -86,7 +86,7 @@ public class BattleActionController : MonoBehaviour
                         attackSprite,
                         () => ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent),
                         null,
-                        () => stageCamera?.FocusUnitSmooth(clickedTarget, battleManager.AttackHoldDuration),
+                        () => stageCamera?.FocusUnitSmooth(clickedTarget, GetAttackTargetFocusDuration()),
                         () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackReturnDuration)));
                 }
                 else
@@ -118,7 +118,7 @@ public class BattleActionController : MonoBehaviour
                 BattleUnitView targetView = viewManager.GetView(primaryTarget);
                 if (targetView != null && skill.hitEffectPrefab != null)
                 {
-                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView.transform.position);
+                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView);
                 }
 
                 PlaySkillHitSfx(skill);
@@ -428,6 +428,22 @@ public class BattleActionController : MonoBehaviour
             yield return new WaitForSeconds(waitDuration);
     }
 
+    private float GetAttackTargetFocusDuration()
+    {
+        if (battleManager == null)
+            return 0f;
+
+        return Mathf.Max(battleManager.AttackHoldDuration, battleManager.AttackImpactDelayAfterArrival);
+    }
+
+    private void FocusAttackCameraOnImpactTarget(BattleUnit target)
+    {
+        if (target == null || battleManager == null || battleManager.PresentationController == null)
+            return;
+
+        battleManager.PresentationController.StageCameraController?.FocusUnitSmooth(target, GetAttackTargetFocusDuration());
+    }
+
     private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, int rolledPrimaryDamagePercent)
     {
         int totalHpDamageDealt = 0;
@@ -447,9 +463,11 @@ public class BattleActionController : MonoBehaviour
                 if (primaryTarget == null || primaryTarget.IsDead)
                     break;
 
+                FocusAttackCameraOnImpactTarget(primaryTarget);
+
                 BattleUnitView targetView = viewManager.GetView(primaryTarget);
                 if (targetView != null && skill.hitEffectPrefab != null)
-                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView.transform.position);
+                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView);
 
                 PlaySkillHitSfx(skill);
 
@@ -485,6 +503,7 @@ public class BattleActionController : MonoBehaviour
 
                 if (secondaryTarget != null && !secondaryTarget.IsDead)
                 {
+                    FocusAttackCameraOnImpactTarget(secondaryTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -502,6 +521,7 @@ public class BattleActionController : MonoBehaviour
                 else if (skill.HasMissingSecondaryTargetDamageBonus())
                 {
                     float bonusPower = Mathf.Max(rolledPrimaryDamagePercent, skill.GetMissingSecondaryTargetDamagePowerPercent());
+                    FocusAttackCameraOnImpactTarget(primaryTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -523,6 +543,7 @@ public class BattleActionController : MonoBehaviour
                 BattleUnit pierceTarget = GetBackUnit(primaryTarget);
                 if (pierceTarget != null && !pierceTarget.IsDead)
                 {
+                    FocusAttackCameraOnImpactTarget(pierceTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -1010,6 +1031,7 @@ public class BattleActionController : MonoBehaviour
             if (target == null)
                 yield break;
 
+            FocusAttackCameraOnImpactTarget(target);
             PlaySkillHitSfx(skill);
             yield return StartCoroutine(ResolveAndApplyAttack(
                 actor,
@@ -1038,6 +1060,7 @@ public class BattleActionController : MonoBehaviour
             if (target == null || target.IsDead)
                 yield break;
 
+            FocusAttackCameraOnImpactTarget(target);
             PlaySkillHitSfx(skill);
             yield return StartCoroutine(ResolveAndApplyAttack(
                 actor,

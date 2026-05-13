@@ -251,6 +251,14 @@ public class BattleViewManager : MonoBehaviour
         Destroy(effect, duration);
     }
 
+    public void PlayEffect(GameObject prefab, BattleUnitView targetView, float duration = 2f)
+    {
+        if (targetView == null)
+            return;
+
+        PlayEffect(prefab, targetView.HitEffectAnchorPosition, duration);
+    }
+
     public void ShowFloatingText(BattleUnit unit, string text, Color color, float duration = -1f)
     {
         if (unit == null || string.IsNullOrWhiteSpace(text))
