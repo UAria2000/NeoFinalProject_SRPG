@@ -105,19 +105,6 @@ MonoBehaviour:
     valueReference: 0
     durationTurns: 0
     displayIcon: {fileID: 0}
-  - kind: 5
-    statusType: 1
-    statModifierType: 0
-    successChancePercent: 100
-    affectedByResistance: 0
-    powerPercent: 0
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 0
-    randomPowerPercentMax: 0
-    flatValue: 0
-    valueReference: 0
-    durationTurns: 0
-    displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 5691736663297753136, guid: e3154417192c1904eb89807a5a6626ae, type: 3}
