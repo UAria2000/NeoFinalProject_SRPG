@@ -108,8 +108,25 @@ public class WorldBattleBridge : MonoBehaviour
         StartCoroutine(OpenSettlementRoutine(wasVictory));
     }
 
+    private void PrepareBattleSceneForWorldDrivenStart()
+    {
+        if (battleManager == null)
+            battleManager = UnityEngine.Object.FindFirstObjectByType<BattleManager>(FindObjectsInactive.Include);
+
+        if (battleManager != null)
+            battleManager.SetAutoStartBattleOnStart(false);
+
+        if (encounterBootstrapper == null)
+            encounterBootstrapper = UnityEngine.Object.FindFirstObjectByType<RandomEnemyEncounterBootstrapper>(FindObjectsInactive.Include);
+
+        if (encounterBootstrapper != null)
+            encounterBootstrapper.SetGenerateOnAwake(false);
+    }
+
     private IEnumerator BeginBattleRoutine(WorldTileData tile, FactionBattleConfig config)
     {
+        PrepareBattleSceneForWorldDrivenStart();
+
         if (screenFader != null)
             yield return screenFader.FadeOut(battleEnterFadeOutDuration);
 
@@ -137,9 +154,6 @@ public class WorldBattleBridge : MonoBehaviour
             yield break;
         }
 
-        if (runManager != null && runManager.IsTutorialWorld)
-            yield return runManager.PlayTutorialBattleIntroIfNeeded(tile);
-
         battleManager.StartBattle();
 
         if (tile != null && tile.eventType == WorldTileEventType.EliteBattle)
@@ -147,6 +161,11 @@ public class WorldBattleBridge : MonoBehaviour
 
         if (screenFader != null)
             yield return screenFader.FadeIn(battleEnterFadeInDuration);
+
+        // 튜토리얼 전투 안내 이미지는 반드시 전투 화면 페이드가 걷힌 뒤에 표시한다.
+        // FadeCanvas가 클릭을 막은 상태에서 튜토리얼 오버레이를 열면 검은 화면 뒤에 이미지가 갇힌다.
+        if (runManager != null && runManager.IsTutorialWorld)
+            yield return runManager.PlayTutorialBattleIntroIfNeeded(tile);
     }
 
     private bool PrepareEnemyParty(WorldTileData tile, FactionBattleConfig config)
@@ -217,7 +236,9 @@ public class WorldBattleBridge : MonoBehaviour
 
     private IEnumerator HandleBattleEndedRoutine(BattleResultType result)
     {
-        isBattleRunning = false;
+        // 전투 결과 팝업이 닫히고, 배틀 루트가 월드맵으로 완전히 전환될 때까지
+        // isBattleRunning을 true로 유지한다. 그래야 월드 정산 자동 오픈이 전투 결과 팝업 위에
+        // 겹쳐 뜨지 않고, EventController.IsBusy도 전환 중 상태를 올바르게 인식한다.
         pendingCombatOutcomeCommitted = false;
 
         yield return StartCoroutine(ShowBattleResultRoutine(result));
@@ -241,15 +262,18 @@ public class WorldBattleBridge : MonoBehaviour
                 runManager.ResolveCombatDefeat(pendingTile, true);
         }
 
-        if (pendingCombatOutcomeCommitted && runManager != null)
-            runManager.TryShowQueuedQuestCompletionPopup();
-
+        bool committedCombatOutcome = pendingCombatOutcomeCommitted;
         pendingCombatOutcomeCommitted = false;
         pendingTile = null;
 
         if (screenFader != null)
             yield return screenFader.FadeIn(battleExitFadeInDuration);
 
+        // 여기부터는 월드맵 화면으로 돌아온 상태다.
+        isBattleRunning = false;
+
+        // 튜토리얼 후처리 이미지/최종 메시지는 반드시 월드맵에서 먼저 표시한다.
+        // 마지막 튜토리얼 전투에서는 이 루틴 안에서 최종 메시지 클릭 후 월드 정산을 연다.
         if (runManager != null && runManager.IsTutorialWorld)
             yield return runManager.PlayTutorialAfterBattleReturnIfNeeded(resolvedBattleTile, result);
 
@@ -259,7 +283,12 @@ public class WorldBattleBridge : MonoBehaviour
         }
         else if (runManager != null)
         {
-            runManager.TryOpenQueuedWorldSettlementIfReady();
+            // 전투 결과 확정 과정에서 퀘스트/정복 조건이 갱신되었더라도,
+            // 월드 정산은 전투 결과 팝업과 배틀->월드맵 페이드가 모두 끝난 뒤에만 연다.
+            if (committedCombatOutcome)
+                runManager.TryShowQueuedQuestCompletionPopup();
+            else
+                runManager.TryOpenQueuedWorldSettlementIfReady();
         }
     }
 
@@ -530,8 +559,63 @@ public class WorldBattleBridge : MonoBehaviour
     private void SetWorldBattleRoots(bool isInBattle)
     {
         if (worldMapRoot != null && hideWorldMapDuringBattle)
-            worldMapRoot.SetActive(!isInBattle);
+        {
+            if (!isInBattle)
+            {
+                worldMapRoot.SetActive(true);
+            }
+            else if (CanSafelyDeactivateWorldMapRoot())
+            {
+                worldMapRoot.SetActive(false);
+            }
+        }
+
         if (battleRoot != null && showBattleRootDuringBattle)
             battleRoot.SetActive(isInBattle);
+    }
+
+    private bool CanSafelyDeactivateWorldMapRoot()
+    {
+        if (worldMapRoot == null)
+            return false;
+
+        Transform root = worldMapRoot.transform;
+
+        if (transform == root || transform.IsChildOf(root))
+        {
+            Debug.LogError(
+                "[WorldBattleBridge] World Map Root points to an object that contains WorldBattleBridge. " +
+                "If this root is deactivated, the battle-start coroutine stops after FadeOut and the Game view stays black. " +
+                "Connect World Map Root to a visual-only object such as WorldMapCanvas/MapViewport, or move WorldSystems outside the object that is hidden during battle.",
+                this
+            );
+            screenFader?.ClearImmediate();
+            return false;
+        }
+
+        if (runManager != null && (runManager.transform == root || runManager.transform.IsChildOf(root)))
+        {
+            Debug.LogError(
+                "[WorldBattleBridge] World Map Root contains WorldRunManager. " +
+                "Do not hide the object that owns world systems during battle. " +
+                "Use a visual-only World Map Root instead.",
+                this
+            );
+            screenFader?.ClearImmediate();
+            return false;
+        }
+
+        if (battleRoot != null && (battleRoot.transform == root || battleRoot.transform.IsChildOf(root) || root.IsChildOf(battleRoot.transform)))
+        {
+            Debug.LogError(
+                "[WorldBattleBridge] World Map Root overlaps Battle Root. " +
+                "World Map Root and Battle Root must be separate scene branches.",
+                this
+            );
+            screenFader?.ClearImmediate();
+            return false;
+        }
+
+        return true;
     }
 }

@@ -17,36 +17,18 @@ public class WorldDominationPanelUI : MonoBehaviour
     [SerializeField] private GameObject conquestButtonRoot;
     [SerializeField] private Button conquestButton;
 
-    [Header("Text Formats")]
-    [SerializeField] private string bossConditionFormat = "∏µÁ ∫∏Ω∫ ≈∏¿œ ¡°∑… ({0}/{1})";
-    [SerializeField] private string conquestConditionFormat = "¿¸√º ¡ˆø™¿« {0}% ¡°∑… ¥ﬁº∫ ({1}/{2})";
-
     private readonly List<WorldDominationConditionRowUI> rowInstances = new List<WorldDominationConditionRowUI>();
 
     private void Awake()
     {
-        if (runManager == null)
-            runManager = Object.FindFirstObjectByType<WorldRunManager>();
-
-        if (runManager != null && generationSettings == null)
-            generationSettings = runManager.Settings;
-
-        if (conquestButton != null)
-        {
-            conquestButton.onClick.RemoveAllListeners();
-            conquestButton.onClick.AddListener(HandleConquestButtonClicked);
-        }
-
+        ResolveReferences();
+        BindButton();
         EnsureRows();
     }
 
     private void OnEnable()
     {
-        if (runManager == null)
-            runManager = Object.FindFirstObjectByType<WorldRunManager>();
-
-        if (runManager != null && generationSettings == null)
-            generationSettings = runManager.Settings;
+        ResolveReferences();
 
         if (runManager != null)
         {
@@ -67,6 +49,24 @@ public class WorldDominationPanelUI : MonoBehaviour
         }
     }
 
+    private void ResolveReferences()
+    {
+        if (runManager == null)
+            runManager = Object.FindFirstObjectByType<WorldRunManager>();
+
+        if (runManager != null)
+            generationSettings = runManager.Settings;
+    }
+
+    private void BindButton()
+    {
+        if (conquestButton == null)
+            return;
+
+        conquestButton.onClick.RemoveListener(HandleConquestButtonClicked);
+        conquestButton.onClick.AddListener(HandleConquestButtonClicked);
+    }
+
     private void HandleCurrentTileChanged(WorldTileData _)
     {
         RefreshUI();
@@ -79,23 +79,18 @@ public class WorldDominationPanelUI : MonoBehaviour
 
         rowInstances.RemoveAll(r => r == null);
 
-        while (rowInstances.Count < maxRows)
+        while (rowInstances.Count < Mathf.Max(1, maxRows))
         {
             WorldDominationConditionRowUI instance = Instantiate(rowPrefab, rowRoot);
             instance.name = $"DominationRow_{rowInstances.Count}";
             rowInstances.Add(instance);
         }
-
-        // »§Ω√ rowRoot πÿø° ºˆµø¿∏∑Œ ∏π¿Ã ∏∏µÁ ∞ÊøÏ ≥≤¥¬ ∞« ≤®µ“
-        for (int i = 0; i < rowInstances.Count; i++)
-        {
-            if (rowInstances[i] != null)
-                rowInstances[i].gameObject.SetActive(true);
-        }
     }
 
     public void RefreshUI()
     {
+        ResolveReferences();
+
         if (runManager == null || generationSettings == null || runManager.MapData == null)
         {
             BindEmpty();
@@ -104,14 +99,54 @@ public class WorldDominationPanelUI : MonoBehaviour
 
         EnsureRows();
 
-        WorldMapData map = runManager.MapData;
+        CountWorldProgress(
+            out int totalBossTiles,
+            out int conqueredBossTiles,
+            out int nonStartTiles,
+            out int conqueredTiles);
 
-        int totalBossTiles = 0;
-        int conqueredBossTiles = 0;
-        int nonStartTiles = 0;
-        int conqueredTiles = 0;
+        int requiredPercent = generationSettings.GetConquestRequiredPercent();
+        int currentPercent = nonStartTiles > 0
+            ? Mathf.FloorToInt((conqueredTiles / (float)nonStartTiles) * 100f)
+            : 0;
 
-        IReadOnlyList<WorldTileData> tiles = map.Tiles;
+        bool conquestCompleted = currentPercent >= requiredPercent;
+
+        if (runManager.IsTutorialWorld)
+        {
+            // Tutorial domination condition is intentionally simpler than normal worlds.
+            // It has no boss requirement: only conquer every non-start tile.
+            string tutorialText = $"Ï†ÑÏ≤¥ ÏßÄÏó≠Ïùò 100% Ï†êÎ†π Îã¨ÏÑ± ({conqueredTiles}/{nonStartTiles})";
+            BindRow(0, true, conquestCompleted, tutorialText);
+            HideRowsFrom(1);
+            SetConquestButtonVisible(conquestCompleted);
+            return;
+        }
+
+        bool bossCompleted = totalBossTiles <= 0 || conqueredBossTiles >= totalBossTiles;
+
+        int rowIndex = 0;
+        if (totalBossTiles > 0)
+        {
+            BindRow(rowIndex, true, bossCompleted, $"Î™®Îì† Î≥¥Ïä§ ÌÉÄÏùº Ï†êÎ†π ({conqueredBossTiles}/{totalBossTiles})");
+            rowIndex++;
+        }
+
+        BindRow(rowIndex, true, conquestCompleted, $"Ï†ÑÏ≤¥ ÏßÄÏó≠Ïùò {requiredPercent}% Ï†êÎ†π Îã¨ÏÑ± ({conqueredTiles}/{nonStartTiles})");
+        rowIndex++;
+
+        HideRowsFrom(rowIndex);
+        SetConquestButtonVisible(bossCompleted && conquestCompleted);
+    }
+
+    private void CountWorldProgress(out int totalBossTiles, out int conqueredBossTiles, out int nonStartTiles, out int conqueredTiles)
+    {
+        totalBossTiles = 0;
+        conqueredBossTiles = 0;
+        nonStartTiles = 0;
+        conqueredTiles = 0;
+
+        IReadOnlyList<WorldTileData> tiles = runManager.MapData.Tiles;
         for (int i = 0; i < tiles.Count; i++)
         {
             WorldTileData tile = tiles[i];
@@ -132,44 +167,19 @@ public class WorldDominationPanelUI : MonoBehaviour
                     conqueredBossTiles++;
             }
         }
-
-        int requiredPercent = generationSettings.GetConquestRequiredPercent();
-        int currentPercent = nonStartTiles > 0
-            ? Mathf.FloorToInt((conqueredTiles / (float)nonStartTiles) * 100f)
-            : 0;
-
-        bool bossCompleted = totalBossTiles > 0 && conqueredBossTiles >= totalBossTiles;
-        bool conquestCompleted = currentPercent >= requiredPercent;
-
-        string bossText = string.Format(bossConditionFormat, conqueredBossTiles, totalBossTiles);
-        string conquestText = string.Format(conquestConditionFormat, requiredPercent, conqueredTiles, nonStartTiles);
-
-        BindRow(0, true, bossCompleted, bossText);
-        BindRow(1, true, conquestCompleted, conquestText);
-
-        // 3ƒ≠¬∞¥¬ ¡ˆ±› ∫ÒøˆµŒµ«, ≥™¡ﬂ ¡∂∞« √ﬂ∞° ¥Î∫Ò
-        for (int i = 2; i < maxRows; i++)
-            BindRow(i, false, false, string.Empty);
-
-        bool canConquer = bossCompleted && conquestCompleted;
-
-        if (conquestButtonRoot != null)
-            conquestButtonRoot.SetActive(canConquer);
-        else if (conquestButton != null)
-            conquestButton.gameObject.SetActive(canConquer);
     }
 
     private void BindEmpty()
     {
         EnsureRows();
+        HideRowsFrom(0);
+        SetConquestButtonVisible(false);
+    }
 
-        for (int i = 0; i < maxRows; i++)
+    private void HideRowsFrom(int startIndex)
+    {
+        for (int i = Mathf.Max(0, startIndex); i < rowInstances.Count; i++)
             BindRow(i, false, false, string.Empty);
-
-        if (conquestButtonRoot != null)
-            conquestButtonRoot.SetActive(false);
-        else if (conquestButton != null)
-            conquestButton.gameObject.SetActive(false);
     }
 
     private void BindRow(int index, bool visible, bool completed, string text)
@@ -182,6 +192,14 @@ public class WorldDominationPanelUI : MonoBehaviour
             return;
 
         row.Bind(visible, completed, text);
+    }
+
+    private void SetConquestButtonVisible(bool visible)
+    {
+        if (conquestButtonRoot != null)
+            conquestButtonRoot.SetActive(visible);
+        else if (conquestButton != null)
+            conquestButton.gameObject.SetActive(visible);
     }
 
     private void HandleConquestButtonClicked()

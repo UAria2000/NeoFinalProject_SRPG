@@ -329,6 +329,38 @@ public class TutorialWorldController : MonoBehaviour
         return null;
     }
 
+    public bool TryBuildEnemyPreviewForTile(WorldTileData tile, out List<Sprite> previewSprites)
+    {
+        previewSprites = new List<Sprite>();
+        if (tile == null)
+            return false;
+
+        if (!Enum.IsDefined(typeof(TutorialTileStage), tile.tileId))
+            return false;
+
+        previewSprites = BuildPreviewForStage((TutorialTileStage)tile.tileId);
+        return previewSprites != null && previewSprites.Count > 0;
+    }
+
+    public void ReapplyTutorialTilePresentation(WorldMapData map)
+    {
+        if (map == null || map.tiles == null)
+            return;
+
+        for (int i = 0; i < map.tiles.Count; i++)
+        {
+            WorldTileData tile = map.tiles[i];
+            if (tile == null || !Enum.IsDefined(typeof(TutorialTileStage), tile.tileId))
+                continue;
+
+            TutorialTileStage stage = (TutorialTileStage)tile.tileId;
+            tile.eventDescriptionText = GetStageDescription(stage);
+
+            List<Sprite> preview = BuildPreviewForStage(stage);
+            tile.previewEnemyPortraits = preview != null ? preview : new List<Sprite>();
+        }
+    }
+
     private List<Sprite> BuildPreviewForStage(TutorialTileStage stage)
     {
         List<Sprite> result = new List<Sprite>();

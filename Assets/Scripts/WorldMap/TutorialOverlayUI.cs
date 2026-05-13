@@ -38,6 +38,7 @@ public class TutorialOverlayUI : MonoBehaviour
             clickCatcherButton.onClick.AddListener(HandleClick);
         }
 
+        ConfigureRaycastTargets();
         HideImmediate();
     }
 
@@ -60,6 +61,8 @@ public class TutorialOverlayUI : MonoBehaviour
         if (stepNumbers == null || stepNumbers.Length == 0)
             yield break;
 
+        bool showedAny = false;
+
         for (int i = 0; i < stepNumbers.Length; i++)
         {
             int step = stepNumbers[i];
@@ -73,9 +76,13 @@ public class TutorialOverlayUI : MonoBehaviour
                 continue;
             }
 
+            showedAny = true;
             yield return ShowSingleSprite(sprite);
             markShown?.Invoke(step);
         }
+
+        if (showedAny)
+            HideImmediate();
     }
 
     public IEnumerator ShowFinalMessage(Action onClicked)
@@ -119,6 +126,8 @@ public class TutorialOverlayUI : MonoBehaviour
 
     private void PrepareVisible()
     {
+        ConfigureRaycastTargets();
+
         if (root != null)
             root.SetActive(true);
         if (canvasGroup != null)
@@ -127,6 +136,16 @@ public class TutorialOverlayUI : MonoBehaviour
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
         }
+    }
+
+    private void ConfigureRaycastTargets()
+    {
+        if (tutorialImage != null)
+            tutorialImage.raycastTarget = false;
+        if (finalTitleText != null)
+            finalTitleText.raycastTarget = false;
+        if (finalBodyText != null)
+            finalBodyText.raycastTarget = false;
     }
 
     public void HideImmediate()

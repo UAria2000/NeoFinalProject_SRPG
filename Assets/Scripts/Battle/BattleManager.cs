@@ -105,6 +105,7 @@ public class BattleManager : MonoBehaviour
     private bool battleEndEventSent;
     private bool pendingWorldFailure;
     private bool mainPlayerDeadThisBattle;
+    private bool controllersInitialized;
 
     public event Action<BattleResultType> BattleEnded;
 
@@ -167,6 +168,23 @@ public class BattleManager : MonoBehaviour
     public float HitFlashDuration { get { return Mathf.Max(0.01f, hitFlashDuration); } }
     public float SupportSkillPreImpactDelay { get { return Mathf.Max(0f, supportSkillPreImpactDelay); } }
     public float SupportSkillPostImpactDelay { get { return Mathf.Max(0f, supportSkillPostImpactDelay); } }
+
+    public void SetAutoStartBattleOnStart(bool enabled)
+    {
+        autoStartBattleOnStart = enabled;
+    }
+
+    private bool HasValidPartyForAutoStart()
+    {
+        BattlePartyRuntimeState allyState = GetActiveAllyPartyState();
+        BattlePartyRuntimeState enemyState = GetActiveEnemyPartyState();
+        return allyState != null &&
+               enemyState != null &&
+               allyState.IsValidMemberCount() &&
+               enemyState.IsValidMemberCount() &&
+               !allyState.HasNullDefinitions() &&
+               !enemyState.HasNullDefinitions();
+    }
 
     public BattlePartyRuntimeState GetActiveAllyPartyState()
     {
@@ -340,8 +358,41 @@ public class BattleManager : MonoBehaviour
 
     private void Start()
     {
+        EnsureControllersInitialized();
+
+        if (autoStartBattleOnStart)
+        {
+            if (HasValidPartyForAutoStart())
+            {
+                StartBattle();
+            }
+            else
+            {
+                Debug.Log("[BattleManager] Auto start skipped because prepared ally/enemy party data is not ready. WorldBattleBridge will start the battle after assigning runtime parties.", this);
+            }
+        }
+    }
+
+    public void EnsureControllersInitialized()
+    {
+        if (controllersInitialized && flowController != null)
+            return;
+
         if (worldRunManager == null)
             worldRunManager = UnityEngine.Object.FindFirstObjectByType<WorldRunManager>();
+
+        if (viewManager == null)
+            viewManager = GetComponent<BattleViewManager>();
+        if (uiController == null)
+            uiController = GetComponent<BattleUIController>();
+        if (logController == null)
+            logController = GetComponent<BattleLogController>();
+        if (actionController == null)
+            actionController = GetComponent<BattleActionController>();
+        if (inputController == null)
+            inputController = GetComponent<BattleInputController>();
+        if (enemyAIController == null)
+            enemyAIController = GetComponent<EnemyAIController>();
 
         if (flowController == null)
             flowController = GetOrAddComponent<BattleFlowController>();
@@ -362,15 +413,25 @@ public class BattleManager : MonoBehaviour
             uiController.BindButtonEvents();
             uiController.BindEnemySkillHoverEvents(enemySkillHoverTargets);
         }
+        else
+        {
+            Debug.LogWarning("[BattleManager] BattleUIController is missing on BattleManager object. Battle can start, but battle UI will not update.", this);
+        }
 
         if (actionController != null)
             actionController.Initialize(this, viewManager, logController);
+        else
+            Debug.LogWarning("[BattleManager] BattleActionController is missing on BattleManager object.", this);
 
         if (inputController != null)
             inputController.Initialize(this, uiController, actionController, logController);
+        else
+            Debug.LogWarning("[BattleManager] BattleInputController is missing on BattleManager object.", this);
 
         if (enemyAIController != null)
             enemyAIController.Initialize(this);
+        else
+            Debug.LogWarning("[BattleManager] EnemyAIController is missing on BattleManager object.", this);
 
         if (passiveController != null)
             passiveController.Initialize(this, logController);
@@ -406,19 +467,38 @@ public class BattleManager : MonoBehaviour
                 captureController,
                 persistenceController);
         }
+        else
+        {
+            Debug.LogError("[BattleManager] BattleFlowController could not be created. Battle cannot start.", this);
+        }
 
-        if (autoStartBattleOnStart)
-            StartBattle();
+        controllersInitialized = true;
     }
 
 
     public void StartBattle()
     {
+        EnsureControllersInitialized();
         EnsureRuntimePartyStates();
-        ClearBattleRewardSummary();
 
-        if (flowController != null)
-            flowController.StartBattle();
+        BattlePartyRuntimeState allyState = GetActiveAllyPartyState();
+        BattlePartyRuntimeState enemyState = GetActiveEnemyPartyState();
+        if (allyState == null || enemyState == null ||
+            !allyState.IsValidMemberCount() || !enemyState.IsValidMemberCount() ||
+            allyState.HasNullDefinitions() || enemyState.HasNullDefinitions())
+        {
+            Debug.LogError("[BattleManager] Cannot start battle. Ally or enemy runtime party is missing or contains null definitions.", this);
+            return;
+        }
+
+        if (flowController == null)
+        {
+            Debug.LogError("[BattleManager] Cannot start battle because BattleFlowController is missing or not initialized.", this);
+            return;
+        }
+
+        ClearBattleRewardSummary();
+        flowController.StartBattle();
     }
 
     public void RefreshAllUI()
