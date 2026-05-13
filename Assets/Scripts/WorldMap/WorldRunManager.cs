@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,6 +17,9 @@ public class WorldRunManager : MonoBehaviour
 
     [Header("Startup")]
     [SerializeField] private bool generateOnStart = true;
+
+    [Header("Tutorial World")]
+    [SerializeField] private TutorialWorldController tutorialWorldController;
 
     [Header("Player Party")]
     [SerializeField] private PartyDefinition playerPartyTemplate;
@@ -107,6 +111,13 @@ public class WorldRunManager : MonoBehaviour
     private int currentWorldNumber = 1;
     public int WorldStartMainCharacterLevel => Mathf.Max(1, worldStartMainCharacterLevel > 0 ? worldStartMainCharacterLevel : ResolveCurrentMainCharacterLevel());
     public int CurrentWorldNumber => Mathf.Max(1, currentWorldNumber);
+
+    private bool isTutorialWorld;
+    private int tutorialShownStepMask;
+    private int activeTutorialBattleTileId = -1;
+    public bool IsTutorialWorld => isTutorialWorld;
+    public int TutorialShownStepMask => tutorialShownStepMask;
+    public bool IsTutorialElfCaptureBattleActive => isTutorialWorld && activeTutorialBattleTileId == (int)TutorialTileStage.ElfCaptureBattle;
     private void Awake()
     {
         if (revealedEnemyPreviewCount <= 0)
@@ -123,6 +134,10 @@ public class WorldRunManager : MonoBehaviour
 
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
     }
 
     private void Start()
@@ -135,10 +150,19 @@ public class WorldRunManager : MonoBehaviour
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
 
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
+
         saveCoordinator?.LoadProfileIntoCurrentScene();
 
         if (generateOnStart)
-            GenerateNewWorld();
+        {
+            if (saveCoordinator != null && !saveCoordinator.HasCompletedTutorial())
+                StartTutorialWorldFromSetup(generationSettings);
+            else
+                GenerateNewWorld();
+        }
     }
 
     private void RequestAutoSaveAll()
@@ -148,6 +172,9 @@ public class WorldRunManager : MonoBehaviour
 
     public void GenerateNewWorld()
     {
+        isTutorialWorld = false;
+        tutorialShownStepMask = 0;
+        activeTutorialBattleTileId = -1;
         BeginNewWorldAttemptNumber();
         RestoreRosterUnitsForNewWorld();
         ResetWorldRunStateForNewWorld();
@@ -173,6 +200,10 @@ public class WorldRunManager : MonoBehaviour
 
         if (eventController != null)
             eventController.Initialize(this, generationSettings);
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
 
         if (questController == null)
             questController = UnityEngine.Object.FindFirstObjectByType<WorldQuestController>();
@@ -518,6 +549,10 @@ public class WorldRunManager : MonoBehaviour
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
 
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
+
         int granted = persistentProfileController != null
             ? persistentProfileController.AddExperienceToActivePartyMembers(Mathf.Max(0, amount))
             : 0;
@@ -535,6 +570,10 @@ public class WorldRunManager : MonoBehaviour
     {
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
 
         int granted = persistentProfileController != null
             ? persistentProfileController.AddExperienceToAllRosterUnits(Mathf.Max(0, amount))
@@ -573,6 +612,10 @@ public class WorldRunManager : MonoBehaviour
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
 
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
+
         if (persistentProfileController != null)
             currentWorldNumber = Mathf.Max(1, persistentProfileController.BeginNextWorldAttempt());
         else
@@ -583,6 +626,10 @@ public class WorldRunManager : MonoBehaviour
     {
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
 
         int found = 0;
         BattlePartyRuntimeState runtime = GetOrCreatePlayerPartyRuntimeState();
@@ -665,6 +712,10 @@ public class WorldRunManager : MonoBehaviour
 
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
 
         if (persistentProfileController == null)
             return created;
@@ -1034,6 +1085,10 @@ public class WorldRunManager : MonoBehaviour
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
 
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
+
         persistentProfileController?.SyncFromActivePartyRuntimeAndSave();
     }
 
@@ -1063,6 +1118,10 @@ public class WorldRunManager : MonoBehaviour
         int movedToGraveyard = 0;
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
         if (persistentProfileController != null)
             movedToGraveyard = persistentProfileController.MoveDeadNonMainRosterUnitsToGraveyard();
 
@@ -1082,6 +1141,10 @@ public class WorldRunManager : MonoBehaviour
     {
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
 
         BattlePartyRuntimeState runtime = GetOrCreatePlayerPartyRuntimeState();
         List<string> currentPartyIds = new List<string>();
@@ -1336,14 +1399,16 @@ public class WorldRunManager : MonoBehaviour
         summary.completedQuestCount = state != null ? Mathf.Max(0, state.settlementCompletedQuestCount) : 0;
         summary.capturedEnemyCount = state != null ? Mathf.Max(0, state.settlementCapturedEnemyCount) : 0;
 
-        summary.sizeBonusPercent = wasVictory && generationSettings != null ? Mathf.Max(0, generationSettings.GetSizeBonusPercent()) : 0;
-        summary.difficultyBonusPercent = wasVictory && generationSettings != null ? Mathf.Max(0, generationSettings.GetDifficultyBonusPercent()) : 0;
-        summary.victoryBonusPercent = wasVictory && generationSettings != null ? Mathf.Max(0, generationSettings.worldVictoryBonusPercent) : 0;
-        summary.levelBonusPercent = wasVictory ? Mathf.Max(0, (WorldStartMainCharacterLevel - 1) * Mathf.Max(0, settlementLevelBonusPercentPerLevelAboveOne)) : 0;
+        bool settlementBonusAllowed = wasVictory && !isTutorialWorld;
+
+        summary.sizeBonusPercent = settlementBonusAllowed && generationSettings != null ? Mathf.Max(0, generationSettings.GetSizeBonusPercent()) : 0;
+        summary.difficultyBonusPercent = settlementBonusAllowed && generationSettings != null ? Mathf.Max(0, generationSettings.GetDifficultyBonusPercent()) : 0;
+        summary.victoryBonusPercent = settlementBonusAllowed && generationSettings != null ? Mathf.Max(0, generationSettings.worldVictoryBonusPercent) : 0;
+        summary.levelBonusPercent = settlementBonusAllowed ? Mathf.Max(0, (WorldStartMainCharacterLevel - 1) * Mathf.Max(0, settlementLevelBonusPercentPerLevelAboveOne)) : 0;
         summary.soulBonusPercent = wasVictory ? summary.sizeBonusPercent + summary.difficultyBonusPercent + summary.victoryBonusPercent + summary.levelBonusPercent : 0;
         summary.expBonusPercent = summary.soulBonusPercent;
-        summary.worldSizeLabel = GetWorldSizeLabel();
-        summary.worldDifficultyLabel = GetWorldDifficultyLabel();
+        summary.worldSizeLabel = isTutorialWorld ? "튜토리얼" : GetWorldSizeLabel();
+        summary.worldDifficultyLabel = isTutorialWorld ? "튜토리얼" : GetWorldDifficultyLabel();
 
         CaptureLordExpPreview(summary, 0);
 
@@ -1457,6 +1522,10 @@ public class WorldRunManager : MonoBehaviour
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
 
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
+
         PersistentRosterUnitData main = persistentProfileController != null ? persistentProfileController.GetMainCharacterRosterUnit() : null;
         summary.lordName = main != null ? main.GetDisplayName() : (!string.IsNullOrWhiteSpace(playerDisplayName) ? playerDisplayName : "군주");
 
@@ -1522,11 +1591,19 @@ public class WorldRunManager : MonoBehaviour
 
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
         if (persistentProfileController != null)
         {
             persistentProfileController.EnsureInitialized();
             if (persistentProfileController.Profile != null)
+            {
                 persistentProfileController.Profile.lastWorldSettlementResult = summary.wasVictory ? WorldSettlementResultState.Victory : WorldSettlementResultState.Failure;
+                if (isTutorialWorld)
+                    persistentProfileController.Profile.hasCompletedTutorial = true;
+            }
         }
 
         ClearRuntimeWorldAfterSettlement();
@@ -1584,6 +1661,9 @@ public class WorldRunManager : MonoBehaviour
         revealController = null;
         movementController = null;
         currentWorldRunState = WorldRunTransientState.CreateForNewWorld(playerPartyTemplate);
+        isTutorialWorld = false;
+        tutorialShownStepMask = 0;
+        activeTutorialBattleTileId = -1;
 
         if (selectedTileInfoPanel != null)
             selectedTileInfoPanel.HidePanel();
@@ -1694,6 +1774,102 @@ public class WorldRunManager : MonoBehaviour
         worldSettlementQueued = false;
     }
 
+    public void StartManagedTutorialCoroutine(IEnumerator routine)
+    {
+        if (routine != null && isActiveAndEnabled)
+            StartCoroutine(routine);
+    }
+
+    public bool IsTutorialStepShown(int stepNumber)
+    {
+        if (stepNumber <= 0 || stepNumber > 30)
+            return false;
+        int bit = 1 << (stepNumber - 1);
+        return (tutorialShownStepMask & bit) != 0;
+    }
+
+    public void MarkTutorialStepShown(int stepNumber)
+    {
+        if (stepNumber <= 0 || stepNumber > 30)
+            return;
+        int bit = 1 << (stepNumber - 1);
+        if ((tutorialShownStepMask & bit) != 0)
+            return;
+        tutorialShownStepMask |= bit;
+        RequestAutoSaveAll();
+    }
+
+    public bool TryBuildTutorialEnemyPartyForTile(WorldTileData tile, out BattlePartyRuntimeState enemyParty)
+    {
+        enemyParty = null;
+        if (!isTutorialWorld || tutorialWorldController == null)
+            return false;
+        return tutorialWorldController.TryBuildEnemyPartyForTile(tile, out enemyParty);
+    }
+
+    public IEnumerator PlayTutorialBattleIntroIfNeeded(WorldTileData tile)
+    {
+        if (!isTutorialWorld || tutorialWorldController == null)
+            yield break;
+        activeTutorialBattleTileId = tile != null ? tile.tileId : -1;
+        yield return tutorialWorldController.PlayBattleIntroIfNeeded(tile);
+    }
+
+    public IEnumerator PlayTutorialAfterBattleReturnIfNeeded(WorldTileData tile, BattleResultType result)
+    {
+        if (!isTutorialWorld || tutorialWorldController == null)
+            yield break;
+        yield return tutorialWorldController.PlayAfterBattleReturnIfNeeded(tile, result);
+        activeTutorialBattleTileId = -1;
+    }
+
+    public bool TryOpenTutorialQuestEvent(WorldTileData sourceTile, WorldQuestController controller)
+    {
+        if (!isTutorialWorld || tutorialWorldController == null)
+            return false;
+        return tutorialWorldController.TryOpenTutorialQuestOffer(sourceTile, controller);
+    }
+
+    public bool TryCreateTutorialTreasure(WorldTileData tile, out WorldTreasureResult result)
+    {
+        result = null;
+        if (!isTutorialWorld || tutorialWorldController == null)
+            return false;
+        return tutorialWorldController.TryCreateTutorialTreasure(tile, out result);
+    }
+
+    public bool CanOpenManaMenuInCurrentTutorialBattle()
+    {
+        if (!isTutorialWorld)
+            return true;
+        return activeTutorialBattleTileId == (int)TutorialTileStage.ElfCaptureBattle;
+    }
+
+    public bool IsManaActionAllowedByTutorial(BattleManaActionType actionType)
+    {
+        if (!isTutorialWorld)
+            return true;
+        return activeTutorialBattleTileId == (int)TutorialTileStage.ElfCaptureBattle && actionType == BattleManaActionType.Capture;
+    }
+
+    public int GetTutorialCaptureChanceOverridePercent(BattleUnit target)
+    {
+        if (!isTutorialWorld || tutorialWorldController == null)
+            return -1;
+        return tutorialWorldController.GetCaptureChanceOverridePercent(target);
+    }
+
+    public bool AllowsTutorialFallbackCaptureReward(BattleUnit target)
+    {
+        return isTutorialWorld && activeTutorialBattleTileId == (int)TutorialTileStage.ElfCaptureBattle && target != null && target.Definition != null && target.Definition.canBeCaptured;
+    }
+
+    public void ForceOpenWorldSettlementFromTutorial()
+    {
+        worldSettlementQueued = true;
+        TryOpenQueuedWorldSettlementIfReady();
+    }
+
     public void ResetWorldRunStateForNewWorld()
     {
         int initialMaxMana = CalculateInitialMaxManaForNewWorld();
@@ -1717,6 +1893,10 @@ public class WorldRunManager : MonoBehaviour
         WorldSettlementResultState previousResult = WorldSettlementResultState.None;
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
 
         if (persistentProfileController != null)
         {
@@ -1897,6 +2077,10 @@ public class WorldRunManager : MonoBehaviour
 
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
 
         if (persistentProfileController == null)
             return false;
@@ -2254,6 +2438,85 @@ public class WorldRunManager : MonoBehaviour
         GenerateNewWorld();
     }
 
+    public void StartTutorialWorldFromSetup(WorldGenerationSettings templateSettings)
+    {
+        if (templateSettings == null)
+        {
+            Debug.LogError("[WorldRunManager] tutorial templateSettings is null.");
+            return;
+        }
+
+        WorldGenerationSettings runtimeSettings = Instantiate(templateSettings);
+        runtimeSettings.radius = 1;
+        runtimeSettings.difficulty = WorldDifficulty.Normal;
+        runtimeSettings.conquestRequiredPercentSmall = 100;
+        runtimeSettings.conquestRequiredPercentMedium = 100;
+        runtimeSettings.conquestRequiredPercentLarge = 100;
+        runtimeSettings.conquestRequiredPercentXLarge = 100;
+        runtimeSettings.sizeBonusPercentSmall = 0;
+        runtimeSettings.sizeBonusPercentMedium = 0;
+        runtimeSettings.sizeBonusPercentLarge = 0;
+        runtimeSettings.sizeBonusPercentXLarge = 0;
+        runtimeSettings.difficultyBonusPercentEasy = 0;
+        runtimeSettings.difficultyBonusPercentNormal = 0;
+        runtimeSettings.difficultyBonusPercentHard = 0;
+        runtimeSettings.worldVictoryBonusPercent = 0;
+
+        generationSettings = runtimeSettings;
+        runtimeDifficultyId = "tutorial";
+        isTutorialWorld = true;
+        tutorialShownStepMask = 0;
+        activeTutorialBattleTileId = -1;
+
+        BeginNewWorldAttemptNumber();
+        RestoreRosterUnitsForNewWorld();
+        ResetWorldRunStateForNewWorld();
+        CaptureWorldStartEnemyScalingLevel();
+
+        if (tutorialWorldController == null)
+            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
+        tutorialWorldController?.Initialize(this);
+
+        MapData = tutorialWorldController != null ? tutorialWorldController.GenerateTutorialMap(generationSettings) : null;
+        if (MapData == null)
+        {
+            Debug.LogError("[WorldRunManager] Failed to generate tutorial world.");
+            return;
+        }
+
+        revealController = new WorldRevealController(MapData);
+        movementController = new WorldMovementController(MapData);
+
+        CurrentTile = MapData.GetStartTile();
+        SelectedTile = null;
+        revealController.RevealAround(CurrentTile);
+
+        if (selectedTileInfoPanel != null)
+        {
+            selectedTileInfoPanel.Initialize(this, generationSettings);
+            selectedTileInfoPanel.HidePanel();
+        }
+
+        if (eventController != null)
+            eventController.Initialize(this, generationSettings);
+
+        if (questController == null)
+            questController = UnityEngine.Object.FindFirstObjectByType<WorldQuestController>();
+
+        if (worldMapUI != null)
+            worldMapUI.Initialize(this, MapData, generationSettings);
+
+        if (worldTopHudUI != null)
+            worldTopHudUI.Initialize(this, generationSettings);
+
+        RefreshConquestButtonState();
+        RaiseSelectionChanged();
+        RaiseWorldStateChanged();
+        OnCurrentTileChanged?.Invoke(CurrentTile);
+        StartManagedTutorialCoroutine(tutorialWorldController != null ? tutorialWorldController.PlayWorldEntryIfNeeded() : null);
+        RequestAutoSaveAll();
+    }
+
     public bool RestoreWorldRunFromSave(
         ActiveWorldRunSaveData saveData,
         WorldGenerationSettings templateSettings,
@@ -2273,6 +2536,9 @@ public class WorldRunManager : MonoBehaviour
 
         generationSettings = runtimeSettings;
         runtimeDifficultyId = string.IsNullOrWhiteSpace(saveData.difficultyId) ? "normal" : saveData.difficultyId;
+        isTutorialWorld = saveData.isTutorialWorld || string.Equals(runtimeDifficultyId, "tutorial", StringComparison.OrdinalIgnoreCase);
+        tutorialShownStepMask = Mathf.Max(0, saveData.tutorialShownStepMask);
+        activeTutorialBattleTileId = -1;
         worldStartMainCharacterLevel = Mathf.Max(0, saveData.worldStartMainCharacterLevel);
         currentWorldNumber = Mathf.Max(1, saveData.worldNumber);
 

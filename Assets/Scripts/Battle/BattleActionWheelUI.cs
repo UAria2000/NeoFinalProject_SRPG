@@ -799,6 +799,12 @@ public class BattleActionWheelUI : MonoBehaviour
         string reason = actionSpecificReason;
         bool usable = canAcceptAction && actionSpecificUsable;
 
+        if (usable && battleManager != null && !battleManager.IsManaActionAllowedByTutorial(actionType))
+        {
+            usable = false;
+            reason = unusableLabel;
+        }
+
         if (usable && battleManager != null && !battleManager.CanUseManaActionThisRound())
         {
             usable = false;
@@ -1102,7 +1108,7 @@ public class BattleActionWheelUI : MonoBehaviour
         if (manaButtonUI == null)
             return;
 
-        bool interactable = isOpen && canAcceptAction && !IsTargetSelectionMode();
+        bool interactable = isOpen && canAcceptAction && !IsTargetSelectionMode() && (battleManager == null || battleManager.CanOpenManaMenuInCurrentContext());
         manaButtonUI.SetVisible(isOpen);
         manaButtonUI.Apply(currentManaValue, maxManaValue, interactable, () => SwitchToTopLevelDepth(BattleActionWheelDepth.Mana));
     }

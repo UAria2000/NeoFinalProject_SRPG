@@ -137,6 +137,9 @@ public class WorldBattleBridge : MonoBehaviour
             yield break;
         }
 
+        if (runManager != null && runManager.IsTutorialWorld)
+            yield return runManager.PlayTutorialBattleIntroIfNeeded(tile);
+
         battleManager.StartBattle();
 
         if (tile != null && tile.eventType == WorldTileEventType.EliteBattle)
@@ -148,6 +151,12 @@ public class WorldBattleBridge : MonoBehaviour
 
     private bool PrepareEnemyParty(WorldTileData tile, FactionBattleConfig config)
     {
+        if (runManager != null && runManager.TryBuildTutorialEnemyPartyForTile(tile, out BattlePartyRuntimeState tutorialEnemyParty))
+        {
+            battleManager.SetEnemyRuntimePartyState(tutorialEnemyParty);
+            return true;
+        }
+
         int mainLevel = runManager != null ? runManager.GetMainCharacterLevelForEnemyScaling() : 1;
         WorldDifficulty difficulty = settings != null ? settings.difficulty : WorldDifficulty.Normal;
 
@@ -221,6 +230,7 @@ public class WorldBattleBridge : MonoBehaviour
         if (runManager != null)
             runManager.RemoveDeadPartyMembersFromActiveParty();
 
+        WorldTileData resolvedBattleTile = pendingTile;
         bool openSettlementAfterReturn = result == BattleResultType.WorldFailure || (battleManager != null && battleManager.MainPlayerDeadThisBattle);
 
         if (pendingTile != null && runManager != null && !pendingCombatOutcomeCommitted)
@@ -239,6 +249,9 @@ public class WorldBattleBridge : MonoBehaviour
 
         if (screenFader != null)
             yield return screenFader.FadeIn(battleExitFadeInDuration);
+
+        if (runManager != null && runManager.IsTutorialWorld)
+            yield return runManager.PlayTutorialAfterBattleReturnIfNeeded(resolvedBattleTile, result);
 
         if (openSettlementAfterReturn)
         {

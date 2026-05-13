@@ -12,6 +12,8 @@ public class ActiveWorldRunSaveData
     public int mapRadius;
     public int worldNumber;
     public int worldStartMainCharacterLevel;
+    public bool isTutorialWorld;
+    public int tutorialShownStepMask;
     public long createdUnixTime;
 
     public int currentTileId = -1;

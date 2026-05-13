@@ -31,6 +31,7 @@ public static class SaveDataMapper
 
         save.nextObtainedOrder = profile.nextObtainedOrder;
         save.worldAttemptCount = Mathf.Max(0, profile.worldAttemptCount);
+        save.hasCompletedTutorial = profile.hasCompletedTutorial;
         save.lastWorldSettlementResult = profile.lastWorldSettlementResult;
 
         if (profile.accountCurrencies != null)
@@ -111,6 +112,8 @@ public static class SaveDataMapper
         save.mapRadius = worldRunManager.MapData.radius;
         save.worldNumber = Mathf.Max(1, worldRunManager.CurrentWorldNumber);
         save.worldStartMainCharacterLevel = Mathf.Max(1, worldRunManager.WorldStartMainCharacterLevel);
+        save.isTutorialWorld = worldRunManager.IsTutorialWorld;
+        save.tutorialShownStepMask = worldRunManager.TutorialShownStepMask;
 
         bool interruptedArrival = worldRunManager.ShouldSaveAsInterruptedArrival();
         WorldTileData safeCurrentTile = interruptedArrival
@@ -121,7 +124,7 @@ public static class SaveDataMapper
         save.selectedTileId = interruptedArrival
             ? -1
             : (worldRunManager.SelectedTile != null ? worldRunManager.SelectedTile.tileId : -1);
-        save.difficultyId = worldRunManager.Settings != null ? worldRunManager.Settings.difficulty.ToString() : string.Empty;
+        save.difficultyId = !string.IsNullOrWhiteSpace(worldRunManager.RuntimeDifficultyId) ? worldRunManager.RuntimeDifficultyId : (worldRunManager.Settings != null ? worldRunManager.Settings.difficulty.ToString() : string.Empty);
 
         IReadOnlyList<WorldTileData> tiles = worldRunManager.MapData.Tiles;
         for (int i = 0; i < tiles.Count; i++)
@@ -273,6 +276,7 @@ public static class SaveDataMapper
         profile.graveyardUnits.Clear();
         profile.nextObtainedOrder = saveData.nextObtainedOrder > 0 ? saveData.nextObtainedOrder : 1;
         profile.worldAttemptCount = Mathf.Max(0, saveData.worldAttemptCount);
+        profile.hasCompletedTutorial = saveData.hasCompletedTutorial;
         profile.lastWorldSettlementResult = saveData.lastWorldSettlementResult;
 
         if (profile.accountCurrencies == null)

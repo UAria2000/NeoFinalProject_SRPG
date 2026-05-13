@@ -172,6 +172,32 @@ public class WorldQuestController : MonoBehaviour
         return true;
     }
 
+    public bool TryOpenForcedQuestOfferFromTile(WorldTileData sourceTile, WorldMapData mapData, WorldQuestDefinition definition, int assignedTargetTileId, bool applyDescription)
+    {
+        if (sourceTile == null || mapData == null || definition == null)
+            return false;
+
+        WorldQuestState state = null;
+        if (!generatedQuestByTileId.TryGetValue(sourceTile.tileId, out state) || state == null)
+        {
+            state = new WorldQuestState();
+            state.Initialize(definition, sourceTile.tileId);
+            state.assignedTargetTileId = assignedTargetTileId;
+            generatedQuestByTileId[sourceTile.tileId] = state;
+        }
+
+        if (applyDescription && runManager != null)
+            runManager.ApplyQuestDescriptionToTile(sourceTile, definition.questType);
+
+        currentPopupQuest = state;
+        currentPopupMode = WorldQuestPopupMode.Offer;
+
+        if (questPopupUI != null)
+            questPopupUI.ShowOffer(state, !HasReachedQuestLimit());
+
+        return true;
+    }
+
     public WorldQuestState GetOrCreateQuestForTile(WorldTileData sourceTile, WorldMapData mapData)
     {
         if (sourceTile == null || mapData == null)

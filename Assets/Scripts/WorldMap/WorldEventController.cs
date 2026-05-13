@@ -143,6 +143,9 @@ public class WorldEventController : MonoBehaviour
 
     private bool TryOpenQuestEvent(WorldTileData tile)
     {
+        if (runManager != null && runManager.TryOpenTutorialQuestEvent(tile, questController))
+            return true;
+
         if (questController != null && questController.TryOpenQuestOfferFromTile(tile))
             return true;
 
@@ -255,6 +258,12 @@ public class WorldEventController : MonoBehaviour
         int key = tile != null ? tile.tileId : -1;
         if (pendingTreasureByTileId.TryGetValue(key, out WorldTreasureResult cached) && cached != null)
             return cached;
+
+        if (runManager != null && runManager.TryCreateTutorialTreasure(tile, out WorldTreasureResult tutorialTreasure) && tutorialTreasure != null)
+        {
+            pendingTreasureByTileId[key] = tutorialTreasure;
+            return tutorialTreasure;
+        }
 
         WorldTreasureResult generated = GenerateTreasureReward();
         pendingTreasureByTileId[key] = generated;

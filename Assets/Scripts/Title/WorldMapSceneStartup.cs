@@ -38,15 +38,28 @@ public class WorldMapSceneStartup : MonoBehaviour
             return;
         }
 
+        if (saveCoordinator.ConsumeQueuedTutorialWorldStart())
+        {
+            StartTutorialWorld();
+            return;
+        }
+
         if (saveCoordinator.ConsumeQueuedNewWorldStart(out string newDifficultyId, out int newRadius))
         {
-            StartNewWorld(newDifficultyId, newRadius);
+            if (!saveCoordinator.HasCompletedTutorial())
+                StartTutorialWorld();
+            else
+                StartNewWorld(newDifficultyId, newRadius);
             return;
         }
 
         if (saveCoordinator.HasSavedActiveWorld())
         {
             TryContinueWorld();
+        }
+        else if (!saveCoordinator.HasCompletedTutorial())
+        {
+            StartTutorialWorld();
         }
         else
         {
@@ -74,6 +87,19 @@ public class WorldMapSceneStartup : MonoBehaviour
             Debug.LogWarning("[WorldMapSceneStartup] Restore failed. Starting a new world instead.");
             StartNewWorld(fallbackDifficultyId, fallbackMapRadius);
         }
+    }
+
+    private void StartTutorialWorld()
+    {
+        WorldGenerationSettings settings = normalSettings != null ? normalSettings : ResolveDifficultySettings(fallbackDifficultyId);
+        if (settings == null)
+        {
+            Debug.LogError("[WorldMapSceneStartup] Tutorial settings asset is missing.");
+            return;
+        }
+
+        worldRunManager.StartTutorialWorldFromSetup(settings);
+        saveCoordinator.SaveAll();
     }
 
     private void StartNewWorld(string difficultyId, int radius)

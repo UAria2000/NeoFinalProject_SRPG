@@ -410,6 +410,33 @@ public class BootstrapTitleFlow : MonoBehaviour
 
     private void HandleNewWorldClicked()
     {
+        if (saveCoordinator == null)
+            saveCoordinator = SaveCoordinator.Instance;
+
+        if (saveCoordinator != null && !saveCoordinator.HasCompletedTutorial())
+        {
+            if (saveCoordinator.HasSavedActiveWorld())
+            {
+                if (overwriteWorldConfirmPopup != null)
+                {
+                    overwriteWorldConfirmPopup.Show(
+                        overwriteWorldMessage,
+                        overwriteWorldConfirmLabel,
+                        overwriteWorldCancelLabel,
+                        ConfirmOverwriteAndStartTutorialWorld,
+                        null);
+                }
+                else
+                {
+                    ConfirmOverwriteAndStartTutorialWorld();
+                }
+                return;
+            }
+
+            StartQueuedTutorialWorld();
+            return;
+        }
+
         ShowNewWorldSetup();
     }
 
@@ -495,6 +522,24 @@ public class BootstrapTitleFlow : MonoBehaviour
         }
 
     StartQueuedNewWorld();
+    }
+
+    private void ConfirmOverwriteAndStartTutorialWorld()
+    {
+        if (saveCoordinator == null)
+            return;
+
+        saveCoordinator.ClearSavedWorldRunAsAbandoned();
+        StartQueuedTutorialWorld();
+    }
+
+    private void StartQueuedTutorialWorld()
+    {
+        if (saveCoordinator == null)
+            return;
+
+        saveCoordinator.QueueTutorialWorldStart();
+        SceneManager.LoadScene(worldMapSceneName);
     }
 
     private void ConfirmOverwriteAndStartNewWorld()

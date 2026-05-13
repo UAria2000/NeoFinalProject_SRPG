@@ -23,6 +23,7 @@ public class SaveCoordinator : MonoBehaviour
 
     private bool queuedContinueWorld;
     private bool queuedNewWorld;
+    private bool queuedTutorialWorld;
     private string queuedDifficultyId;
     private int queuedMapRadius;
 
@@ -117,6 +118,39 @@ public class SaveCoordinator : MonoBehaviour
         LocalSaveService.SaveWorldRun(data);
     }
 
+    public bool HasCompletedTutorial()
+    {
+        AccountProfileSaveData data = LoadProfileData();
+        return data != null && data.hasCompletedTutorial;
+    }
+
+    public void MarkTutorialCompleted()
+    {
+        RebindSceneReferences();
+
+        if (persistentProfileController != null)
+        {
+            persistentProfileController.EnsureInitialized();
+            if (persistentProfileController.Profile != null)
+                persistentProfileController.Profile.hasCompletedTutorial = true;
+            SaveProfile();
+            return;
+        }
+
+        AccountProfileSaveData data = LoadProfileData();
+        if (data == null)
+        {
+            data = new AccountProfileSaveData
+            {
+                accountId = accountId,
+                nickname = nickname,
+            };
+        }
+
+        data.hasCompletedTutorial = true;
+        LocalSaveService.SaveProfile(data);
+    }
+
     public AccountProfileSaveData LoadProfileData()
     {
         return LocalSaveService.LoadProfile(accountId);
@@ -162,8 +196,13 @@ public class SaveCoordinator : MonoBehaviour
 
     public void ClearSavedWorldRunAsAbandoned()
     {
-        if (HasSavedActiveWorld())
+        ActiveWorldRunSaveData active = LoadWorldRunData();
+        if (active != null && active.hasActiveWorld)
+        {
             SetLastWorldSettlementResult(WorldSettlementResultState.Failure);
+            if (active.isTutorialWorld)
+                MarkTutorialCompleted();
+        }
 
         LocalSaveService.DeleteWorldRun(accountId);
     }
@@ -172,6 +211,7 @@ public class SaveCoordinator : MonoBehaviour
     {
         queuedContinueWorld = false;
         queuedNewWorld = false;
+        queuedTutorialWorld = false;
         queuedDifficultyId = null;
         queuedMapRadius = 0;
         persistentInventory = new List<PersistentInventoryItemSaveData>();
@@ -209,6 +249,7 @@ public class SaveCoordinator : MonoBehaviour
     {
         queuedContinueWorld = true;
         queuedNewWorld = false;
+        queuedTutorialWorld = false;
         queuedDifficultyId = null;
         queuedMapRadius = 0;
     }
@@ -217,14 +258,31 @@ public class SaveCoordinator : MonoBehaviour
     {
         queuedContinueWorld = false;
         queuedNewWorld = true;
+        queuedTutorialWorld = false;
         queuedDifficultyId = difficultyId;
         queuedMapRadius = mapRadius;
+    }
+
+    public void QueueTutorialWorldStart()
+    {
+        queuedContinueWorld = false;
+        queuedNewWorld = false;
+        queuedTutorialWorld = true;
+        queuedDifficultyId = "tutorial";
+        queuedMapRadius = 0;
     }
 
     public bool ConsumeQueuedContinueWorld()
     {
         bool value = queuedContinueWorld;
         queuedContinueWorld = false;
+        return value;
+    }
+
+    public bool ConsumeQueuedTutorialWorldStart()
+    {
+        bool value = queuedTutorialWorld;
+        queuedTutorialWorld = false;
         return value;
     }
 
@@ -241,6 +299,7 @@ public class SaveCoordinator : MonoBehaviour
         mapRadius = queuedMapRadius;
 
         queuedNewWorld = false;
+        queuedTutorialWorld = false;
         queuedDifficultyId = null;
         queuedMapRadius = 0;
         return true;

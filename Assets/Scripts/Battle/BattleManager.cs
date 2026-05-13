@@ -286,6 +286,16 @@ public class BattleManager : MonoBehaviour
         return currentRound > 0 && lastManaActionRoundUsed != currentRound;
     }
 
+    public bool CanOpenManaMenuInCurrentContext()
+    {
+        return WorldRunManager == null || WorldRunManager.CanOpenManaMenuInCurrentTutorialBattle();
+    }
+
+    public bool IsManaActionAllowedByTutorial(BattleManaActionType actionType)
+    {
+        return WorldRunManager == null || WorldRunManager.IsManaActionAllowedByTutorial(actionType);
+    }
+
     public bool HasManaForAction(BattleManaActionType actionType)
     {
         return WorldRunManager != null && WorldRunManager.HasManaForAction(actionType);
@@ -297,6 +307,7 @@ public class BattleManager : MonoBehaviour
                CurrentActingUnit != null &&
                CurrentActingUnit.Team == TeamType.Ally &&
                CanUseManaActionThisRound() &&
+               IsManaActionAllowedByTutorial(actionType) &&
                HasManaForAction(actionType);
     }
 
@@ -311,6 +322,9 @@ public class BattleManager : MonoBehaviour
             return false;
 
         if (!CanUseManaActionThisRound())
+            return false;
+
+        if (!IsManaActionAllowedByTutorial(actionType))
             return false;
 
         if (WorldRunManager == null || !WorldRunManager.TrySpendMana(actionType))
@@ -548,8 +562,18 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            // 구버전 호환: 포로 아이템이 연결되지 않은 적은 기존 방식으로만 기록한다.
             currentBattleRewardSummary.capturedPrisoners.Add(fallbackUnit);
+            currentBattleRewardSummary.capturedPrisonerRewards.Add(new CapturedPrisonerRewardEntry
+            {
+                prisonerItem = null,
+                fallbackUnit = fallbackUnit,
+                fallbackView = unit.ViewDefinition,
+                capturedLevel = Mathf.Max(1, unit.CurrentLevel),
+                isExchangeable = unit.IsNftUnit,
+                learnedSkills = unit.MemberData != null && unit.MemberData.learnedSkills != null
+                    ? new List<SkillDefinition>(unit.MemberData.learnedSkills)
+                    : new List<SkillDefinition>()
+            });
         }
     }
 

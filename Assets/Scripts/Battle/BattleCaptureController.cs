@@ -143,7 +143,7 @@ public class BattleCaptureController : MonoBehaviour
 
         // 새 포획 플로우는 적 자체가 아니라 적에게 연결된 포로 아이템을 획득한 뒤
         // 전투 종료 시 그 아이템을 포로 데이터로 변환한다.
-        if (target.Definition.captureRewardItem == null)
+        if (target.Definition.captureRewardItem == null && (battleManager == null || battleManager.WorldRunManager == null || !battleManager.WorldRunManager.AllowsTutorialFallbackCaptureReward(target)))
             return false;
 
         if (!HasInventorySpaceForCapture())
@@ -174,6 +174,12 @@ public class BattleCaptureController : MonoBehaviour
         if (target == null || target.MaxHP <= 0)
             return 0;
 
+        int tutorialOverride = battleManager != null && battleManager.WorldRunManager != null
+            ? battleManager.WorldRunManager.GetTutorialCaptureChanceOverridePercent(target)
+            : -1;
+        if (tutorialOverride >= 0)
+            return Mathf.Clamp(tutorialOverride, 0, 100);
+
         float hpPercent = target.CurrentHP / (float)target.MaxHP * 100f;
 
         if (captureChanceRanges != null)
@@ -195,9 +201,14 @@ public class BattleCaptureController : MonoBehaviour
             ? target.Definition.captureRewardItem
             : null;
 
-        return target != null &&
-               target.Definition != null &&
-               target.Definition.canBeCaptured &&
-               target.Definition.captureRewardItem != null;
+        if (target == null || target.Definition == null || !target.Definition.canBeCaptured)
+            return false;
+
+        if (target.Definition.captureRewardItem != null)
+            return true;
+
+        return battleManager != null &&
+               battleManager.WorldRunManager != null &&
+               battleManager.WorldRunManager.AllowsTutorialFallbackCaptureReward(target);
     }
 }
