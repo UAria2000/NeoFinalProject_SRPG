@@ -177,6 +177,7 @@ public class PersistentProfileState
     public List<PersistentRosterUnitData> graveyardUnits = new List<PersistentRosterUnitData>();
     public PersistentAccountCurrencyState accountCurrencies = new PersistentAccountCurrencyState();
     public long nextObtainedOrder = 1;
+    public int worldAttemptCount = 0;
     public WorldSettlementResultState lastWorldSettlementResult = WorldSettlementResultState.None;
 
     public void EnsureDefaults()
@@ -194,6 +195,9 @@ public class PersistentProfileState
 
         if (nextObtainedOrder < 1)
             nextObtainedOrder = 1;
+
+        if (worldAttemptCount < 0)
+            worldAttemptCount = 0;
 
         for (int i = 0; i < rosterUnits.Count; i++)
         {
@@ -215,4 +219,12 @@ public class PersistentProfileState
         nextObtainedOrder++;
         return order;
     }
+
+    public int BeginNextWorldAttempt()
+    {
+        EnsureDefaults();
+        worldAttemptCount++;
+        return worldAttemptCount;
+    }
 }
+

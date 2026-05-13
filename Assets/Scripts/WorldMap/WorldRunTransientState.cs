@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [Serializable]
 public class WorldRunTransientState
@@ -12,6 +13,15 @@ public class WorldRunTransientState
     public int maxMana;
     public long nextPrisonerSequence = 1;
     public List<PartyEquipmentAssignmentData> partyEquipmentAssignments = new List<PartyEquipmentAssignmentData>();
+
+    [Header("Settlement Records")]
+    public int settlementBattleCount;
+    public int settlementVictoryCount;
+    public int settlementDefeatCount;
+    public int settlementKilledEnemyCount;
+    public int settlementCompletedQuestCount;
+    public int settlementCapturedEnemyCount;
+    public List<PrisonerRuntimeData> settlementCapturedPrisonerRecords = new List<PrisonerRuntimeData>();
     public static WorldRunTransientState CreateForNewWorld(PartyDefinition playerPartyTemplate)
     {
         WorldRunTransientState state = new WorldRunTransientState();
@@ -30,6 +40,7 @@ public class WorldRunTransientState
         currentMana = maxMana;
         nextPrisonerSequence = 1;
         partyEquipmentAssignments.Clear();
+        ClearSettlementRecords();
     }
 
     public void AddItem(ItemDefinition item, int amount = 1)
@@ -64,4 +75,54 @@ public class WorldRunTransientState
     {
         worldEarnedSoulAlreadyGranted += Math.Max(0, amount);
     }
+
+    public void ClearSettlementRecords()
+    {
+        settlementBattleCount = 0;
+        settlementVictoryCount = 0;
+        settlementDefeatCount = 0;
+        settlementKilledEnemyCount = 0;
+        settlementCompletedQuestCount = 0;
+        settlementCapturedEnemyCount = 0;
+        if (settlementCapturedPrisonerRecords == null)
+            settlementCapturedPrisonerRecords = new List<PrisonerRuntimeData>();
+        else
+            settlementCapturedPrisonerRecords.Clear();
+    }
+
+    public void RecordCapturedPrisoner(CapturedPrisonerRewardEntry reward)
+    {
+        if (reward == null)
+            return;
+
+        if (settlementCapturedPrisonerRecords == null)
+            settlementCapturedPrisonerRecords = new List<PrisonerRuntimeData>();
+
+        PrisonerRuntimeData record = null;
+        long sequence = nextPrisonerSequence++;
+
+        if (reward.prisonerItem != null)
+        {
+            record = PrisonerRuntimeData.CreateFromPrisonerItem(
+                reward.prisonerItem,
+                Math.Max(1, reward.capturedLevel),
+                sequence,
+                reward.fallbackUnit,
+                reward.fallbackView,
+                reward.isExchangeable);
+        }
+        else if (reward.fallbackUnit != null)
+        {
+            record = PrisonerRuntimeData.CreateFromCapturedUnit(
+                reward.fallbackUnit,
+                Math.Max(1, reward.capturedLevel),
+                sequence,
+                reward.fallbackView,
+                reward.isExchangeable);
+        }
+
+        if (record != null)
+            settlementCapturedPrisonerRecords.Add(record);
+    }
 }
+

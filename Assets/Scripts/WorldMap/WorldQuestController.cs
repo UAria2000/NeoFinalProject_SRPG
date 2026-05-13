@@ -729,6 +729,7 @@ public class WorldQuestController : MonoBehaviour
         quest.completionPopupClosed = true;
         activeAcceptedQuests.Remove(quest);
         delayedImmediateRewardScheduled.Remove(quest);
+        runManager?.RecordCompletedWorldQuestForSettlement();
     }
 
     private void ScheduleImmediateRewardsForQuest(WorldQuestState quest)

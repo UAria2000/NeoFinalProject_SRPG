@@ -36,13 +36,21 @@ public class WorldRunManager : MonoBehaviour
     [SerializeField] private int persistentSoul;
     [SerializeField] private int persistentCash;
 
-    [Header("Experience Rewards")]
-    [Tooltip("월드 결산 경험치: 점령 타일 1개당 기본 EXP.")]
-    [Min(0)] [SerializeField] private int settlementExpPerConqueredTile = 20;
-    [Tooltip("월드 결산 경험치: 사라지는 아이템의 환산 소울 대비 EXP 비율.")]
-    [Min(0f)] [SerializeField] private float settlementExpPercentOfConvertedItemSoul = 25f;
-    [Tooltip("월드 결산 경험치: 사라지는 포로의 환산 소울 대비 EXP 비율.")]
-    [Min(0f)] [SerializeField] private float settlementExpPercentOfConvertedPrisonerSoul = 25f;
+    [Header("World Settlement Rewards")]
+    [Tooltip("월드 결산 EXP: 전투 1회당 기본 EXP.")]
+    [Min(0)] [SerializeField] private int settlementExpPerBattle = 25;
+    [Tooltip("월드 결산 EXP: 승리 1회당 기본 EXP.")]
+    [Min(0)] [SerializeField] private int settlementExpPerVictory = 75;
+    [Tooltip("월드 결산 EXP: 패배/전원 도주 1회당 기본 EXP.")]
+    [Min(0)] [SerializeField] private int settlementExpPerDefeat = 0;
+    [Tooltip("월드 결산 EXP: 처치 또는 포획한 적 1명당 기본 EXP.")]
+    [Min(0)] [SerializeField] private int settlementExpPerKilledEnemy = 15;
+    [Tooltip("월드 결산 EXP: 포획 기록 1명당 추가 EXP.")]
+    [Min(0)] [SerializeField] private int settlementExpPerCapturedEnemy = 25;
+    [Tooltip("월드 결산 EXP: 완료한 임무 1개당 기본 EXP.")]
+    [Min(0)] [SerializeField] private int settlementExpPerCompletedQuest = 200;
+    [Tooltip("월드 시작 주인공 레벨 보너스. 레벨 1은 0%, 이후 레벨마다 이 값만큼 증가합니다.")]
+    [Min(0)] [SerializeField] private int settlementLevelBonusPercentPerLevelAboveOne = 5;
 
     [Header("World HUD")]
     [SerializeField] private WorldTopHudUI worldTopHudUI;
@@ -96,7 +104,9 @@ public class WorldRunManager : MonoBehaviour
     public string RuntimeDifficultyId => runtimeDifficultyId;
 
     private int worldStartMainCharacterLevel = 0;
+    private int currentWorldNumber = 1;
     public int WorldStartMainCharacterLevel => Mathf.Max(1, worldStartMainCharacterLevel > 0 ? worldStartMainCharacterLevel : ResolveCurrentMainCharacterLevel());
+    public int CurrentWorldNumber => Mathf.Max(1, currentWorldNumber);
     private void Awake()
     {
         if (revealedEnemyPreviewCount <= 0)
@@ -138,6 +148,7 @@ public class WorldRunManager : MonoBehaviour
 
     public void GenerateNewWorld()
     {
+        BeginNewWorldAttemptNumber();
         RestoreRosterUnitsForNewWorld();
         ResetWorldRunStateForNewWorld();
         CaptureWorldStartEnemyScalingLevel();
@@ -520,6 +531,24 @@ public class WorldRunManager : MonoBehaviour
         return granted;
     }
 
+    public int AddExperienceToAllRosterUnits(int amount)
+    {
+        if (persistentProfileController == null)
+            persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        int granted = persistentProfileController != null
+            ? persistentProfileController.AddExperienceToAllRosterUnits(Mathf.Max(0, amount))
+            : 0;
+
+        if (granted > 0)
+        {
+            RaiseStorageChanged();
+            RequestAutoSaveAll();
+        }
+
+        return granted;
+    }
+
     public int GrantPartyExperienceReward(int amount) => AddPartyExperienceToAllMembers(amount);
     public int AddPartyExperienceReward(int amount) => AddPartyExperienceToAllMembers(amount);
     public int GainPartyExperience(int amount) => AddPartyExperienceToAllMembers(amount);
@@ -537,6 +566,17 @@ public class WorldRunManager : MonoBehaviour
     public void CaptureWorldStartEnemyScalingLevel()
     {
         worldStartMainCharacterLevel = Mathf.Max(1, ResolveCurrentMainCharacterLevel());
+    }
+
+    private void BeginNewWorldAttemptNumber()
+    {
+        if (persistentProfileController == null)
+            persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (persistentProfileController != null)
+            currentWorldNumber = Mathf.Max(1, persistentProfileController.BeginNextWorldAttempt());
+        else
+            currentWorldNumber = Mathf.Max(1, currentWorldNumber + 1);
     }
 
     private int ResolveCurrentMainCharacterLevel()
@@ -1286,14 +1326,28 @@ public class WorldRunManager : MonoBehaviour
         WorldRunTransientState state = GetOrCreateWorldRunState();
         WorldSettlementSummary summary = new WorldSettlementSummary();
         summary.wasVictory = wasVictory;
-        summary.worldEarnedSoulAlreadyGranted = state != null ? state.worldEarnedSoulAlreadyGranted : 0;
-        summary.sizeBonusPercent = generationSettings != null ? generationSettings.GetSizeBonusPercent() : 0;
-        summary.difficultyBonusPercent = generationSettings != null ? generationSettings.GetDifficultyBonusPercent() : 0;
-        summary.victoryBonusPercent = wasVictory && generationSettings != null ? generationSettings.worldVictoryBonusPercent : 0;
-        summary.conqueredTileCount = CountConqueredPlayerTiles();
-        summary.conqueredTileExp = Mathf.Max(0, summary.conqueredTileCount * settlementExpPerConqueredTile);
+        summary.worldNumber = Mathf.Max(1, currentWorldNumber);
+        summary.worldEarnedSoulAlreadyGranted = state != null ? Mathf.Max(0, state.worldEarnedSoulAlreadyGranted) : 0;
 
-        if (state != null)
+        summary.battleCount = state != null ? Mathf.Max(0, state.settlementBattleCount) : 0;
+        summary.victoryCount = state != null ? Mathf.Max(0, state.settlementVictoryCount) : 0;
+        summary.defeatCount = state != null ? Mathf.Max(0, state.settlementDefeatCount) : 0;
+        summary.killedEnemyCount = state != null ? Mathf.Max(0, state.settlementKilledEnemyCount) : 0;
+        summary.completedQuestCount = state != null ? Mathf.Max(0, state.settlementCompletedQuestCount) : 0;
+        summary.capturedEnemyCount = state != null ? Mathf.Max(0, state.settlementCapturedEnemyCount) : 0;
+
+        summary.sizeBonusPercent = wasVictory && generationSettings != null ? Mathf.Max(0, generationSettings.GetSizeBonusPercent()) : 0;
+        summary.difficultyBonusPercent = wasVictory && generationSettings != null ? Mathf.Max(0, generationSettings.GetDifficultyBonusPercent()) : 0;
+        summary.victoryBonusPercent = wasVictory && generationSettings != null ? Mathf.Max(0, generationSettings.worldVictoryBonusPercent) : 0;
+        summary.levelBonusPercent = wasVictory ? Mathf.Max(0, (WorldStartMainCharacterLevel - 1) * Mathf.Max(0, settlementLevelBonusPercentPerLevelAboveOne)) : 0;
+        summary.soulBonusPercent = wasVictory ? summary.sizeBonusPercent + summary.difficultyBonusPercent + summary.victoryBonusPercent + summary.levelBonusPercent : 0;
+        summary.expBonusPercent = summary.soulBonusPercent;
+        summary.worldSizeLabel = GetWorldSizeLabel();
+        summary.worldDifficultyLabel = GetWorldDifficultyLabel();
+
+        CaptureLordExpPreview(summary, 0);
+
+        if (state != null && wasVictory)
         {
             if (state.inventory != null)
             {
@@ -1310,32 +1364,125 @@ public class WorldRunManager : MonoBehaviour
                 }
             }
 
-            if (state.prisoners != null)
+            if (state.settlementCapturedPrisonerRecords != null)
             {
-                for (int i = 0; i < state.prisoners.Count; i++)
+                for (int i = 0; i < state.settlementCapturedPrisonerRecords.Count; i++)
                 {
-                    PrisonerRuntimeData prisoner = state.prisoners[i];
-                    if (prisoner == null || prisoner.sourceUnit == null)
+                    PrisonerRuntimeData prisoner = state.settlementCapturedPrisonerRecords[i];
+                    if (prisoner == null)
                         continue;
 
-                    summary.prisonerUnits.Add(prisoner.sourceUnit);
-                    summary.convertedPrisonerSoul += Mathf.Max(0, prisoner.sourceUnit.baseSoulReward);
+                    summary.capturedPrisonerRecords.Add(prisoner);
+                    UnitDefinition unit = prisoner.sourceUnit;
+                    if (unit == null && prisoner.sourcePrisonerItem != null)
+                        unit = prisoner.sourcePrisonerItem.GetConvertedAllyUnitDefinition();
+
+                    if (unit != null)
+                        summary.capturedPrisonerSoul += Mathf.Max(0, unit.baseSoulReward);
                 }
             }
         }
+        else if (state != null && state.settlementCapturedPrisonerRecords != null)
+        {
+            for (int i = 0; i < state.settlementCapturedPrisonerRecords.Count; i++)
+            {
+                if (state.settlementCapturedPrisonerRecords[i] != null)
+                    summary.capturedPrisonerRecords.Add(state.settlementCapturedPrisonerRecords[i]);
+            }
+        }
 
-        int convertedBase = summary.convertedItemSoul + summary.convertedPrisonerSoul;
-        int additivePercent = summary.sizeBonusPercent + summary.difficultyBonusPercent + summary.victoryBonusPercent;
-        int convertedWithBonus = convertedBase + Mathf.RoundToInt(convertedBase * (additivePercent / 100f));
-        summary.totalSettlementSoulAward = summary.worldEarnedSoulAlreadyGranted + convertedWithBonus;
+        if (wasVictory)
+        {
+            summary.baseSoulTotal = Mathf.Max(0, summary.worldEarnedSoulAlreadyGranted + summary.convertedItemSoul + summary.capturedPrisonerSoul);
+            summary.totalSettlementSoulAward = ApplySettlementMultiplier(summary.baseSoulTotal, summary.soulBonusPercent);
+            summary.soulAwardToGrant = Mathf.Max(0, summary.totalSettlementSoulAward - summary.worldEarnedSoulAlreadyGranted);
 
-        summary.convertedItemExp = Mathf.RoundToInt(summary.convertedItemSoul * Mathf.Max(0f, settlementExpPercentOfConvertedItemSoul) * 0.01f);
-        summary.convertedPrisonerExp = Mathf.RoundToInt(summary.convertedPrisonerSoul * Mathf.Max(0f, settlementExpPercentOfConvertedPrisonerSoul) * 0.01f);
-        int expBase = summary.conqueredTileExp + summary.convertedItemExp + summary.convertedPrisonerExp;
-        int expBonusPercent = summary.difficultyBonusPercent + summary.victoryBonusPercent;
-        summary.totalSettlementExpAward = Mathf.Max(0, expBase + Mathf.RoundToInt(expBase * (expBonusPercent / 100f)));
+            summary.battleExp = Mathf.Max(0, summary.battleCount * settlementExpPerBattle);
+            summary.victoryExp = Mathf.Max(0, summary.victoryCount * settlementExpPerVictory);
+            summary.defeatExp = Mathf.Max(0, summary.defeatCount * settlementExpPerDefeat);
+            summary.killedEnemyExp = Mathf.Max(0, summary.killedEnemyCount * settlementExpPerKilledEnemy);
+            summary.capturedEnemyExp = Mathf.Max(0, summary.capturedEnemyCount * settlementExpPerCapturedEnemy);
+            summary.completedQuestExp = Mathf.Max(0, summary.completedQuestCount * settlementExpPerCompletedQuest);
+            summary.baseExpTotal = summary.battleExp + summary.victoryExp + summary.defeatExp + summary.killedEnemyExp + summary.capturedEnemyExp + summary.completedQuestExp;
+            summary.totalSettlementExpAward = ApplySettlementMultiplier(summary.baseExpTotal, summary.expBonusPercent);
+        }
+        else
+        {
+            summary.convertedItemSoul = 0;
+            summary.capturedPrisonerSoul = 0;
+            summary.baseSoulTotal = Mathf.Max(0, summary.worldEarnedSoulAlreadyGranted);
+            summary.totalSettlementSoulAward = summary.worldEarnedSoulAlreadyGranted;
+            summary.soulAwardToGrant = 0;
+            summary.baseExpTotal = 0;
+            summary.totalSettlementExpAward = 0;
+        }
 
+        CaptureLordExpPreview(summary, summary.totalSettlementExpAward);
         return summary;
+    }
+
+    private int ApplySettlementMultiplier(int baseValue, int bonusPercent)
+    {
+        return Mathf.Max(0, Mathf.RoundToInt(Mathf.Max(0, baseValue) * (1f + Mathf.Max(0, bonusPercent) * 0.01f)));
+    }
+
+    private string GetWorldSizeLabel()
+    {
+        if (generationSettings == null)
+            return "-";
+        if (generationSettings.radius <= 4)
+            return "소형";
+        if (generationSettings.radius == 5)
+            return "중형";
+        return "대형";
+    }
+
+    private string GetWorldDifficultyLabel()
+    {
+        if (generationSettings == null)
+            return "-";
+        switch (generationSettings.difficulty)
+        {
+            case WorldDifficulty.Easy: return "쉬움";
+            case WorldDifficulty.Hard: return "어려움";
+            default: return "보통";
+        }
+    }
+
+    private void CaptureLordExpPreview(WorldSettlementSummary summary, int pendingExpGain)
+    {
+        if (summary == null)
+            return;
+
+        if (persistentProfileController == null)
+            persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        PersistentRosterUnitData main = persistentProfileController != null ? persistentProfileController.GetMainCharacterRosterUnit() : null;
+        int level = main != null ? Mathf.Max(1, main.currentLevel) : Mathf.Max(1, ResolveCurrentMainCharacterLevel());
+        int exp = main != null ? Mathf.Max(0, main.currentExp) : 0;
+        int cap = persistentProfileController != null ? persistentProfileController.GetLevelCapForUnit(main) : 999;
+
+        summary.lordLevelBefore = level;
+        summary.lordExpBefore = exp;
+        summary.lordExpToNextBefore = level >= cap ? Mathf.Max(1, LegionFormula.GetExpToNextLevel(level)) : Mathf.Max(1, LegionFormula.GetExpToNextLevel(level));
+
+        int afterLevel = level;
+        int afterExp = exp + Mathf.Max(0, pendingExpGain);
+        int guard = 0;
+        while (afterLevel < cap && afterExp >= LegionFormula.GetExpToNextLevel(afterLevel) && guard < 1000)
+        {
+            afterExp -= LegionFormula.GetExpToNextLevel(afterLevel);
+            afterLevel++;
+            guard++;
+        }
+
+        int afterNeed = Mathf.Max(1, LegionFormula.GetExpToNextLevel(afterLevel));
+        if (afterLevel >= cap)
+            afterExp = Mathf.Clamp(afterExp, 0, afterNeed);
+
+        summary.lordLevelAfter = Mathf.Max(1, afterLevel);
+        summary.lordExpAfter = Mathf.Max(0, afterExp);
+        summary.lordExpToNextAfter = afterNeed;
     }
 
     private int CountConqueredPlayerTiles()
@@ -1362,11 +1509,11 @@ public class WorldRunManager : MonoBehaviour
         if (summary == null)
             return;
 
-        int conversionOnly = Mathf.Max(0, summary.totalSettlementSoulAward - summary.worldEarnedSoulAlreadyGranted);
+        int conversionOnly = Mathf.Max(0, summary.soulAwardToGrant);
         persistentSoul += conversionOnly;
 
         if (summary.totalSettlementExpAward > 0)
-            AddPartyExperienceToAllMembers(summary.totalSettlementExpAward);
+            AddExperienceToAllRosterUnits(summary.totalSettlementExpAward);
 
         RemoveDeadPartyMembersFromActiveParty();
         RestoreRosterUnitsForNewWorld();
@@ -1388,6 +1535,42 @@ public class WorldRunManager : MonoBehaviour
         saveCoordinator?.ClearSavedWorldRun();
         RaiseStorageChanged();
         RaiseWorldStateChanged();
+    }
+
+    public void RecordBattleForSettlement(BattleRewardSummary battleSummary, BattleResultType result)
+    {
+        WorldRunTransientState state = GetOrCreateWorldRunState();
+        if (state == null)
+            return;
+
+        state.settlementBattleCount++;
+        if (result == BattleResultType.Victory)
+            state.settlementVictoryCount++;
+        else if (result == BattleResultType.Defeat || result == BattleResultType.Flee || result == BattleResultType.WorldFailure)
+            state.settlementDefeatCount++;
+
+        int defeatedOrCaptured = battleSummary != null ? Mathf.Max(0, battleSummary.DefeatedOrCapturedEnemyCount) : 0;
+        state.settlementKilledEnemyCount += defeatedOrCaptured;
+
+        if (battleSummary != null && battleSummary.capturedPrisonerRewards != null)
+        {
+            int captured = battleSummary.capturedPrisonerRewards.Count;
+            state.settlementCapturedEnemyCount += Mathf.Max(0, captured);
+            for (int i = 0; i < battleSummary.capturedPrisonerRewards.Count; i++)
+                state.RecordCapturedPrisoner(battleSummary.capturedPrisonerRewards[i]);
+        }
+
+        RequestAutoSaveAll();
+    }
+
+    public void RecordCompletedWorldQuestForSettlement()
+    {
+        WorldRunTransientState state = GetOrCreateWorldRunState();
+        if (state == null)
+            return;
+
+        state.settlementCompletedQuestCount++;
+        RequestAutoSaveAll();
     }
 
     private void ClearRuntimeWorldAfterSettlement()
@@ -2089,6 +2272,7 @@ public class WorldRunManager : MonoBehaviour
         generationSettings = runtimeSettings;
         runtimeDifficultyId = string.IsNullOrWhiteSpace(saveData.difficultyId) ? "normal" : saveData.difficultyId;
         worldStartMainCharacterLevel = Mathf.Max(0, saveData.worldStartMainCharacterLevel);
+        currentWorldNumber = Mathf.Max(1, saveData.worldNumber);
 
         ResetWorldRunStateForNewWorld();
 
@@ -2536,8 +2720,18 @@ public class WorldRunManager : MonoBehaviour
         state.prisoners.Clear();
         state.sharedConsumableItem = null;
         state.partyEquipmentAssignments.Clear();
-        state.worldEarnedSoulAlreadyGranted = 0;
+        state.worldEarnedSoulAlreadyGranted = Mathf.Max(0, saveData.worldEarnedSoulAlreadyGranted);
         state.nextPrisonerSequence = 1;
+        state.settlementBattleCount = Mathf.Max(0, saveData.settlementBattleCount);
+        state.settlementVictoryCount = Mathf.Max(0, saveData.settlementVictoryCount);
+        state.settlementDefeatCount = Mathf.Max(0, saveData.settlementDefeatCount);
+        state.settlementKilledEnemyCount = Mathf.Max(0, saveData.settlementKilledEnemyCount);
+        state.settlementCompletedQuestCount = Mathf.Max(0, saveData.settlementCompletedQuestCount);
+        state.settlementCapturedEnemyCount = Mathf.Max(0, saveData.settlementCapturedEnemyCount);
+        if (state.settlementCapturedPrisonerRecords == null)
+            state.settlementCapturedPrisonerRecords = new List<PrisonerRuntimeData>();
+        else
+            state.settlementCapturedPrisonerRecords.Clear();
         state.maxMana = Mathf.Max(0, saveData.maxMana);
         state.currentMana = state.maxMana > 0 ? Mathf.Clamp(saveData.currentMana, 0, state.maxMana) : Mathf.Max(0, saveData.currentMana);
         if (state.maxMana <= 0)
@@ -2618,6 +2812,38 @@ public class WorldRunManager : MonoBehaviour
             }
 
             state.nextPrisonerSequence = maxSequence + 1;
+        }
+
+        if (saveData.settlementCapturedPrisonerRecords != null)
+        {
+            for (int i = 0; i < saveData.settlementCapturedPrisonerRecords.Count; i++)
+            {
+                CapturedPrisonerSaveData saved = saveData.settlementCapturedPrisonerRecords[i];
+                if (saved == null)
+                    continue;
+
+                UnitDefinition unit = !string.IsNullOrWhiteSpace(saved.sourceUnitId) ? resolver.FindUnitDefinition(saved.sourceUnitId) : null;
+                UnitViewDefinition view = !string.IsNullOrWhiteSpace(saved.sourceUnitViewDefinitionName) ? resolver.FindUnitViewDefinition(saved.sourceUnitViewDefinitionName) : null;
+                ItemDefinition item = !string.IsNullOrWhiteSpace(saved.sourcePrisonerItemId) ? resolver.FindItemDefinition(saved.sourcePrisonerItemId) : null;
+
+                PrisonerRuntimeData record = new PrisonerRuntimeData
+                {
+                    prisonerInstanceId = saved.prisonerInstanceId,
+                    sourceUnit = unit,
+                    sourceUnitViewDefinition = view,
+                    sourcePrisonerItem = item,
+                    prisonerNameOverride = saved.prisonerNameOverride,
+                    capturedLevel = Mathf.Max(1, saved.capturedLevel),
+                    isExchangeable = saved.isExchangeable,
+                    corruptionConditionType = (PrisonerCorruptionConditionType)saved.corruptionConditionType,
+                    targetValue = Mathf.Max(1, saved.targetValue),
+                    currentValue = Mathf.Max(0, saved.currentValue),
+                    captureSequence = saved.captureSequence
+                };
+
+                if (record.sourceUnit != null || record.sourcePrisonerItem != null)
+                    state.settlementCapturedPrisonerRecords.Add(record);
+            }
         }
 
         if (!string.IsNullOrWhiteSpace(saveData.sharedConsumableItemId))

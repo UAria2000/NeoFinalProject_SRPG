@@ -10,6 +10,7 @@ public class ActiveWorldRunSaveData
     public int worldSeed;
     public string difficultyId;
     public int mapRadius;
+    public int worldNumber;
     public int worldStartMainCharacterLevel;
     public long createdUnixTime;
 
@@ -28,6 +29,15 @@ public class ActiveWorldRunSaveData
 
     public int currentMana;
     public int maxMana;
+    public int worldEarnedSoulAlreadyGranted;
+
+    public int settlementBattleCount;
+    public int settlementVictoryCount;
+    public int settlementDefeatCount;
+    public int settlementKilledEnemyCount;
+    public int settlementCompletedQuestCount;
+    public int settlementCapturedEnemyCount;
+    public List<CapturedPrisonerSaveData> settlementCapturedPrisonerRecords = new List<CapturedPrisonerSaveData>();
 
     public List<WorldPartyMemberRuntimeSaveData> worldPartyMembers = new List<WorldPartyMemberRuntimeSaveData>();
 }
