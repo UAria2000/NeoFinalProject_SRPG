@@ -453,6 +453,71 @@ public class PersistentProfileController : MonoBehaviour
         return true;
     }
 
+
+    public int AddExperienceToAllRosterUnits(int amount)
+    {
+        EnsureInitialized();
+        SyncRosterFromActivePartyRuntime();
+
+        int exp = Mathf.Max(0, amount);
+        if (exp <= 0 || persistentProfile == null || persistentProfile.rosterUnits == null)
+            return 0;
+
+        int grantedUnitCount = 0;
+        for (int i = 0; i < persistentProfile.rosterUnits.Count; i++)
+        {
+            PersistentRosterUnitData unit = persistentProfile.rosterUnits[i];
+            if (unit == null || IsDeadUnit(unit))
+                continue;
+
+            if (AddExperienceToRosterUnit(unit, exp, true))
+                grantedUnitCount++;
+        }
+
+        if (grantedUnitCount > 0)
+        {
+            SyncRosterToActivePartyRuntime();
+            RaiseProfileChanged();
+        }
+
+        return grantedUnitCount;
+    }
+
+    public PersistentRosterUnitData GetMainCharacterRosterUnit()
+    {
+        EnsureInitialized();
+        SyncRosterFromActivePartyRuntime();
+
+        if (persistentProfile == null || persistentProfile.rosterUnits == null)
+            return null;
+
+        for (int i = 0; i < persistentProfile.rosterUnits.Count; i++)
+        {
+            PersistentRosterUnitData unit = persistentProfile.rosterUnits[i];
+            if (IsMainCharacter(unit))
+                return unit;
+        }
+
+        return null;
+    }
+
+    public int BeginNextWorldAttempt()
+    {
+        EnsureInitialized();
+        if (persistentProfile == null)
+            return 1;
+
+        int number = persistentProfile.BeginNextWorldAttempt();
+        RaiseProfileChanged();
+        return Mathf.Max(1, number);
+    }
+
+    public int GetWorldAttemptCount()
+    {
+        EnsureInitialized();
+        return persistentProfile != null ? Mathf.Max(0, persistentProfile.worldAttemptCount) : 0;
+    }
+
     public void SyncFromActivePartyRuntimeAndSave()
     {
         EnsureInitialized();

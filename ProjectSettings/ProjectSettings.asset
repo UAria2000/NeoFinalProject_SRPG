@@ -774,11 +774,11 @@ PlayerSettings:
   captureStartupLogs: {}
   activeInputHandler: 1
   windowsGamepadBackendHint: 0
-  cloudProjectId: c11a5f74-25f5-46bc-a50b-238d50b38a61
+  cloudProjectId: b467d370-9427-4ada-9ea4-1d4bf78f3a48
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: FinalProject_SRPG
-  organizationId: didtjdtlr117
+  projectName: NeoFinalProject
+  organizationId: qnpfr307
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   hmiLoadingImage: {fileID: 0}

@@ -323,6 +323,7 @@ public class WorldBattleBridge : MonoBehaviour
 
         if (runManager != null)
         {
+            runManager.RecordBattleForSettlement(summary, result);
             runManager.AddWorldSoul(summary.soulReward);
             runManager.ConvertCapturedPrisonerRewardsToRoster(summary.capturedPrisonerRewards);
 

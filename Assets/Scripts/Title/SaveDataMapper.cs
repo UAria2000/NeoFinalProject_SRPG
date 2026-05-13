@@ -30,6 +30,7 @@ public static class SaveDataMapper
             return save;
 
         save.nextObtainedOrder = profile.nextObtainedOrder;
+        save.worldAttemptCount = Mathf.Max(0, profile.worldAttemptCount);
         save.lastWorldSettlementResult = profile.lastWorldSettlementResult;
 
         if (profile.accountCurrencies != null)
@@ -108,6 +109,7 @@ public static class SaveDataMapper
 
         save.hasActiveWorld = true;
         save.mapRadius = worldRunManager.MapData.radius;
+        save.worldNumber = Mathf.Max(1, worldRunManager.CurrentWorldNumber);
         save.worldStartMainCharacterLevel = Mathf.Max(1, worldRunManager.WorldStartMainCharacterLevel);
 
         bool interruptedArrival = worldRunManager.ShouldSaveAsInterruptedArrival();
@@ -176,6 +178,23 @@ public static class SaveDataMapper
             save.sharedConsumableItemId = state.sharedConsumableItem != null ? state.sharedConsumableItem.itemId : string.Empty;
             save.currentMana = Mathf.Max(0, state.currentMana);
             save.maxMana = Mathf.Max(0, state.maxMana);
+            save.worldEarnedSoulAlreadyGranted = Mathf.Max(0, state.worldEarnedSoulAlreadyGranted);
+
+            save.settlementBattleCount = Mathf.Max(0, state.settlementBattleCount);
+            save.settlementVictoryCount = Mathf.Max(0, state.settlementVictoryCount);
+            save.settlementDefeatCount = Mathf.Max(0, state.settlementDefeatCount);
+            save.settlementKilledEnemyCount = Mathf.Max(0, state.settlementKilledEnemyCount);
+            save.settlementCompletedQuestCount = Mathf.Max(0, state.settlementCompletedQuestCount);
+            save.settlementCapturedEnemyCount = Mathf.Max(0, state.settlementCapturedEnemyCount);
+            if (state.settlementCapturedPrisonerRecords != null)
+            {
+                for (int i = 0; i < state.settlementCapturedPrisonerRecords.Count; i++)
+                {
+                    CapturedPrisonerSaveData record = CapturedPrisonerSaveData.FromRuntime(state.settlementCapturedPrisonerRecords[i]);
+                    if (record != null)
+                        save.settlementCapturedPrisonerRecords.Add(record);
+                }
+            }
 
             if (state.partyEquipmentAssignments != null)
             {
@@ -253,6 +272,7 @@ public static class SaveDataMapper
             profile.graveyardUnits = new List<PersistentRosterUnitData>();
         profile.graveyardUnits.Clear();
         profile.nextObtainedOrder = saveData.nextObtainedOrder > 0 ? saveData.nextObtainedOrder : 1;
+        profile.worldAttemptCount = Mathf.Max(0, saveData.worldAttemptCount);
         profile.lastWorldSettlementResult = saveData.lastWorldSettlementResult;
 
         if (profile.accountCurrencies == null)
