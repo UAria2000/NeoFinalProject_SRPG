@@ -73,6 +73,8 @@ public class BattleActionController : MonoBehaviour
                         ? battleManager.PresentationController.StageCameraController
                         : null;
 
+                    yield return StartCoroutine(FocusAttackCameraBeforeMotion(stageCamera, actor, battleManager.AttackApproachDuration));
+
                     yield return StartCoroutine(actorView.PlayAttackMoveWithImpact(
                         targetView.AnchoredPosition,
                         battleManager.AttackMoveRatio,
@@ -83,7 +85,7 @@ public class BattleActionController : MonoBehaviour
                         battleManager.AttackImpactDelayAfterArrival,
                         attackSprite,
                         () => ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent),
-                        () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackApproachDuration),
+                        null,
                         () => stageCamera?.FocusUnitSmooth(clickedTarget, battleManager.AttackHoldDuration),
                         () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackReturnDuration)));
                 }
@@ -414,6 +416,18 @@ public class BattleActionController : MonoBehaviour
         battleManager.OnActionExecutionFinished(true);
     }
 
+    private IEnumerator FocusAttackCameraBeforeMotion(BattleStageCameraController stageCamera, BattleUnit unit, float duration)
+    {
+        if (stageCamera == null || unit == null)
+            yield break;
+
+        float waitDuration = Mathf.Max(0f, duration);
+        stageCamera.FocusUnitSmooth(unit, waitDuration);
+
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+    }
+
     private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, int rolledPrimaryDamagePercent)
     {
         int totalHpDamageDealt = 0;
@@ -620,6 +634,9 @@ public class BattleActionController : MonoBehaviour
             else
             {
                 yield return StartCoroutine(view.AnimateHPChange(0.15f));
+                float missHold = battleManager != null ? battleManager.MissCameraHoldDuration : 0f;
+                if (missHold > 0f)
+                    yield return new WaitForSeconds(missHold);
             }
         }
 
