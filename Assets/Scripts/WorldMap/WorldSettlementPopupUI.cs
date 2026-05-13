@@ -55,10 +55,26 @@ public class WorldSettlementPopupUI : MonoBehaviour
     [Header("World Info Values")]
     [SerializeField] private TMP_Text worldSizeValueText;
     [SerializeField] private TMP_Text worldDifficultyValueText;
+    [SerializeField] private TMP_Text lordNameValueText;
     [SerializeField] private TMP_Text lordLevelValueText;
     [SerializeField] private TMP_Text lordExpGainValueText;
+
+    [Tooltip("군주 현재 경험치 숫자만 표시합니다. 예: 6,260")]
+    [SerializeField] private TMP_Text lordExpCurrentValueText;
+
+    [Tooltip("군주 다음 레벨까지 필요한 최대 경험치 숫자만 표시합니다. 예: 8,400")]
+    [SerializeField] private TMP_Text lordExpMaxValueText;
+
+    [Tooltip("구형 단일 텍스트 방식입니다. 비워도 됩니다. 연결되어 있으면 '현재 / 최대' 형식으로 표시합니다.")]
     [SerializeField] private TMP_Text lordExpText;
+
     [SerializeField] private Slider lordExpSlider;
+
+    [Tooltip("전투 결과 카드처럼 Image Type=Filled 방식으로 게이지를 직접 제어할 때 연결합니다. Slider를 정상 세팅했다면 비워도 됩니다.")]
+    [SerializeField] private Image lordExpFillImage;
+
+    [Tooltip("선택 사항입니다. 연결하면 '다음 레벨까지 N' 형식으로 표시합니다.")]
+    [SerializeField] private TMP_Text lordNextLevelText;
 
     [Header("Optional Legacy Body")]
     [SerializeField] private TMP_Text bodyText;
@@ -179,6 +195,7 @@ public class WorldSettlementPopupUI : MonoBehaviour
 
         SetText(worldSizeValueText, string.IsNullOrWhiteSpace(s.worldSizeLabel) ? "-" : s.worldSizeLabel);
         SetText(worldDifficultyValueText, string.IsNullOrWhiteSpace(s.worldDifficultyLabel) ? "-" : s.worldDifficultyLabel);
+        SetText(lordNameValueText, string.IsNullOrWhiteSpace(s.lordName) ? "-" : s.lordName);
         SetText(lordLevelValueText, FormatNumber(s.lordLevelBefore));
         SetText(lordExpGainValueText, s.totalSettlementExpAward > 0 ? $"+{FormatNumber(s.totalSettlementExpAward)} 경험치" : "+0 경험치");
 
@@ -333,15 +350,26 @@ public class WorldSettlementPopupUI : MonoBehaviour
 
     private void ApplyLordExpVisual(int level, int exp, int need)
     {
+        need = Mathf.Max(1, need);
+        int clampedExp = Mathf.Clamp(exp, 0, need);
+        float normalized = Mathf.Clamp01(clampedExp / (float)need);
+
         SetText(lordLevelValueText, FormatNumber(level));
-        SetText(lordExpText, $"{FormatNumber(exp)}/{FormatNumber(Mathf.Max(1, need))}");
+        SetText(lordExpCurrentValueText, FormatNumber(clampedExp));
+        SetText(lordExpMaxValueText, FormatNumber(need));
+        SetText(lordExpText, $"{FormatNumber(clampedExp)} / {FormatNumber(need)}");
+        SetText(lordNextLevelText, $"다음 레벨까지 {FormatNumber(Mathf.Max(0, need - clampedExp))}");
+
         if (lordExpSlider != null)
         {
             lordExpSlider.minValue = 0f;
-            lordExpSlider.maxValue = Mathf.Max(1, need);
-            lordExpSlider.value = Mathf.Clamp(exp, 0, Mathf.Max(1, need));
+            lordExpSlider.maxValue = 1f;
+            lordExpSlider.value = normalized;
             lordExpSlider.interactable = false;
         }
+
+        if (lordExpFillImage != null)
+            lordExpFillImage.fillAmount = normalized;
     }
 
     private string BuildDebugBody(WorldSettlementSummary s)

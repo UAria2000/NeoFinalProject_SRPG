@@ -1458,6 +1458,8 @@ public class WorldRunManager : MonoBehaviour
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
 
         PersistentRosterUnitData main = persistentProfileController != null ? persistentProfileController.GetMainCharacterRosterUnit() : null;
+        summary.lordName = main != null ? main.GetDisplayName() : (!string.IsNullOrWhiteSpace(playerDisplayName) ? playerDisplayName : "군주");
+
         int level = main != null ? Mathf.Max(1, main.currentLevel) : Mathf.Max(1, ResolveCurrentMainCharacterLevel());
         int exp = main != null ? Mathf.Max(0, main.currentExp) : 0;
         int cap = persistentProfileController != null ? persistentProfileController.GetLevelCapForUnit(main) : 999;

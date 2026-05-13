@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 7d165d20d0521c84382d8d42b0641bc8
+guid: fb3981f88f1aebe4d95489a95c71bd06
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 4373829943880989563
-    second: Mana_0_Capture_0
+      213: 7481680521801741044
+    second: Barrier_Hightlight_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Mana_0_Capture_0
+      name: Barrier_Hightlight_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 364
-        height: 364
+        x: 327
+        y: 89
+        width: 1556
+        height: 1919
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b7b3ef01927f2bc30800000000000000
-      internalID: 4373829943880989563
+      spriteID: 4f2b3f08bc444d760800000000000000
+      internalID: 7481680521801741044
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Mana_0_Capture_0: 4373829943880989563
+      Barrier_Hightlight_0: 7481680521801741044
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
