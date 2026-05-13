@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,58 +17,91 @@ public class BootstrapTitleFlow : MonoBehaviour
     [SerializeField] private Button settingsButton;
     [SerializeField] private Button exitButton;
 
+    [Header("Main Menu Disabled Overlays")]
+    [Tooltip("진행 중인 월드가 없을 때 계속하기 버튼 위에 켜둘 비활성화 Dim 오브젝트입니다.")]
+    [SerializeField] private GameObject continueDisabledDim;
+
     [Header("Difficulty Buttons")]
-    [SerializeField] private BootstrapOptionButtonUI easyButton;
-    [SerializeField] private BootstrapOptionButtonUI normalButton;
-    [SerializeField] private BootstrapOptionButtonUI hardButton;
+    [SerializeField] private Button easyButton;
+    [SerializeField] private Button normalButton;
+    [SerializeField] private Button hardButton;
+
+    [Header("Difficulty Optional Visuals")]
+    [Tooltip("선택 상태에서 직접 스프라이트를 바꾸고 싶을 때만 연결합니다. 월드맵 Hover/Press 버튼 UI만 사용할 경우 비워둬도 됩니다.")]
+    [SerializeField] private Image easyButtonImage;
+    [SerializeField] private Image normalButtonImage;
+    [SerializeField] private Image hardButtonImage;
+    [SerializeField] private Sprite difficultyNormalSprite;
+    [SerializeField] private Sprite difficultySelectedSprite;
+    [Tooltip("선택 표시용 오브젝트가 따로 있으면 연결합니다. 선택된 난이도만 켜집니다.")]
+    [SerializeField] private GameObject easySelectedRoot;
+    [SerializeField] private GameObject normalSelectedRoot;
+    [SerializeField] private GameObject hardSelectedRoot;
 
     [Header("Map Size Slider")]
     [SerializeField] private Slider mapSizeSlider;
     [SerializeField] private TMP_Text mapSizeValueText;
-    [SerializeField] private string mapSizeUnselectedText = "�� ũ�� ����";
-    [SerializeField] private string smallLabel = "����";
-    [SerializeField] private string mediumLabel = "����";
-    [SerializeField] private string largeLabel = "����";
+    [SerializeField] private string smallLabel = "소형";
+    [SerializeField] private string mediumLabel = "중형";
+    [SerializeField] private string largeLabel = "대형";
 
     [Header("Setup Buttons")]
     [SerializeField] private Button startWorldButton;
+    [Tooltip("난이도/크기 선택이 완료되지 않아 새 세계 생성 버튼이 잠겨 있을 때 버튼 위에 켜둘 Dim 오브젝트입니다.")]
+    [SerializeField] private GameObject startWorldDisabledDim;
     [SerializeField] private Button backButton;
 
     [Header("Texts")]
     [SerializeField] private TMP_Text accountText;
     [SerializeField] private TMP_Text versionText;
+    [SerializeField] private string versionLabel = "v.0.01.a";
 
     [Header("Confirm Popup")]
     [SerializeField] private BootstrapConfirmPopupUI overwriteWorldConfirmPopup;
     [SerializeField] private BootstrapConfirmPopupUI deleteAccountConfirmPopup;
 
-    [Header("Confirm Popup Text")]
-    [TextArea(3, 8)]
+    [Header("Overwrite World Popup Text")]
+    [TextArea(4, 10)]
     [SerializeField]
     private string overwriteWorldMessage =
-        "������ ���� ���� ���尡 �ֽ��ϴ�.\n\n" +
-        "�� ���带 �����ϸ� ���� ����� ���� �����˴ϴ�.\n" +
-        "��� ����� ����(����), ������, ���ΰ� ���� �����Ǹ�,\n" +
-        "���� ���忡���� �ִ� ������ ������ �˴ϴ�.\n\n" +
-        "���� �� ���带 �����Ͻðڽ��ϱ�?";
+        "이미 진행 중인 세계가 있습니다.\n\n" +
+        "새 세계를 시작하면 현재 세계는 결산 없이 폐기됩니다.\n" +
+        "현재 세계의 아이템, 포로, 전투 기록, 퀘스트 진행도는 정산되지 않습니다.\n" +
+        "또한 세계 실패 처리로 인해 다음 세계의 시작 마나가 감소할 수 있습니다.\n\n" +
+        "정말 새 세계를 시작하시겠습니까?";
 
-    [SerializeField] private string overwriteWorldConfirmLabel = "�����մϴ�";
-    [SerializeField] private string overwriteWorldCancelLabel = "���";
+    [SerializeField] private string overwriteWorldConfirmLabel = "동의";
+    [SerializeField] private string overwriteWorldCancelLabel = "취소";
 
-    [Header("Delete Account Progress")]
-    [TextArea(2, 6)]
-    [SerializeField] private string deleteAccountMessage = "Delete all account progress data?\nDeleted progress data cannot be restored.";
-    [SerializeField] private string deleteAccountConfirmLabel = "Delete";
-    [SerializeField] private string deleteAccountCancelLabel = "Cancel";
+    [Header("Delete Account Progress Popup Text")]
+    [TextArea(4, 10)]
+    [SerializeField]
+    private string deleteAccountMessage =
+        "계정 진행 데이터를 삭제하시겠습니까?\n\n" +
+        "저장된 세계, 군단, 창고, 재화, 진행 기록이 삭제됩니다.\n" +
+        "삭제된 데이터는 복구할 수 없습니다.";
+
+    [SerializeField] private string deleteAccountConfirmLabel = "동의";
+    [SerializeField] private string deleteAccountCancelLabel = "취소";
 
     [Header("Scene")]
     [SerializeField] private string worldMapSceneName = "WorldMap";
 
+    [Header("Screen Transition")]
+    [SerializeField] private bool useFadeTransition = true;
+    [SerializeField, Min(0f)] private float fadeDuration = 0.18f;
+    [SerializeField] private AnimationCurve fadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+    [Header("Defaults")]
+    [SerializeField] private int defaultMapRadius = 5;
+    [SerializeField] private bool clearDifficultyWhenOpenSetup = true;
+
     private SaveCoordinator saveCoordinator;
 
     private string selectedDifficultyId;
-    private int selectedMapRadius;
-    private bool hasSelectedMapSize;
+    private int selectedMapRadius = 5;
+    private bool hasSelectedMapSize = true;
+    private Coroutine transitionRoutine;
 
     private void Awake()
     {
@@ -76,7 +110,7 @@ public class BootstrapTitleFlow : MonoBehaviour
         WireButtons();
         ConfigureMapSizeSlider();
 
-        ShowTitle();
+        ShowTitleImmediate();
         RefreshTexts();
         RefreshContinueButton();
         RefreshSetupState();
@@ -92,78 +126,59 @@ public class BootstrapTitleFlow : MonoBehaviour
 
     private void WireButtons()
     {
-        if (continueButton != null)
-        {
-            continueButton.onClick.RemoveAllListeners();
-            continueButton.onClick.AddListener(HandleContinueClicked);
-        }
+        WireButton(continueButton, HandleContinueClicked);
+        WireButton(newWorldButton, HandleNewWorldClicked);
+        WireButton(deleteAccountButton, HandleDeleteAccountClicked);
+        WireButton(settingsButton, HandleSettingsClicked);
+        WireButton(exitButton, HandleExitClicked);
+        WireButton(startWorldButton, HandleStartWorldClicked);
+        WireButton(backButton, HandleBackClicked);
 
-        if (newWorldButton != null)
-        {
-            newWorldButton.onClick.RemoveAllListeners();
-            newWorldButton.onClick.AddListener(HandleNewWorldClicked);
-        }
-
-        if (deleteAccountButton != null)
-        {
-            deleteAccountButton.onClick.RemoveAllListeners();
-            deleteAccountButton.onClick.AddListener(HandleDeleteAccountClicked);
-        }
-
-        if (settingsButton != null)
-        {
-            settingsButton.onClick.RemoveAllListeners();
-            settingsButton.onClick.AddListener(HandleSettingsClicked);
-        }
-
-        if (exitButton != null)
-        {
-            exitButton.onClick.RemoveAllListeners();
-            exitButton.onClick.AddListener(HandleExitClicked);
-        }
-
-        if (startWorldButton != null)
-        {
-            startWorldButton.onClick.RemoveAllListeners();
-            startWorldButton.onClick.AddListener(HandleStartWorldClicked);
-        }
-
-        if (backButton != null)
-        {
-            backButton.onClick.RemoveAllListeners();
-            backButton.onClick.AddListener(HandleBackClicked);
-        }
-
-        BindOption(easyButton, () => SelectDifficulty("easy"));
-        BindOption(normalButton, () => SelectDifficulty("normal"));
-        BindOption(hardButton, () => SelectDifficulty("hard"));
+        WireButton(easyButton, () => SelectDifficulty("easy"));
+        WireButton(normalButton, () => SelectDifficulty("normal"));
+        WireButton(hardButton, () => SelectDifficulty("hard"));
     }
 
-    private void BindOption(BootstrapOptionButtonUI option, UnityEngine.Events.UnityAction action)
+    private void WireButton(Button button, UnityEngine.Events.UnityAction action)
     {
-        if (option == null || option.Button == null)
+        if (button == null)
             return;
 
-        option.Button.onClick.RemoveAllListeners();
-        option.Button.onClick.AddListener(action);
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(action);
     }
 
     private void ConfigureMapSizeSlider()
     {
-        if (mapSizeSlider == null)
-            return;
+        selectedMapRadius = Mathf.Clamp(defaultMapRadius, 4, 6);
+        hasSelectedMapSize = true;
 
-        mapSizeSlider.wholeNumbers = true;
-        mapSizeSlider.minValue = 0f;
-        mapSizeSlider.maxValue = 2f;
-        mapSizeSlider.SetValueWithoutNotify(1f);
+        if (mapSizeSlider != null)
+        {
+            mapSizeSlider.wholeNumbers = true;
+            mapSizeSlider.minValue = 0f;
+            mapSizeSlider.maxValue = 2f;
+            mapSizeSlider.SetValueWithoutNotify(MapRadiusToSliderStep(selectedMapRadius));
 
-        mapSizeSlider.onValueChanged.RemoveAllListeners();
-        mapSizeSlider.onValueChanged.AddListener(HandleMapSizeSliderChanged);
+            mapSizeSlider.onValueChanged.RemoveAllListeners();
+            mapSizeSlider.onValueChanged.AddListener(HandleMapSizeSliderChanged);
+        }
 
-        hasSelectedMapSize = false;
-        selectedMapRadius = 0;
         RefreshMapSizeText();
+    }
+
+    private int MapRadiusToSliderStep(int radius)
+    {
+        switch (radius)
+        {
+            case 4:
+                return 0;
+            case 6:
+                return 2;
+            case 5:
+            default:
+                return 1;
+        }
     }
 
     private void HandleMapSizeSliderChanged(float value)
@@ -196,12 +211,6 @@ public class BootstrapTitleFlow : MonoBehaviour
         if (mapSizeValueText == null)
             return;
 
-        if (!hasSelectedMapSize)
-        {
-            mapSizeValueText.text = mapSizeUnselectedText;
-            return;
-        }
-
         switch (selectedMapRadius)
         {
             case 4:
@@ -214,7 +223,7 @@ public class BootstrapTitleFlow : MonoBehaviour
                 mapSizeValueText.text = largeLabel;
                 break;
             default:
-                mapSizeValueText.text = mapSizeUnselectedText;
+                mapSizeValueText.text = mediumLabel;
                 break;
         }
     }
@@ -224,11 +233,11 @@ public class BootstrapTitleFlow : MonoBehaviour
         if (accountText != null)
         {
             string nick = saveCoordinator != null ? saveCoordinator.Nickname : "Player";
-            accountText.text = $"ȯ���մϴ� {nick}��";
+            accountText.text = $"환영합니다. {nick}";
         }
 
         if (versionText != null)
-            versionText.text = "v.0.01.a";
+            versionText.text = versionLabel;
     }
 
     private void RefreshContinueButton()
@@ -237,18 +246,46 @@ public class BootstrapTitleFlow : MonoBehaviour
 
         if (continueButton != null)
             continueButton.interactable = canContinue;
+
+        if (continueDisabledDim != null)
+            continueDisabledDim.SetActive(!canContinue);
     }
 
     private void RefreshSetupState()
     {
-        if (easyButton != null) easyButton.SetSelected(selectedDifficultyId == "easy");
-        if (normalButton != null) normalButton.SetSelected(selectedDifficultyId == "normal");
-        if (hardButton != null) hardButton.SetSelected(selectedDifficultyId == "hard");
+        RefreshDifficultyVisuals();
 
         bool canStart = !string.IsNullOrEmpty(selectedDifficultyId) && hasSelectedMapSize;
 
         if (startWorldButton != null)
             startWorldButton.interactable = canStart;
+
+        if (startWorldDisabledDim != null)
+            startWorldDisabledDim.SetActive(!canStart);
+    }
+
+    private void RefreshDifficultyVisuals()
+    {
+        bool easySelected = selectedDifficultyId == "easy";
+        bool normalSelected = selectedDifficultyId == "normal";
+        bool hardSelected = selectedDifficultyId == "hard";
+
+        ApplyDifficultyVisual(easyButtonImage, easySelectedRoot, easySelected);
+        ApplyDifficultyVisual(normalButtonImage, normalSelectedRoot, normalSelected);
+        ApplyDifficultyVisual(hardButtonImage, hardSelectedRoot, hardSelected);
+    }
+
+    private void ApplyDifficultyVisual(Image targetImage, GameObject selectedRoot, bool selected)
+    {
+        if (selectedRoot != null)
+            selectedRoot.SetActive(selected);
+
+        if (targetImage == null)
+            return;
+
+        Sprite targetSprite = selected ? difficultySelectedSprite : difficultyNormalSprite;
+        if (targetSprite != null)
+            targetImage.sprite = targetSprite;
     }
 
     private void SelectDifficulty(string difficultyId)
@@ -257,25 +294,109 @@ public class BootstrapTitleFlow : MonoBehaviour
         RefreshSetupState();
     }
 
+    private void ShowTitleImmediate()
+    {
+        if (transitionRoutine != null)
+        {
+            StopCoroutine(transitionRoutine);
+            transitionRoutine = null;
+        }
+
+        SetRootVisible(titleRoot, true, 1f, true);
+        SetRootVisible(newWorldSetupRoot, false, 0f, false);
+    }
+
     private void ShowTitle()
     {
-        if (titleRoot != null)
-            titleRoot.SetActive(true);
-
-        if (newWorldSetupRoot != null)
-            newWorldSetupRoot.SetActive(false);
+        TransitionTo(titleRoot, newWorldSetupRoot);
     }
 
     private void ShowNewWorldSetup()
     {
-        if (titleRoot != null)
-            titleRoot.SetActive(false);
+        if (clearDifficultyWhenOpenSetup)
+            selectedDifficultyId = null;
 
-        if (newWorldSetupRoot != null)
-            newWorldSetupRoot.SetActive(true);
+        selectedMapRadius = Mathf.Clamp(defaultMapRadius, 4, 6);
+        hasSelectedMapSize = true;
+
+        if (mapSizeSlider != null)
+            mapSizeSlider.SetValueWithoutNotify(MapRadiusToSliderStep(selectedMapRadius));
 
         RefreshSetupState();
         RefreshMapSizeText();
+        TransitionTo(newWorldSetupRoot, titleRoot);
+    }
+
+    private void TransitionTo(GameObject showRoot, GameObject hideRoot)
+    {
+        if (!useFadeTransition || fadeDuration <= 0f)
+        {
+            SetRootVisible(showRoot, true, 1f, true);
+            SetRootVisible(hideRoot, false, 0f, false);
+            return;
+        }
+
+        if (transitionRoutine != null)
+            StopCoroutine(transitionRoutine);
+
+        transitionRoutine = StartCoroutine(TransitionRoutine(showRoot, hideRoot));
+    }
+
+    private IEnumerator TransitionRoutine(GameObject showRoot, GameObject hideRoot)
+    {
+        CanvasGroup showGroup = PrepareGroup(showRoot, true, 0f, false);
+        CanvasGroup hideGroup = PrepareGroup(hideRoot, true, 1f, false);
+
+        float elapsed = 0f;
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / fadeDuration);
+            float curved = fadeCurve != null ? fadeCurve.Evaluate(t) : t;
+
+            if (showGroup != null)
+                showGroup.alpha = curved;
+
+            if (hideGroup != null)
+                hideGroup.alpha = 1f - curved;
+
+            yield return null;
+        }
+
+        SetRootVisible(showRoot, true, 1f, true);
+        SetRootVisible(hideRoot, false, 0f, false);
+        transitionRoutine = null;
+    }
+
+    private CanvasGroup PrepareGroup(GameObject root, bool active, float alpha, bool interactable)
+    {
+        if (root == null)
+            return null;
+
+        root.SetActive(active);
+        CanvasGroup group = root.GetComponent<CanvasGroup>();
+        if (group == null)
+            group = root.AddComponent<CanvasGroup>();
+
+        group.alpha = alpha;
+        group.interactable = interactable;
+        group.blocksRaycasts = interactable;
+        return group;
+    }
+
+    private void SetRootVisible(GameObject root, bool active, float alpha, bool interactable)
+    {
+        if (root == null)
+            return;
+
+        root.SetActive(active);
+        CanvasGroup group = root.GetComponent<CanvasGroup>();
+        if (group != null)
+        {
+            group.alpha = alpha;
+            group.interactable = interactable;
+            group.blocksRaycasts = interactable;
+        }
     }
 
     private void HandleContinueClicked()
@@ -321,11 +442,16 @@ public class BootstrapTitleFlow : MonoBehaviour
 
     private void HandleSettingsClicked()
     {
-        Debug.Log("[BootstrapTitleFlow] ȯ�漳���� ���� ���� ����.");
+        Debug.Log("[BootstrapTitleFlow] 타이틀 설정 패널은 아직 기획/연결 전입니다.");
     }
 
     private void HandleExitClicked()
     {
+        if (saveCoordinator == null)
+            saveCoordinator = SaveCoordinator.Instance;
+
+        saveCoordinator?.SaveAll();
+
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else
@@ -368,7 +494,7 @@ public class BootstrapTitleFlow : MonoBehaviour
             return;
         }
 
-        StartQueuedNewWorld();
+    StartQueuedNewWorld();
     }
 
     private void ConfirmOverwriteAndStartNewWorld()

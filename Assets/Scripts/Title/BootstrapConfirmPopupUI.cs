@@ -63,10 +63,10 @@ public class BootstrapConfirmPopupUI : MonoBehaviour
             messageText.text = message ?? string.Empty;
 
         if (confirmButtonText != null)
-            confirmButtonText.text = string.IsNullOrEmpty(confirmLabel) ? "»Æ¿Œ" : confirmLabel;
+            confirmButtonText.text = string.IsNullOrEmpty(confirmLabel) ? "ÎèôÏùò" : confirmLabel;
 
         if (cancelButtonText != null)
-            cancelButtonText.text = string.IsNullOrEmpty(cancelLabel) ? "√Îº“" : cancelLabel;
+            cancelButtonText.text = string.IsNullOrEmpty(cancelLabel) ? "Ï∑®ÏÜå" : cancelLabel;
     }
 
     public void Hide()
