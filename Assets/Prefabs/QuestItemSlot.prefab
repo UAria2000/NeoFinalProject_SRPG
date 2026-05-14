@@ -365,6 +365,7 @@ MonoBehaviour:
   amountText: {fileID: 4613040268782868969}
   lockedRoot: {fileID: 5370995009128674378}
   emptyRoot: {fileID: 1800780658037128568}
+  selectedRoot: {fileID: 0}
 --- !u!1 &3709059452012579649
 GameObject:
   m_ObjectHideFlags: 0
@@ -507,8 +508,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: x1
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: ca852be99b271354f89bf35470b56f16, type: 2}
-  m_sharedMaterial: {fileID: 5661338464539886934, guid: ca852be99b271354f89bf35470b56f16, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8d0e77bb7a4240940a76383f64640283, type: 2}
+  m_sharedMaterial: {fileID: -8107022182522314717, guid: 8d0e77bb7a4240940a76383f64640283, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

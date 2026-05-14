@@ -42,6 +42,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -134,7 +135,7 @@ MonoBehaviour:
   attackMotionSprite: {fileID: -830048158754200990, guid: 6194fabb826f95a42ae15c4e9c529162, type: 3}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 9
+  hitEffectType: 6
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

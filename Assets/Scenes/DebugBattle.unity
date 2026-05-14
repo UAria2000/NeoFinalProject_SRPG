@@ -73778,7 +73778,7 @@ MonoBehaviour:
   captureGameViewOnPlay: 1
   debugPromotionBonusPercentPerRank: 1
   promotionRankSprites: []
-  useDebugEffectOverrides: 1
+  useDebugEffectOverrides: 0
   debugCastEffectPrefab: {fileID: 8044248948510086152, guid: 8018841b39c4107479f174ef0067c0c6, type: 3}
   debugHitEffectPrefab: {fileID: 0}
   debugHitEffectType: 1

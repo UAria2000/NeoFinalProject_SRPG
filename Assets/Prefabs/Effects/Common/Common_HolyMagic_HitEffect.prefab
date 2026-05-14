@@ -9942,7 +9942,7 @@ MonoBehaviour:
   - {fileID: 1363262680695592072}
   - {fileID: 548901535168312239}
   - {fileID: 7508356986636121429}
-  mainSpriteAlpha: 0.544
+  mainSpriteAlpha: 1
   subSpriteAlpha: 0.68
   particleAlpha: 1
   duration: 0.7

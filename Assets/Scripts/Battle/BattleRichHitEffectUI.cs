@@ -51,6 +51,7 @@ public class BattleRichHitEffectUI : MonoBehaviour
     [SerializeField] private CanvasGroup canvasGroup;
     [SerializeField] private ImageLayer[] imageLayers;
     [SerializeField] private ParticleSystem[] particleSystems;
+    [SerializeField] private bool renderParticlesAsUI = true;
     [Header("Alpha Controls")]
     [SerializeField, Range(0f, 1f)] private float mainSpriteAlpha = 1f;
     [SerializeField, Range(0f, 1f)] private float subSpriteAlpha = 1f;
@@ -64,6 +65,19 @@ public class BattleRichHitEffectUI : MonoBehaviour
     private float[] baseLayerScales;
     private float[] baseLayerRotations;
     private ParticleSystem.MinMaxGradient[] baseParticleStartColors;
+    private UIParticleLayer[] uiParticleLayers;
+
+    private const int MaxUIParticlesPerSystem = 160;
+    private static Sprite uiParticleSprite;
+
+    private class UIParticleLayer
+    {
+        public ParticleSystem particleSystem;
+        public ParticleSystem.Particle[] particles;
+        public RectTransform root;
+        public Image[] images;
+        public ParticleSystemRenderer renderer;
+    }
 
     public float Duration => Mathf.Max(0.01f, duration);
     public Vector2 SpawnOffset => spawnOffset;
@@ -72,13 +86,17 @@ public class BattleRichHitEffectUI : MonoBehaviour
     {
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
+
+        EnsureParticleSystems();
     }
 
     private void OnEnable()
     {
         elapsed = 0f;
+        EnsureParticleSystems();
         CaptureLayerDefaults();
         CaptureParticleDefaults();
+        SetupUIParticleLayers();
 
         if (canvasGroup != null)
             canvasGroup.alpha = 1f;
@@ -100,6 +118,7 @@ public class BattleRichHitEffectUI : MonoBehaviour
 
         float t = Mathf.Clamp01(elapsed / safeDuration);
         ApplyLayers(t);
+        UpdateUIParticles();
 
         if (canvasGroup != null)
         {
@@ -257,6 +276,9 @@ public class BattleRichHitEffectUI : MonoBehaviour
 
     private void PlayParticles()
     {
+        EnsureParticleSystems();
+        SetupUIParticleLayers();
+
         if (particleSystems == null)
             return;
 
@@ -273,6 +295,8 @@ public class BattleRichHitEffectUI : MonoBehaviour
 
     private void CaptureParticleDefaults()
     {
+        EnsureParticleSystems();
+
         int length = particleSystems != null ? particleSystems.Length : 0;
         if (baseParticleStartColors != null && baseParticleStartColors.Length == length)
             return;
@@ -291,6 +315,8 @@ public class BattleRichHitEffectUI : MonoBehaviour
 
     private void ApplyParticleAlpha()
     {
+        EnsureParticleSystems();
+
         if (particleSystems == null || baseParticleStartColors == null)
             return;
 
@@ -304,6 +330,162 @@ public class BattleRichHitEffectUI : MonoBehaviour
             ParticleSystem.MainModule main = ps.main;
             main.startColor = ScaleGradientAlpha(baseParticleStartColors[i], particleAlpha);
         }
+    }
+
+    private void EnsureParticleSystems()
+    {
+        if (particleSystems != null && particleSystems.Length > 0)
+            return;
+
+        particleSystems = GetComponentsInChildren<ParticleSystem>(true);
+    }
+
+    private void SetupUIParticleLayers()
+    {
+        if (!renderParticlesAsUI || particleSystems == null || particleSystems.Length == 0)
+            return;
+
+        if (uiParticleLayers != null && uiParticleLayers.Length == particleSystems.Length)
+            return;
+
+        uiParticleLayers = new UIParticleLayer[particleSystems.Length];
+        for (int i = 0; i < particleSystems.Length; i++)
+        {
+            ParticleSystem ps = particleSystems[i];
+            if (ps == null)
+                continue;
+
+            ParticleSystemRenderer renderer = ps.GetComponent<ParticleSystemRenderer>();
+            if (renderer != null)
+                renderer.enabled = false;
+
+            GameObject rootObject = new GameObject(ps.name + "_UIRender");
+            RectTransform root = rootObject.AddComponent<RectTransform>();
+            root.SetParent(transform, false);
+            root.anchorMin = new Vector2(0.5f, 0.5f);
+            root.anchorMax = new Vector2(0.5f, 0.5f);
+            root.pivot = new Vector2(0.5f, 0.5f);
+            root.anchoredPosition = Vector2.zero;
+            root.localScale = Vector3.one;
+            root.SetAsLastSibling();
+
+            int maxParticles = Mathf.Clamp(ps.main.maxParticles, 1, MaxUIParticlesPerSystem);
+            uiParticleLayers[i] = new UIParticleLayer
+            {
+                particleSystem = ps,
+                particles = new ParticleSystem.Particle[maxParticles],
+                root = root,
+                images = new Image[maxParticles],
+                renderer = renderer,
+            };
+        }
+    }
+
+    private void UpdateUIParticles()
+    {
+        if (!renderParticlesAsUI || uiParticleLayers == null)
+            return;
+
+        for (int i = 0; i < uiParticleLayers.Length; i++)
+            UpdateUIParticleLayer(uiParticleLayers[i]);
+    }
+
+    private void UpdateUIParticleLayer(UIParticleLayer layer)
+    {
+        if (layer == null || layer.particleSystem == null || layer.root == null || layer.particles == null || layer.images == null)
+            return;
+
+        int count = layer.particleSystem.GetParticles(layer.particles, layer.particles.Length);
+        for (int i = 0; i < layer.images.Length; i++)
+        {
+            if (i >= count)
+            {
+                if (layer.images[i] != null)
+                    layer.images[i].enabled = false;
+                continue;
+            }
+
+            Image image = EnsureUIParticleImage(layer, i);
+            if (image == null)
+                continue;
+
+            ParticleSystem.Particle particle = layer.particles[i];
+            RectTransform rect = image.rectTransform;
+            Vector3 worldPosition = GetParticleWorldPosition(layer.particleSystem, particle);
+            Vector3 localPosition = layer.root.InverseTransformPoint(worldPosition);
+            rect.anchoredPosition = new Vector2(localPosition.x, localPosition.y);
+
+            float size = Mathf.Max(1f, particle.GetCurrentSize(layer.particleSystem));
+            rect.sizeDelta = new Vector2(size, size);
+            rect.localRotation = Quaternion.Euler(0f, 0f, -particle.rotation);
+
+            Color color = particle.GetCurrentColor(layer.particleSystem);
+            color.a *= particleAlpha;
+            image.color = color;
+            image.enabled = color.a > 0.001f;
+        }
+    }
+
+    private Image EnsureUIParticleImage(UIParticleLayer layer, int index)
+    {
+        if (layer.images[index] != null)
+            return layer.images[index];
+
+        GameObject imageObject = new GameObject("UIParticle");
+        RectTransform rect = imageObject.AddComponent<RectTransform>();
+        rect.SetParent(layer.root, false);
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+
+        Image image = imageObject.AddComponent<Image>();
+        image.sprite = GetUIParticleSprite();
+        image.raycastTarget = false;
+        image.preserveAspect = true;
+        layer.images[index] = image;
+        return image;
+    }
+
+    private static Vector3 GetParticleWorldPosition(ParticleSystem ps, ParticleSystem.Particle particle)
+    {
+        ParticleSystem.MainModule main = ps.main;
+        if (main.simulationSpace == ParticleSystemSimulationSpace.Local)
+            return ps.transform.TransformPoint(particle.position);
+
+        if (main.simulationSpace == ParticleSystemSimulationSpace.Custom && main.customSimulationSpace != null)
+            return main.customSimulationSpace.TransformPoint(particle.position);
+
+        return particle.position;
+    }
+
+    private static Sprite GetUIParticleSprite()
+    {
+        if (uiParticleSprite != null)
+            return uiParticleSprite;
+
+        const int size = 32;
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        texture.name = "Runtime_UI_Particle_SoftDot";
+        texture.wrapMode = TextureWrapMode.Clamp;
+
+        Color[] pixels = new Color[size * size];
+        Vector2 center = new Vector2((size - 1) * 0.5f, (size - 1) * 0.5f);
+        float radius = size * 0.5f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float distance = Vector2.Distance(new Vector2(x, y), center) / radius;
+                float alpha = Mathf.Clamp01(1f - distance);
+                alpha *= alpha;
+                pixels[y * size + x] = new Color(1f, 1f, 1f, alpha);
+            }
+        }
+
+        texture.SetPixels(pixels);
+        texture.Apply();
+        uiParticleSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+        return uiParticleSprite;
     }
 
     private static ParticleSystem.MinMaxGradient ScaleGradientAlpha(ParticleSystem.MinMaxGradient gradient, float alphaScale)

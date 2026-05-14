@@ -20,7 +20,8 @@ public static class BattleEffectManager
             return;
 
         Vector3 worldPosition = targetView.GetHitEffectAnchorPosition(anchorType, offset);
-        viewManager.PlayEffect(prefab, worldPosition, duration);
+        bool mirrorX = targetView.Unit != null && targetView.Unit.Team == TeamType.Ally;
+        viewManager.PlayEffect(prefab, worldPosition, duration, mirrorX);
     }
 
     public static bool TryResolveHitEffect(

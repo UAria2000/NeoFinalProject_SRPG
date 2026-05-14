@@ -136,7 +136,7 @@ MonoBehaviour:
   - {fileID: 3056863241750476818}
   - {fileID: 1835897706358728434}
   - {fileID: 8377580603373189027}
-  mainSpriteAlpha: 0.85
+  mainSpriteAlpha: 1
   subSpriteAlpha: 0.85
   particleAlpha: 1
   duration: 0.82

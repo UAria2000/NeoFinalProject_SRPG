@@ -237,6 +237,13 @@ public partial class DebugBattleSceneController : MonoBehaviour
             if (debugHitEffects[i] != null)
                 DestroyDebugRuntimeObject(debugHitEffects[i].gameObject);
         }
+
+        BattleRichHitEffectUI[] richHitEffects = UnityEngine.Object.FindObjectsByType<BattleRichHitEffectUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < richHitEffects.Length; i++)
+        {
+            if (richHitEffects[i] != null)
+                DestroyDebugRuntimeObject(richHitEffects[i].gameObject);
+        }
     }
 
     private static void DestroyDebugRuntimeObject(GameObject target)

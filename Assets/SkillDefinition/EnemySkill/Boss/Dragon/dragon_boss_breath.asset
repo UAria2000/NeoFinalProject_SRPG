@@ -108,6 +108,9 @@ MonoBehaviour:
   disableAfterUseInBattle: 0
   attackMotionSprite: {fileID: 7740031619727199848, guid: 957f3327f140a8e4193ea6cf7f44becc, type: 3}
   castEffectPrefab: {fileID: 0}
-  hitEffectPrefab: {fileID: 5691736663297753136, guid: e3154417192c1904eb89807a5a6626ae, type: 3}
+  hitEffectPrefab: {fileID: 0}
+  hitEffectType: 8
+  hitEffectAnchorType: 0
+  hitEffectDurationOverride: 0
   useSfx: {fileID: 0}
   hitSfx: {fileID: 0}
