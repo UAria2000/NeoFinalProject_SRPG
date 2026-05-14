@@ -182,9 +182,16 @@ public class WorldQuestController : MonoBehaviour
         {
             state = new WorldQuestState();
             state.Initialize(definition, sourceTile.tileId);
-            state.assignedTargetTileId = assignedTargetTileId;
             generatedQuestByTileId[sourceTile.tileId] = state;
         }
+        else
+        {
+            ApplyForcedDefinitionToQuestState(state, definition, sourceTile.tileId);
+        }
+
+        // 강제 퀘스트는 이미 GetTileEventDescription/선택 패널에서 임의 퀘스트가 선생성됐더라도
+        // 목표 타일을 반드시 호출자가 지정한 값으로 덮어쓴다.
+        state.assignedTargetTileId = assignedTargetTileId;
 
         if (applyDescription && runManager != null)
             runManager.ApplyQuestDescriptionToTile(sourceTile, definition.questType);
@@ -196,6 +203,64 @@ public class WorldQuestController : MonoBehaviour
             questPopupUI.ShowOffer(state, !HasReachedQuestLimit());
 
         return true;
+    }
+
+    public void ForceCaptureSpecificTileQuestTarget(int sourceTileId, WorldQuestDefinition definition, int assignedTargetTileId)
+    {
+        if (sourceTileId < 0 || assignedTargetTileId < 0 || definition == null)
+            return;
+
+        WorldQuestState state = null;
+        if (!generatedQuestByTileId.TryGetValue(sourceTileId, out state) || state == null)
+        {
+            state = new WorldQuestState();
+            state.Initialize(definition, sourceTileId);
+            generatedQuestByTileId[sourceTileId] = state;
+        }
+        else
+        {
+            ApplyForcedDefinitionToQuestState(state, definition, sourceTileId);
+        }
+
+        state.assignedTargetTileId = assignedTargetTileId;
+
+        if (state.isAccepted && !state.isCancelled && !state.isCompleted && !activeAcceptedQuests.Contains(state))
+            activeAcceptedQuests.Add(state);
+
+        RefreshQuestListUI();
+    }
+
+    private void ApplyForcedDefinitionToQuestState(WorldQuestState state, WorldQuestDefinition definition, int sourceTileId)
+    {
+        if (state == null || definition == null)
+            return;
+
+        bool wasAccepted = state.isAccepted;
+        bool wasCancelled = state.isCancelled;
+        bool wasCompleted = state.isCompleted;
+        bool wasCompletionPopupQueued = state.completionPopupQueued;
+        bool wasCompletionPopupShown = state.completionPopupShown;
+        bool wasCompletionPopupClosed = state.completionPopupClosed;
+        bool wasSoulGranted = state.soulGranted;
+        bool wasExperienceGranted = state.experienceGranted;
+        int currentProgress = state.currentProgress;
+        List<bool> previousItemClaimed = new List<bool>(state.itemClaimed ?? new List<bool>());
+
+        state.Initialize(definition, sourceTileId);
+
+        state.isAccepted = wasAccepted;
+        state.isCancelled = wasCancelled;
+        state.isCompleted = wasCompleted;
+        state.completionPopupQueued = wasCompletionPopupQueued;
+        state.completionPopupShown = wasCompletionPopupShown;
+        state.completionPopupClosed = wasCompletionPopupClosed;
+        state.soulGranted = wasSoulGranted;
+        state.experienceGranted = wasExperienceGranted;
+        state.currentProgress = Mathf.Clamp(currentProgress, 0, state.targetProgress);
+
+        int copyCount = Mathf.Min(state.itemClaimed.Count, previousItemClaimed.Count);
+        for (int i = 0; i < copyCount; i++)
+            state.itemClaimed[i] = previousItemClaimed[i];
     }
 
     public WorldQuestState GetOrCreateQuestForTile(WorldTileData sourceTile, WorldMapData mapData)

@@ -95,6 +95,12 @@ public enum SkillTargetTeam
     Self
 }
 
+public enum SkillNonDamageEffectTarget
+{
+    Target,
+    Self
+}
+
 public enum TargetScope
 {
     Single,

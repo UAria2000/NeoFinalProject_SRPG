@@ -43,6 +43,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 1
   selfMoveDirection: 1
   selfMoveSteps: 1
   selfApplyStatusAfterUse: 0

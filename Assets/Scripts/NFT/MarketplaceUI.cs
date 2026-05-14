@@ -16,6 +16,9 @@ public class MarketplaceUI : MonoBehaviour
     [Header("Owned Assets (Right)")]
     public TextMeshProUGUI goldText;
 
+    [Header("Detail Panel")]
+    public UnitDetailPanel detailPanel; // 인스펙터에서 할당
+
     [Header("Inventory (Left)")]
     public Transform inventoryContent;
     public GameObject inventorySlotPrefab;
@@ -103,20 +106,32 @@ public class MarketplaceUI : MonoBehaviour
 
         try
         {
-            // 목록 비우기를 try 내부로 이동하여 안전하게 처리
             foreach (Transform child in inventoryContent) Destroy(child.gameObject);
 
             var profileData = SaveCoordinator.Instance.LoadProfileData();
             if (profileData == null || profileData.rosterUnits == null) return;
 
+            // 파티 편성 중인 ID 리스트를 미리 가져옵니다.
+            HashSet<string> activePartyIds = new HashSet<string>(profileData.activePartyUnitInstanceIds);
+
             foreach (var unit in profileData.rosterUnits)
             {
+                // 1. NFT 태그가 달려 있는 병사만 출력
+                if (!unit.isNft) continue;
+
+                // 2. 즐겨찾기 등록된 병사는 제외
+                if (unit.isFavorite) continue;
+
+                // 3. 파티에 편성 중인 병사는 제외
+                if (activePartyIds.Contains(unit.unitInstanceId)) continue;
+
                 var slot = Instantiate(inventorySlotPrefab, inventoryContent);
                 var card = slot.GetComponent<SoldierCard>();
                 if (card != null)
                 {
                     card.SetupCard(unit);
-                    slot.GetComponent<Button>().onClick.AddListener(() => SelectInventoryItem(card, unit.unitInstanceId));
+                    slot.GetComponent<Button>().onClick.AddListener(() =>
+                        SelectInventoryItem(card, unit.unitInstanceId));
                 }
             }
         }
@@ -164,7 +179,16 @@ public class MarketplaceUI : MonoBehaviour
     {
         UpdateHighlight(clickedCard);
         selectedInstanceId = instanceId;
-        selectedListing = null;
+
+        // 1. SaveCoordinator에서 해당 병사의 전체 데이터를 찾습니다.
+        var profileData = SaveCoordinator.Instance.LoadProfileData();
+        var unitData = profileData.rosterUnits.Find(u => u.unitInstanceId == instanceId);
+
+        // 2. 상세 정보 패널 갱신
+        if (unitData != null && detailPanel != null)
+        {
+            detailPanel.Setup(unitData);
+        }
 
         if (sellButton != null) sellButton.gameObject.SetActive(true);
         if (buyButton != null) buyButton.gameObject.SetActive(false);

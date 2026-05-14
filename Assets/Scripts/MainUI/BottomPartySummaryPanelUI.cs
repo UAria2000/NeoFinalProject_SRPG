@@ -26,6 +26,8 @@ public class BottomPartySummaryPanelUI : MonoBehaviour
     [SerializeField] private PersistentProfileController persistentProfileController;
     [SerializeField] private StorageSharedConsumableSlotUI sharedConsumableSlotUI;
     [SerializeField] private StorageItemTooltipUI sharedConsumableTooltipUI;
+    [Tooltip("바텀 파티 서머리의 장비/공용 소비 아이템 호버에 사용할 툴팁입니다. 비워두면 Shared Consumable Tooltip UI를 대신 사용합니다.")]
+    [SerializeField] private StorageItemTooltipUI bottomItemTooltipUI;
 
     [Tooltip("왼쪽 -> 오른쪽 순서로 넣어. 즉 3,2,1,0 자리 순서.")]
     [SerializeField] private List<PartyLoadoutUnitEntryUI> unitEntries = new List<PartyLoadoutUnitEntryUI>();
@@ -83,6 +85,8 @@ public class BottomPartySummaryPanelUI : MonoBehaviour
 
         if (persistentProfileController != null)
             persistentProfileController.OnProfileChanged -= RefreshAll;
+
+        HideBottomItemTooltip();
     }
 
     public bool IsStorageMode() => storageMode;
@@ -903,22 +907,58 @@ public class BottomPartySummaryPanelUI : MonoBehaviour
 
     public void HandleSharedConsumableHoverEnter()
     {
-        if (sharedConsumableTooltipUI == null || worldRunManager == null)
+        if (worldRunManager == null)
             return;
 
         ItemDefinition item = worldRunManager.GetSharedConsumableItem();
         if (item == null)
             return;
 
-        sharedConsumableTooltipUI.Show(item, true, 0);
+        ShowBottomItemTooltip(item, true, 0);
     }
 
     public void HandleSharedConsumableHoverExit()
     {
-        if (sharedConsumableTooltipUI == null)
+        HideBottomItemTooltip();
+    }
+
+    public void HandleEquipmentSlotHoverEnter(PartyEquipmentSlotUI slotUI)
+    {
+        if (slotUI == null || slotUI.AssignedItem == null)
             return;
 
-        sharedConsumableTooltipUI.Hide();
+        ShowBottomItemTooltip(slotUI.AssignedItem, true, slotUI.SlotIndex);
+    }
+
+    public void HandleEquipmentSlotHoverExit(PartyEquipmentSlotUI slotUI)
+    {
+        HideBottomItemTooltip();
+    }
+
+    private void ShowBottomItemTooltip(ItemDefinition item, bool isAssigned, int columnIndexInRow)
+    {
+        StorageItemTooltipUI tooltip = GetBottomItemTooltipUI();
+        if (tooltip == null || item == null)
+            return;
+
+        tooltip.Show(item, isAssigned, columnIndexInRow);
+    }
+
+    private void HideBottomItemTooltip()
+    {
+        StorageItemTooltipUI tooltip = GetBottomItemTooltipUI();
+        if (tooltip == null)
+            return;
+
+        tooltip.Hide();
+    }
+
+    private StorageItemTooltipUI GetBottomItemTooltipUI()
+    {
+        if (bottomItemTooltipUI != null)
+            return bottomItemTooltipUI;
+
+        return sharedConsumableTooltipUI;
     }
     private bool IsSameRosterRuntimeUnit(PartyMemberData member, PersistentRosterUnitData unit)
     {

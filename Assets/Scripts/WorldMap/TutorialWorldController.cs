@@ -145,6 +145,19 @@ public class TutorialWorldController : MonoBehaviour
         return opened;
     }
 
+
+    public void NormalizeTutorialQuestState(WorldQuestController questController)
+    {
+        if (questController == null)
+            return;
+
+        WorldQuestDefinition definition = BuildTutorialQuestDefinition();
+        questController.ForceCaptureSpecificTileQuestTarget(
+            (int)TutorialTileStage.Quest,
+            definition,
+            (int)TutorialTileStage.Treasure);
+    }
+
     public bool TryCreateTutorialTreasure(WorldTileData tile, out WorldTreasureResult result)
     {
         result = null;
@@ -159,6 +172,8 @@ public class TutorialWorldController : MonoBehaviour
 
     public IEnumerator PlayWorldEntryIfNeeded()
     {
+        // 씬 시작 직후 비활성 오버레이가 첫 활성화될 때 Awake/Canvas 초기화와 충돌하지 않도록 1프레임 대기한다.
+        yield return null;
         yield return ShowSteps(1, 2, 3);
     }
 

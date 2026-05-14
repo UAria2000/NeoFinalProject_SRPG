@@ -460,7 +460,7 @@ public class BattleActionController : MonoBehaviour
         battleManager.PresentationController.StageCameraController?.FocusUnitSmooth(target, GetAttackTargetFocusDuration());
     }
 
-    private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, int rolledPrimaryDamagePercent)
+    private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, float rolledPrimaryDamagePercent)
     {
         int totalHpDamageDealt = 0;
         bool killedWithPrimarySkill = false;
@@ -469,6 +469,8 @@ public class BattleActionController : MonoBehaviour
             yield break;
 
         int primaryHitCount = skill != null ? skill.GetPrimaryHitCount() : 1;
+        int damageDistributionDivisor = GetDamageDistributionDivisor(skill, targets);
+        float primaryDamagePowerPercent = GetDistributedPrimaryDamagePowerPercent(skill, rolledPrimaryDamagePercent, damageDistributionDivisor);
 
         for (int i = 0; i < targets.Count; i++)
         {
@@ -495,7 +497,7 @@ public class BattleActionController : MonoBehaviour
                     actor,
                     skill,
                     primaryTarget,
-                    rolledPrimaryDamagePercent,
+                    primaryDamagePowerPercent,
                     -1f,
                     primaryLogSuffix,
                     true,
@@ -536,7 +538,7 @@ public class BattleActionController : MonoBehaviour
                 }
                 else if (skill.HasMissingSecondaryTargetDamageBonus())
                 {
-                    float bonusPower = Mathf.Max(rolledPrimaryDamagePercent, skill.GetMissingSecondaryTargetDamagePowerPercent());
+                    float bonusPower = Mathf.Max(primaryDamagePowerPercent, skill.GetMissingSecondaryTargetDamagePowerPercent());
                     FocusAttackCameraOnImpactTarget(primaryTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
@@ -565,7 +567,7 @@ public class BattleActionController : MonoBehaviour
                         actor,
                         skill,
                         pierceTarget,
-                        rolledPrimaryDamagePercent,
+                        primaryDamagePowerPercent,
                         -1f,
                         " [관통]",
                         false,
@@ -637,9 +639,14 @@ public class BattleActionController : MonoBehaviour
             if (applyNonDamageEffects)
             {
                 if (skill.activeGimmick == ActiveSkillGimmick.BleedDrainStrike)
+                {
                     ApplyBleedDrainStrikeEffects(actor, target, skill, hpDamageDealt);
+                }
                 else
-                    ApplyNonDamageEffects(actor, target, skill.skillName, skill.effects, true);
+                {
+                    BattleUnit nonDamageEffectTarget = GetNonDamageEffectTarget(actor, target, skill);
+                    ApplyNonDamageEffects(actor, nonDamageEffectTarget, skill.skillName, skill.effects, true);
+                }
             }
 
             if (allowPrimaryHitGimmicks &&
@@ -697,6 +704,41 @@ public class BattleActionController : MonoBehaviour
             yield return StartCoroutine(HandleForcedTargetMoveAfterHit(actor, skill, target));
             yield return StartCoroutine(HandleRandomRepositionAfterHit(actor, skill, target));
         }
+    }
+
+    private int GetDamageDistributionDivisor(SkillDefinition skill, List<BattleUnit> targets)
+    {
+        if (skill == null || !skill.DistributesDamageByLivingTargets())
+            return 1;
+
+        if (targets == null || targets.Count <= 0)
+            return 1;
+
+        int count = 0;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            BattleUnit target = targets[i];
+            if (target != null && !target.IsDead)
+                count++;
+        }
+
+        return Mathf.Max(1, count);
+    }
+
+    private float GetDistributedPrimaryDamagePowerPercent(SkillDefinition skill, float rolledPrimaryDamagePercent, int divisor)
+    {
+        if (skill == null || !skill.DistributesDamageByLivingTargets())
+            return rolledPrimaryDamagePercent;
+
+        return rolledPrimaryDamagePercent / Mathf.Max(1, divisor);
+    }
+
+    private BattleUnit GetNonDamageEffectTarget(BattleUnit actor, BattleUnit originalTarget, SkillDefinition skill)
+    {
+        if (skill != null && skill.ShouldApplyNonDamageEffectsToSelf())
+            return actor;
+
+        return originalTarget;
     }
 
     private float GetResolvedDamagePowerPercentForThisAttack(
@@ -1061,7 +1103,7 @@ public class BattleActionController : MonoBehaviour
         }
     }
 
-    private IEnumerator ApplyChainExecutionOnce(BattleUnit actor, SkillDefinition skill, int rolledPrimaryDamagePercent)
+    private IEnumerator ApplyChainExecutionOnce(BattleUnit actor, SkillDefinition skill, float rolledPrimaryDamagePercent)
     {
         if (actor == null || actor.IsDead || skill == null)
             yield break;
@@ -1194,11 +1236,11 @@ public class BattleActionController : MonoBehaviour
             if (result.ResultType == AttackResultType.Crit)
                 amountText = "<b>" + amountText + "</b>";
 
-            ShowFloatingFeedback(target, string.Format("{0}\n{1}", skillName, amountText), new Color(1f, 0.2f, 0.2f, 1f));
+            ShowFloatingFeedback(target, skillName, amountText, new Color(1f, 0.2f, 0.2f, 1f));
         }
         else
         {
-            ShowFloatingFeedback(target, string.Format("{0}\n회피", skillName), new Color(0.7f, 0.7f, 0.7f, 1f));
+            ShowFloatingFeedback(target, skillName, "회피", new Color(0.7f, 0.7f, 0.7f, 1f));
         }
     }
 
@@ -1206,6 +1248,14 @@ public class BattleActionController : MonoBehaviour
     {
         if (viewManager != null)
             viewManager.ShowFloatingText(target, text, color, 1f);
+    }
+
+    private void ShowFloatingFeedback(BattleUnit target, string title, string value, Color valueColor)
+    {
+        if (viewManager == null)
+            return;
+
+        viewManager.ShowFloatingTextParts(target, title, value, Color.white, valueColor, 1f);
     }
 
     private string GetEffectDisplayName(BattleEffectBlock block)
@@ -1332,7 +1382,7 @@ public class BattleActionController : MonoBehaviour
                     int healed = target.Heal(amount);
                     logController.AppendBattleLog(logController.BuildHealLog(actor, target, sourceName, healed));
                     if (healed > 0)
-                        ShowFloatingFeedback(target, string.Format("{0}\n{1}", sourceName, healed), new Color(0.25f, 1f, 0.35f, 1f));
+                        ShowFloatingFeedback(target, sourceName, healed.ToString(), new Color(0.25f, 1f, 0.35f, 1f));
                     break;
                 }
             case BattleEffectKind.Shield:
@@ -1341,7 +1391,7 @@ public class BattleActionController : MonoBehaviour
                     target.AddShield(amount);
                     logController.AppendBattleLog(logController.BuildShieldLog(actor, target, sourceName, amount));
                     if (amount > 0)
-                        ShowFloatingFeedback(target, string.Format("{0}\n{1}", sourceName, amount), new Color(0.25f, 1f, 0.35f, 1f));
+                        ShowFloatingFeedback(target, sourceName, amount.ToString(), new Color(0.25f, 1f, 0.35f, 1f));
                     break;
                 }
             case BattleEffectKind.Buff:

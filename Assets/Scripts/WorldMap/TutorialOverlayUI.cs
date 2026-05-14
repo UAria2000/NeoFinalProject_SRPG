@@ -25,6 +25,7 @@ public class TutorialOverlayUI : MonoBehaviour
     [SerializeField] private string finalBody = "첫 세계를 모두 수확하셨습니다\n\n이제 이 쓸모없어진 세상을 떠나 다음 세계를 찾아나서십시오";
 
     private bool waitingForClick;
+    private bool suppressHideOnAwake;
 
     private void Awake()
     {
@@ -39,7 +40,9 @@ public class TutorialOverlayUI : MonoBehaviour
         }
 
         ConfigureRaycastTargets();
-        HideImmediate();
+
+        if (!suppressHideOnAwake)
+            HideImmediate();
     }
 
     private void OnDestroy()
@@ -72,7 +75,7 @@ public class TutorialOverlayUI : MonoBehaviour
             Sprite sprite = GetSpriteByStepNumber(step);
             if (sprite == null)
             {
-                markShown?.Invoke(step);
+                Debug.LogWarning($"[TutorialOverlayUI] Tutorial sprite for step {step} is missing. The step will not be marked as shown.");
                 continue;
             }
 
@@ -129,7 +132,11 @@ public class TutorialOverlayUI : MonoBehaviour
         ConfigureRaycastTargets();
 
         if (root != null)
+        {
+            suppressHideOnAwake = true;
             root.SetActive(true);
+            suppressHideOnAwake = false;
+        }
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 1f;

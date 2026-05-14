@@ -264,48 +264,111 @@ public class BattleViewManager : MonoBehaviour
         if (unit == null || string.IsNullOrWhiteSpace(text))
             return;
 
+        BattleFloatingTextUI floating = CreateAndPositionFloatingText(unit, false);
+        if (floating == null)
+            return;
+
+        floating.Play(text, color, duration > 0f ? duration : defaultFloatingTextDuration, defaultFloatingTextRiseDistance);
+    }
+
+    public void ShowFloatingTextParts(BattleUnit unit, string title, string value, Color titleColor, Color valueColor, float duration = -1f)
+    {
+        if (unit == null)
+            return;
+        if (string.IsNullOrWhiteSpace(title) && string.IsNullOrWhiteSpace(value))
+            return;
+
+        BattleFloatingTextUI floating = CreateAndPositionFloatingText(unit, true);
+        if (floating == null)
+            return;
+
+        floating.PlaySeparated(title, value, titleColor, valueColor, duration > 0f ? duration : defaultFloatingTextDuration, defaultFloatingTextRiseDistance);
+    }
+
+    private BattleFloatingTextUI CreateAndPositionFloatingText(BattleUnit unit, bool separatedFallback)
+    {
         BattleUnitView unitView = GetView(unit);
         if (unitView == null)
-            return;
+            return null;
 
         RectTransform parent = floatingTextRoot != null ? floatingTextRoot : viewRoot;
         if (parent == null)
-            return;
+            return null;
 
-        BattleFloatingTextUI floating = null;
-        if (floatingTextPrefab != null)
-        {
-            floating = Instantiate(floatingTextPrefab, parent);
-        }
-        else
-        {
-            GameObject go = new GameObject("BattleFloatingText", typeof(RectTransform), typeof(CanvasGroup));
-            go.transform.SetParent(parent, false);
-            TMP_Text tmp = go.AddComponent<TextMeshProUGUI>();
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.fontSize = 28f;
-            tmp.raycastTarget = false;
-            floating = go.AddComponent<BattleFloatingTextUI>();
-            floating.Bind(tmp, go.GetComponent<CanvasGroup>());
-        }
+        BattleFloatingTextUI floating = CreateFloatingTextInstance(parent, separatedFallback);
+        if (floating == null)
+            return null;
 
         RectTransform floatingRect = floating.GetComponent<RectTransform>();
         RectTransform anchor = unitView.HoverAnchor;
         if (floatingRect != null && anchor != null)
         {
             Vector3 world = anchor.position;
-            if (parent != null)
-            {
-                Vector3 local = parent.InverseTransformPoint(world);
-                floatingRect.anchoredPosition = new Vector2(local.x, local.y) + floatingTextOffset;
-            }
-            else
-            {
-                floatingRect.position = world;
-            }
+            Vector3 local = parent.InverseTransformPoint(world);
+            floatingRect.anchoredPosition = new Vector2(local.x, local.y) + floatingTextOffset;
         }
 
-        floating.Play(text, color, duration > 0f ? duration : defaultFloatingTextDuration, defaultFloatingTextRiseDistance);
+        return floating;
+    }
+
+    private BattleFloatingTextUI CreateFloatingTextInstance(RectTransform parent, bool separatedFallback)
+    {
+        if (floatingTextPrefab != null)
+            return Instantiate(floatingTextPrefab, parent);
+
+        GameObject go = new GameObject("BattleFloatingText", typeof(RectTransform), typeof(CanvasGroup));
+        go.transform.SetParent(parent, false);
+
+        RectTransform rootRect = go.GetComponent<RectTransform>();
+        if (rootRect != null)
+            rootRect.sizeDelta = new Vector2(260f, 80f);
+
+        BattleFloatingTextUI floating = go.AddComponent<BattleFloatingTextUI>();
+
+        if (separatedFallback)
+        {
+            VerticalLayoutGroup layout = go.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = true;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.spacing = 2f;
+            layout.padding = new RectOffset(0, 0, 0, 0);
+
+            TMP_Text skillText = CreateFallbackFloatingTextChild(go.transform, "SkillNameText", 21f, FontStyles.Normal);
+            TMP_Text valueText = CreateFallbackFloatingTextChild(go.transform, "DamageText", 34f, FontStyles.Bold);
+            floating.BindSeparated(skillText, valueText, go.GetComponent<CanvasGroup>());
+        }
+        else
+        {
+            TMP_Text tmp = go.AddComponent<TextMeshProUGUI>();
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.fontSize = 28f;
+            tmp.raycastTarget = false;
+            tmp.richText = true;
+            floating.Bind(tmp, go.GetComponent<CanvasGroup>());
+        }
+
+        return floating;
+    }
+
+    private TMP_Text CreateFallbackFloatingTextChild(Transform parent, string objectName, float fontSize, FontStyles fontStyle)
+    {
+        GameObject child = new GameObject(objectName, typeof(RectTransform));
+        child.transform.SetParent(parent, false);
+
+        RectTransform rect = child.GetComponent<RectTransform>();
+        if (rect != null)
+            rect.sizeDelta = new Vector2(260f, Mathf.Max(24f, fontSize + 8f));
+
+        TMP_Text tmp = child.AddComponent<TextMeshProUGUI>();
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.fontSize = fontSize;
+        tmp.fontStyle = fontStyle;
+        tmp.raycastTarget = false;
+        tmp.richText = true;
+        return tmp;
     }
 
     public void RefreshBattleVisualStates(BattleManager manager)

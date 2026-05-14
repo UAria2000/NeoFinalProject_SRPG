@@ -247,6 +247,9 @@ public static class BattleSkillInfoFormatter
             case ActiveSkillGimmick.ChainExecutionOnce:
                 AddEffectEntry(entries, null, "처치 시 1회 연쇄");
                 break;
+            case ActiveSkillGimmick.DistributeDamageByLivingTargets:
+                AddEffectEntry(entries, null, "총 피해를 생존 대상 수로 분배");
+                break;
         }
 
         if (skill.HasSelfMoveAfterUse())
@@ -260,6 +263,9 @@ public static class BattleSkillInfoFormatter
 
         if (skill.alsoApplyToSelfWhenTargetingAlly)
             AddEffectEntry(entries, null, "자신에게도 적용");
+
+        if (skill.ShouldApplyNonDamageEffectsToSelf() && HasNonDamageEffect(skill))
+            AddEffectEntry(entries, null, "부가효과 대상: 자신");
 
         if (skill.disableAfterUseInBattle)
             AddEffectEntry(entries, null, "전투당 1회");
@@ -356,6 +362,21 @@ public static class BattleSkillInfoFormatter
     private static bool IsDrainSkill(SkillDefinition skill)
     {
         return skill != null && skill.activeGimmick == ActiveSkillGimmick.BleedDrainStrike;
+    }
+
+    private static bool HasNonDamageEffect(SkillDefinition skill)
+    {
+        if (skill == null || skill.effects == null)
+            return false;
+
+        for (int i = 0; i < skill.effects.Count; i++)
+        {
+            BattleEffectBlock block = skill.effects[i];
+            if (block != null && block.kind != BattleEffectKind.Damage)
+                return true;
+        }
+
+        return false;
     }
 
     private static bool HasEffectOfKind(SkillDefinition skill, BattleEffectKind kind)

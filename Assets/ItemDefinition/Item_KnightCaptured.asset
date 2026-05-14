@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: item_knight_captured
   itemName: "\uBD99\uC7A1\uD78C \uAE30\uC0AC"
-  description: 
+  description: "\uBD99\uC7A1\uD78C \uAE30\uC0AC"
   icon: {fileID: 21300000, guid: ceacd74548d125242ae9e3483668763a, type: 3}
   targetTeam: 1
   targetScope: 0

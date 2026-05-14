@@ -20,6 +20,7 @@ public class WorldEventController : MonoBehaviour
     [Header("Treasure Event")]
     [SerializeField] private string treasureConfirmText = "확인";
     [SerializeField] private string treasureRewardHeaderText = "획득 예정 보상";
+    [SerializeField] private Color treasureRewardHeaderColor = new Color(0.2f, 1f, 0.25f, 1f);
     [SerializeField] private string treasureEmptyText = "보물 후보 아이템이 없습니다. Treasure Candidate Items를 설정해 주세요.";
     [SerializeField] private string treasureNoRewardText = "획득 가능한 아이템이 없습니다.";
     [Tooltip("{0} 자리에 지급 소울량이 들어갑니다. 예: {0} 소울")]
@@ -57,7 +58,9 @@ public class WorldEventController : MonoBehaviour
     [Header("Rest Event")]
     [SerializeField] private string restConfirmText = "휴식하기";
     [SerializeField] private string restEffectHeaderText = "휴식 효과";
+    [SerializeField] private Color restEffectHeaderColor = new Color(0.2f, 1f, 0.25f, 1f);
     [SerializeField] private string restPartyPreviewHeaderText = "파티 상태";
+    [SerializeField] private Color restPartyPreviewHeaderColor = new Color(0.4f, 0.75f, 1f, 1f);
     [TextArea(2, 4)]
     [SerializeField] private string restDescriptionSuffix = "\n\n파티가 휴식을 취해 체력을 회복합니다.";
     [SerializeField] private WorldRestHealMode restHealMode = WorldRestHealMode.PercentOfMaxHp;
@@ -474,6 +477,14 @@ public class WorldEventController : MonoBehaviour
         return false;
     }
 
+    private string ColorizeText(string text, Color color)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{text}</color>";
+    }
+
     private string BuildTreasureEventBody(WorldTileData tile, WorldTreasureResult treasure)
     {
         StringBuilder sb = new StringBuilder();
@@ -484,7 +495,7 @@ public class WorldEventController : MonoBehaviour
             sb.Append(treasureSuffix);
 
         sb.Append("\n\n");
-        sb.Append(string.IsNullOrWhiteSpace(treasureRewardHeaderText) ? "획득 예정 보상" : treasureRewardHeaderText);
+        sb.Append(ColorizeText(string.IsNullOrWhiteSpace(treasureRewardHeaderText) ? "획득 예정 보상" : treasureRewardHeaderText, treasureRewardHeaderColor));
         sb.Append("\n");
         AppendTreasureRewardLines(sb, treasure);
 
@@ -661,7 +672,7 @@ public class WorldEventController : MonoBehaviour
             sb.Append(restDescriptionSuffix);
 
         sb.Append("\n\n");
-        sb.Append(string.IsNullOrWhiteSpace(restEffectHeaderText) ? "휴식 효과" : restEffectHeaderText);
+        sb.Append(ColorizeText(string.IsNullOrWhiteSpace(restEffectHeaderText) ? "휴식 효과" : restEffectHeaderText, restEffectHeaderColor));
         sb.Append(": ");
         sb.Append(GetRestEffectDescription());
 
@@ -670,7 +681,7 @@ public class WorldEventController : MonoBehaviour
             : null;
 
         sb.Append("\n\n");
-        sb.Append(string.IsNullOrWhiteSpace(restPartyPreviewHeaderText) ? "파티 상태" : restPartyPreviewHeaderText);
+        sb.Append(ColorizeText(string.IsNullOrWhiteSpace(restPartyPreviewHeaderText) ? "파티 상태" : restPartyPreviewHeaderText, restPartyPreviewHeaderColor));
         sb.Append("\n");
         AppendRestPreviewLines(sb, preview);
 

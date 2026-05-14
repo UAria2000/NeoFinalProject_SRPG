@@ -5,50 +5,44 @@ using TMPro;
 public class SoldierCard : MonoBehaviour
 {
     [Header("UI Elements")]
-    public TextMeshProUGUI soldierNameText;
-    public TextMeshProUGUI levelText;
+    public TextMeshProUGUI nameText;
     public Image portraitImage;
     public GameObject highlightObject;
 
-    [Header("Settings")]
-    public SoldierPortraitSettings portraitSettings; // 인스펙터에서 등록
-
-    // 1. 내 인벤토리용 (RosterUnitSaveData 활용)
+    // 인벤토리용: RosterUnitSaveData를 받아 설정
     public void SetupCard(RosterUnitSaveData unitData)
     {
-        // 이름 설정
-        soldierNameText.text = string.IsNullOrEmpty(unitData.instanceDisplayNameOverride)
-            ? unitData.unitDefinitionId
-            : unitData.instanceDisplayNameOverride;
-
-        levelText.text = $"Lv.{unitData.level}";
-
-        // 초상화 자동 연결 (unitViewDefinitionName 기반)
-        if (portraitSettings != null)
+        // 1. 이름 설정: 우선적으로 저장된 이름을 쓰고, 없으면 리졸버에서 정의(Definition)를 찾아 이름을 가져옴
+        if (!string.IsNullOrEmpty(unitData.instanceDisplayNameOverride))
         {
-            portraitImage.sprite = portraitSettings.GetPortrait(unitData.unitViewDefinitionName);
+            nameText.text = unitData.instanceDisplayNameOverride;
+        }
+        else
+        {
+            // SaveReferenceResolver를 통해 원본 유닛 정의를 찾음
+            var def = SaveReferenceResolver.Instance.FindUnitDefinition(unitData.unitDefinitionId);
+            nameText.text = (def != null) ? def.unitId : unitData.unitDefinitionId;
+        }
+
+        // 2. 초상화 설정: ViewDefinition을 찾아 해당 외형의 아이콘 등을 연결
+        var viewDef = SaveReferenceResolver.Instance.FindUnitViewDefinition(unitData.unitViewDefinitionName);
+        if (viewDef != null)
+        {
+            // viewDef에 연결된 스프라이트가 있다면 적용 (구조에 따라 아이콘 필드 참조)
+            // portraitImage.sprite = viewDef.portrait; 
         }
 
         SetHighlight(false);
     }
 
-    // 2. 상점 매물용 (ID 문자열 활용)
-    public void SetupCard(string unitViewName, int price)
+    // 상점용: 기존 로직 유지
+    public void SetupCard(string unitName, int price)
     {
-        soldierNameText.text = unitViewName;
-        levelText.text = $"{price:N0} GOLD";
-
-        // 초상화 자동 연결
-        if (portraitSettings != null)
-        {
-            portraitImage.sprite = portraitSettings.GetPortrait(unitViewName);
-        }
-
+        nameText.text = unitName;
+        // 상점 매물도 리졸버에서 아이콘을 찾을 수 있음
+        var viewDef = SaveReferenceResolver.Instance.FindUnitViewDefinition(unitName);
         SetHighlight(false);
     }
 
-    public void SetHighlight(bool isActive)
-    {
-        if (highlightObject != null) highlightObject.SetActive(isActive);
-    }
+    public void SetHighlight(bool active) => highlightObject?.SetActive(active);
 }

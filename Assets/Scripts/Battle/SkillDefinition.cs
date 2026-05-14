@@ -31,7 +31,8 @@ public enum ActiveSkillGimmick
     PullTargetForwardAfterHit,
     ShieldSelfFromDamageDealt,
     ChainLightning,
-    ChainExecutionOnce
+    ChainExecutionOnce,
+    DistributeDamageByLivingTargets
 }
 
 [CreateAssetMenu(menuName = "Battle/Skill Definition")]
@@ -88,6 +89,9 @@ public class SkillDefinition : ScriptableObject
     [Header("Extra Target Resolution (Optional)")]
     [Tooltip("아군 단일 대상 스킬에서 선택 대상 외에 시전자 자신에게도 같은 효과를 적용합니다.")]
     public bool alsoApplyToSelfWhenTargetingAlly = false;
+
+    [Tooltip("공격 판정형 스킬이 명중했을 때 Damage가 아닌 부가효과를 누구에게 적용할지 결정합니다. 기본값 Target은 기존 동작입니다.")]
+    public SkillNonDamageEffectTarget nonDamageEffectTarget = SkillNonDamageEffectTarget.Target;
 
     [Header("Self Position Move (Optional)")]
     public SkillSelfMoveDirection selfMoveDirection = SkillSelfMoveDirection.None;
@@ -311,6 +315,16 @@ public class SkillDefinition : ScriptableObject
     public bool ShouldAlsoApplyToSelfWhenTargetingAlly()
     {
         return alsoApplyToSelfWhenTargetingAlly && targetTeam == SkillTargetTeam.Ally;
+    }
+
+    public bool ShouldApplyNonDamageEffectsToSelf()
+    {
+        return nonDamageEffectTarget == SkillNonDamageEffectTarget.Self;
+    }
+
+    public bool DistributesDamageByLivingTargets()
+    {
+        return activeGimmick == ActiveSkillGimmick.DistributeDamageByLivingTargets;
     }
 
     public bool HasSecondaryHit()

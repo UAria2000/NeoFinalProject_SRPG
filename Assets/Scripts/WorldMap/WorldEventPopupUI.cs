@@ -188,7 +188,10 @@ public class WorldEventPopupUI : MonoBehaviour
             titleText.text = title;
 
         if (bodyText != null)
+        {
+            bodyText.richText = true;
             bodyText.text = body;
+        }
 
         if (confirmButtonText != null)
             confirmButtonText.text = string.IsNullOrWhiteSpace(confirmLabel) ? "확인" : confirmLabel;

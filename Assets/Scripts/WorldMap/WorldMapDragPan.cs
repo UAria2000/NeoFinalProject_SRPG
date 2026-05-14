@@ -29,6 +29,12 @@ public class WorldMapDragPan : MonoBehaviour
     [Header("Fallback Fixed Pan Padding")]
     [SerializeField] private Vector2 panPadding = new Vector2(300f, 220f);
 
+    [Header("Extra Pan Padding Per Direction")]
+    [Tooltip("Clamp 최소 방향으로 추가 허용할 거리입니다. X는 왼쪽, Y는 아래쪽으로 체감될 수 있습니다.")]
+    [SerializeField] private Vector2 extraNegativePanPadding = Vector2.zero;
+    [Tooltip("Clamp 최대 방향으로 추가 허용할 거리입니다. X는 오른쪽, Y는 위쪽으로 체감될 수 있습니다.")]
+    [SerializeField] private Vector2 extraPositivePanPadding = Vector2.zero;
+
     [Header("Zoom")]
     [SerializeField] private bool enableZoom = true;
     [SerializeField] private float zoomStep = 0.1f;
@@ -73,6 +79,24 @@ public class WorldMapDragPan : MonoBehaviour
             float clamped = Mathf.Clamp(contentRoot.localScale.x, minZoom, maxZoom);
             contentRoot.localScale = new Vector3(clamped, clamped, 1f);
         }
+    }
+
+    public void SetExtraPanPadding(Vector2 negativePadding, Vector2 positivePadding, bool clampImmediately = true)
+    {
+        extraNegativePanPadding = new Vector2(Mathf.Max(0f, negativePadding.x), Mathf.Max(0f, negativePadding.y));
+        extraPositivePanPadding = new Vector2(Mathf.Max(0f, positivePadding.x), Mathf.Max(0f, positivePadding.y));
+
+        if (clampImmediately)
+            ClampContentToBounds();
+    }
+
+    public void ClearExtraPanPadding(bool clampImmediately = true)
+    {
+        extraNegativePanPadding = Vector2.zero;
+        extraPositivePanPadding = Vector2.zero;
+
+        if (clampImmediately)
+            ClampContentToBounds();
     }
 
     public void SetContentBounds(Bounds bounds)
@@ -280,19 +304,22 @@ public class WorldMapDragPan : MonoBehaviour
 
         float scale = Mathf.Max(0.0001f, contentRoot.localScale.x);
 
-        float contentHalfWidth = contentBounds.extents.x * scale;
-        float contentHalfHeight = contentBounds.extents.y * scale;
+        Vector2 scaledCenter = new Vector2(contentBounds.center.x * scale, contentBounds.center.y * scale);
+        Vector2 scaledExtents = new Vector2(contentBounds.extents.x * scale, contentBounds.extents.y * scale);
 
         float viewportHalfWidth = viewportRect.rect.width * 0.5f;
         float viewportHalfHeight = viewportRect.rect.height * 0.5f;
 
         Vector2 effectivePadding = GetEffectivePanPadding();
+        Vector2 negativeExtra = new Vector2(Mathf.Max(0f, extraNegativePanPadding.x), Mathf.Max(0f, extraNegativePanPadding.y));
+        Vector2 positiveExtra = new Vector2(Mathf.Max(0f, extraPositivePanPadding.x), Mathf.Max(0f, extraPositivePanPadding.y));
 
-        float minX = -contentHalfWidth + viewportHalfWidth - effectivePadding.x;
-        float maxX = contentHalfWidth - viewportHalfWidth + effectivePadding.x;
+        // contentBounds.center가 0이 아닌 튜토리얼 세로 맵에서도 클램프가 정확히 동작하도록 center를 반영한다.
+        float minX = viewportHalfWidth - effectivePadding.x - negativeExtra.x - (scaledCenter.x + scaledExtents.x);
+        float maxX = -viewportHalfWidth + effectivePadding.x + positiveExtra.x - (scaledCenter.x - scaledExtents.x);
 
-        float minY = -contentHalfHeight + viewportHalfHeight - effectivePadding.y;
-        float maxY = contentHalfHeight - viewportHalfHeight + effectivePadding.y;
+        float minY = viewportHalfHeight - effectivePadding.y - negativeExtra.y - (scaledCenter.y + scaledExtents.y);
+        float maxY = -viewportHalfHeight + effectivePadding.y + positiveExtra.y - (scaledCenter.y - scaledExtents.y);
 
         Vector2 anchored = contentRoot.anchoredPosition;
 

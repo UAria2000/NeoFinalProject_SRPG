@@ -23,6 +23,10 @@ public class WorldQuestPopupUI : MonoBehaviour
     [SerializeField] private TMP_Text descriptionText;
     [SerializeField] private TMP_Text progressText;
 
+    [Header("Text Colors")]
+    [SerializeField] private Color questTargetHeaderColor = new Color(1f, 0.25f, 0.25f, 1f);
+    [SerializeField] private Color questRewardValueColor = new Color(0.85f, 0.85f, 1f, 1f);
+
     [Header("Soul Reward")]
     [SerializeField] private GameObject soulRewardRoot;
     [SerializeField] private Image soulIconImage;
@@ -304,7 +308,32 @@ public class WorldQuestPopupUI : MonoBehaviour
             descriptionText.text = quest.GetDetailDescription();
 
         if (progressText != null)
-            progressText.text = quest.GetProgressText();
+        {
+            progressText.richText = true;
+            progressText.text = BuildPopupProgressText(quest);
+        }
+    }
+
+    private string BuildPopupProgressText(WorldQuestState quest)
+    {
+        if (quest == null || quest.definition == null)
+            return string.Empty;
+
+        if (quest.definition.questType == WorldQuestType.CaptureSpecificTile)
+        {
+            string target = ColorizeText("목표", questTargetHeaderColor);
+            return quest.isCompleted ? $"{target} - 지정지역 점령하기 (완료)" : $"{target} - 지정지역 점령하기";
+        }
+
+        return quest.GetProgressText();
+    }
+
+    private string ColorizeText(string text, Color color)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        return $"<color=#{ColorUtility.ToHtmlStringRGB(color)}>{text}</color>";
     }
 
     private void RefreshImmediateRewards(WorldQuestState quest)
@@ -319,7 +348,10 @@ public class WorldQuestPopupUI : MonoBehaviour
             soulRewardRoot.SetActive(showSoul);
 
         if (soulRewardText != null)
-            soulRewardText.text = showSoul ? quest.definition.soulReward.ToString() : string.Empty;
+        {
+            soulRewardText.richText = true;
+            soulRewardText.text = showSoul ? ColorizeText(quest.definition.soulReward.ToString(), questRewardValueColor) : string.Empty;
+        }
 
         if (soulIconImage != null)
             soulIconImage.gameObject.SetActive(showSoul);
@@ -328,7 +360,10 @@ public class WorldQuestPopupUI : MonoBehaviour
             experienceRewardRoot.SetActive(showExp);
 
         if (experienceRewardText != null)
-            experienceRewardText.text = showExp ? quest.definition.experienceReward.ToString() : string.Empty;
+        {
+            experienceRewardText.richText = true;
+            experienceRewardText.text = showExp ? ColorizeText(quest.definition.experienceReward.ToString(), questRewardValueColor) : string.Empty;
+        }
 
         if (experienceIconImage != null)
             experienceIconImage.gameObject.SetActive(showExp);
