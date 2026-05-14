@@ -98,7 +98,7 @@ public class BattleResultPartyCardUI : MonoBehaviour
         ApplyRank(data.promotionRank);
 
         if (levelText != null)
-            levelText.text = $"Lv {Mathf.Max(1, data.levelAfter)}";
+            levelText.text = Mathf.Max(1, data.levelAfter).ToString();
 
         bool showOriginal = data.originalLevel > 0 && data.levelAfter < data.originalLevel;
         if (originalLevelRoot != null)
