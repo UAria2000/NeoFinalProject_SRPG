@@ -12,6 +12,8 @@ public class MarketplaceUI : MonoBehaviour
 {
     [Header("Manager Reference")]
     public MarketplaceManager marketplaceManager;
+    // 변수 선언 추가: 인스펙터에서 PersistentProfileController를 드래그 앤 드롭해야 합니다.
+    public PersistentProfileController persistentProfileController;
 
     [Header("Owned Assets (Right)")]
     public TextMeshProUGUI goldText;
@@ -84,7 +86,8 @@ public class MarketplaceUI : MonoBehaviour
 
     private async Task UpdateGoldUI()
     {
-        if (goldText == null || marketplaceManager == null) return;
+        // persistentProfileController가 할당되어 있는지 확인
+        if (goldText == null || marketplaceManager == null || persistentProfileController == null) return;
 
         try
         {
@@ -95,11 +98,10 @@ public class MarketplaceUI : MonoBehaviour
             if (goldBalance != null)
             {
                 // 2. 서버에서 받은 값을 PersistentProfileController에 동기화
-                // 인스펙터에서 persistentProfileController가 연결되어 있어야 합니다.
                 int currentGold = (int)goldBalance.Balance;
                 persistentProfileController.UpdateGoldBalance(currentGold);
 
-                // 3. UI 텍스트 업데이트 (이제 로컬 컨트롤러의 값을 신뢰함)
+                // 3. UI 텍스트 업데이트
                 goldText.text = $"{currentGold:N0} GOLD";
                 Debug.Log($"[Marketplace] 서버-로컬 골드 동기화 완료: {currentGold}");
             }
