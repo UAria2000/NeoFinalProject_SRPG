@@ -40564,15 +40564,16 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   turnDelay: 0.25
-  moveAnimationDuration: 0.35
-  attackMoveRatio: 0.45
-  attackMoveMaxDistance: 260
-  attackMoveDuration: 0.55
-  attackApproachDuration: 1
-  attackHoldDuration: 1
-  attackReturnDuration: 1
-  attackImpactDelayAfterArrival: 0
-  hitFlashDuration: 1
+  moveAnimationDuration: 0.5
+  attackMoveRatio: 0.3
+  attackMoveMaxDistance: 300
+  attackMoveDuration: 0.3
+  attackApproachDuration: 0.25
+  attackHoldDuration: 0.25
+  attackReturnDuration: 0.25
+  attackImpactDelayAfterArrival: 0.5
+  missCameraHoldDuration: -1
+  hitFlashDuration: 0.5
   supportSkillPreImpactDelay: 0.35
   supportSkillPostImpactDelay: 0.65
   popupLogPanel: {fileID: 907927938}
@@ -94262,7 +94263,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00048413547}
+  m_AnchoredPosition: {x: 0, y: 0.00021272601}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!222 &1616903397176202322
@@ -99044,7 +99045,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 7308073487637812338}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99996555
+  m_Size: 0.9999954
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
