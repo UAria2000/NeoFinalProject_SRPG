@@ -1153,11 +1153,11 @@ public class BattleActionController : MonoBehaviour
             if (result.ResultType == AttackResultType.Crit)
                 amountText = "<b>" + amountText + "</b>";
 
-            ShowFloatingFeedback(target, string.Format("{0}\n{1}", skillName, amountText), new Color(1f, 0.2f, 0.2f, 1f));
+            ShowFloatingFeedback(target, skillName, amountText, new Color(1f, 0.2f, 0.2f, 1f));
         }
         else
         {
-            ShowFloatingFeedback(target, string.Format("{0}\n회피", skillName), new Color(0.7f, 0.7f, 0.7f, 1f));
+            ShowFloatingFeedback(target, skillName, "회피", new Color(0.7f, 0.7f, 0.7f, 1f));
         }
     }
 
@@ -1165,6 +1165,14 @@ public class BattleActionController : MonoBehaviour
     {
         if (viewManager != null)
             viewManager.ShowFloatingText(target, text, color, 1f);
+    }
+
+    private void ShowFloatingFeedback(BattleUnit target, string title, string value, Color valueColor)
+    {
+        if (viewManager == null)
+            return;
+
+        viewManager.ShowFloatingTextParts(target, title, value, Color.white, valueColor, 1f);
     }
 
     private string GetEffectDisplayName(BattleEffectBlock block)
@@ -1291,7 +1299,7 @@ public class BattleActionController : MonoBehaviour
                     int healed = target.Heal(amount);
                     logController.AppendBattleLog(logController.BuildHealLog(actor, target, sourceName, healed));
                     if (healed > 0)
-                        ShowFloatingFeedback(target, string.Format("{0}\n{1}", sourceName, healed), new Color(0.25f, 1f, 0.35f, 1f));
+                        ShowFloatingFeedback(target, sourceName, healed.ToString(), new Color(0.25f, 1f, 0.35f, 1f));
                     break;
                 }
             case BattleEffectKind.Shield:
@@ -1300,7 +1308,7 @@ public class BattleActionController : MonoBehaviour
                     target.AddShield(amount);
                     logController.AppendBattleLog(logController.BuildShieldLog(actor, target, sourceName, amount));
                     if (amount > 0)
-                        ShowFloatingFeedback(target, string.Format("{0}\n{1}", sourceName, amount), new Color(0.25f, 1f, 0.35f, 1f));
+                        ShowFloatingFeedback(target, sourceName, amount.ToString(), new Color(0.25f, 1f, 0.35f, 1f));
                     break;
                 }
             case BattleEffectKind.Buff:

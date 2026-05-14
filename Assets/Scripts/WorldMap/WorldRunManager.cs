@@ -2699,6 +2699,9 @@ public class WorldRunManager : MonoBehaviour
 
         questController?.LoadFromSave(saveData.activeQuests);
 
+        if (isTutorialWorld)
+            tutorialWorldController?.NormalizeTutorialQuestState(questController);
+
         if (worldMapUI != null)
             worldMapUI.Initialize(this, MapData, generationSettings);
 
@@ -2730,6 +2733,11 @@ public class WorldRunManager : MonoBehaviour
     private void EnsureQuestDescriptionForTile(WorldTileData tile)
     {
         if (tile == null || tile.eventType != WorldTileEventType.Quest || questController == null || MapData == null)
+            return;
+
+        // 튜토리얼 퀘스트는 TutorialWorldController가 고정 목표(보물 타일)를 생성한다.
+        // 선택 패널 설명을 읽는 순간 일반 퀘스트가 먼저 랜덤 생성되면 목표 고정이 풀릴 수 있으므로 여기서는 선생성하지 않는다.
+        if (isTutorialWorld)
             return;
 
         WorldQuestState quest = questController.GetOrCreateQuestForTile(tile, MapData);

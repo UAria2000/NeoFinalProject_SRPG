@@ -33,6 +33,13 @@ public class HexWorldMapUI : MonoBehaviour
     [SerializeField] private bool focusCurrentTileOnGenerate = true;
     [SerializeField] private bool focusCurrentTileOnMove = true;
 
+    [Header("Tutorial Pan Padding")]
+    [SerializeField] private bool applyTutorialPanPadding = true;
+    [Tooltip("튜토리얼 맵에서 clamp 최소 방향으로 추가 이동 가능한 거리입니다. 화면을 더 위로 올릴 수 없으면 Y 값을 키워보세요.")]
+    [SerializeField] private Vector2 tutorialExtraNegativePanPadding = new Vector2(0f, 900f);
+    [Tooltip("튜토리얼 맵에서 clamp 최대 방향으로 추가 이동 가능한 거리입니다. 방향이 반대로 체감되면 이 Y 값을 키워보세요.")]
+    [SerializeField] private Vector2 tutorialExtraPositivePanPadding = new Vector2(0f, 900f);
+
     private WorldRunManager runManager;
     private WorldGenerationSettings settings;
     private readonly Dictionary<int, HexTileView> tileViews = new Dictionary<int, HexTileView>();
@@ -55,7 +62,14 @@ public class HexWorldMapUI : MonoBehaviour
         BuildTiles(mapData);
 
         if (dragPan != null)
+        {
+            if (applyTutorialPanPadding && runManager != null && runManager.IsTutorialWorld)
+                dragPan.SetExtraPanPadding(tutorialExtraNegativePanPadding, tutorialExtraPositivePanPadding, false);
+            else
+                dragPan.ClearExtraPanPadding(false);
+
             dragPan.SetContentBounds(generatedLocalBounds);
+        }
 
         RefreshAll(mapData);
 

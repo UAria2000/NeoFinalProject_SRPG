@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Item_SisterCaptured
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: item_sister_captured
-  itemName: "\uBD99\uC7A1\uD78C \uC5EC\uC0AC\uC81C"
-  description: 
+  itemName: "\uBD99\uC7A1\uD78C \uC0AC\uC81C"
+  description: "\uBD99\uC7A1\uD78C \uC0AC\uC81C"
   icon: {fileID: 21300000, guid: cb7fe1a1ef80ac84ebe23a24661936fe, type: 3}
   targetTeam: 1
   targetScope: 0

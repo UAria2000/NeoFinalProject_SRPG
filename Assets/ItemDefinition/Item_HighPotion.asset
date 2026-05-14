@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: item_high_potion
   itemName: "\uC0C1\uAE09\uD3EC\uC158"
-  description: "\uC0C1\uAE09 \uCCB4\uB825 \uD68C\uBCF5 \uD3EC\uC158"
+  description: "\uCCB4\uB825 20% \uD68C\uBCF5"
   icon: {fileID: 21300000, guid: d198e767ff2365145a02822b4694126f, type: 3}
   targetTeam: 1
   targetScope: 0

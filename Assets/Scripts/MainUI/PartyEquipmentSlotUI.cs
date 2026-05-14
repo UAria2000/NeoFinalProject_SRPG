@@ -8,7 +8,9 @@ public class PartyEquipmentSlotUI : MonoBehaviour,
     IDropHandler,
     IBeginDragHandler,
     IDragHandler,
-    IEndDragHandler
+    IEndDragHandler,
+    IPointerEnterHandler,
+    IPointerExitHandler
 {
     [SerializeField] private Image iconImage;
 
@@ -46,6 +48,19 @@ public class PartyEquipmentSlotUI : MonoBehaviour,
         }
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (AssignedItem == null)
+            return;
+
+        owner?.HandleEquipmentSlotHoverEnter(this);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        owner?.HandleEquipmentSlotHoverExit(this);
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Left)
@@ -64,6 +79,8 @@ public class PartyEquipmentSlotUI : MonoBehaviour,
         if (eventData.button != PointerEventData.InputButton.Left || AssignedItem == null || owner == null)
             return;
 
+        owner.HandleEquipmentSlotHoverExit(this);
+
         if (!owner.BeginEquipmentDrag(this))
             return;
 
@@ -75,7 +92,7 @@ public class PartyEquipmentSlotUI : MonoBehaviour,
 
     public void OnDrag(PointerEventData eventData)
     {
-        // ºñ¿öµÖµµ µÊ. µå·¡±× Ã¼ÀÎ À¯Áö¿ë.
+        // ë¹„ì›Œë‘¬ë„ ë¨. ë“œë˜ê·¸ ì²´ì¸ ìœ ì§€ìš©.
     }
 
     public void OnEndDrag(PointerEventData eventData)
