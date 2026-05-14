@@ -50,4 +50,40 @@ MonoBehaviour:
     equippedItems: []
     battleLootDrops: []
     persistentCurrentHP: -1
+  - unitDefinition: {fileID: 11400000, guid: e78a50fd3a6650d4ebdfd93ac46d936e, type: 2}
+    unitViewDefinition: {fileID: 11400000, guid: f5a685a5090b74f49a844a3459812760, type: 2}
+    startSlotIndex: 0
+    instanceId: main_player
+    instanceDisplayNameOverride: "\uC8FC\uC778\uACF5"
+    fixedEpitaph: 
+    isExchangeable: 0
+    isNft: 0
+    currentLevel: 0
+    originalLevel: 0
+    currentExp: 0
+    levelGrowthMaxHp: 0
+    levelGrowthDmg: 0
+    promotionRank: 0
+    promotionBonusPercentPerRank: 0
+    statVariance:
+      maxHpDelta: 0
+      dmgDelta: 0
+      spdDelta: 0
+      idtDelta: 0
+      hitDelta: 0
+      acDelta: 0
+      criDelta: 0
+      crdDelta: 0
+      burnResistDelta: 0
+      bleedResistDelta: 0
+      stunResistDelta: 0
+      frostResistDelta: 0
+      blindResistDelta: 0
+    learnedSkills:
+    - {fileID: 11400000, guid: 82b891e97f11af64e9dcbf511f8c01cc, type: 2}
+    - {fileID: 11400000, guid: acb6bb6748375d240b373db994348390, type: 2}
+    - {fileID: 11400000, guid: 86436751716177d43b57f3ffb270fbd8, type: 2}
+    equippedItems: []
+    battleLootDrops: []
+    persistentCurrentHP: -1
   inventory: []

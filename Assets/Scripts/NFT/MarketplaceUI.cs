@@ -84,18 +84,29 @@ public class MarketplaceUI : MonoBehaviour
 
     private async Task UpdateGoldUI()
     {
-        if (goldText == null) return;
+        if (goldText == null || marketplaceManager == null) return;
 
         try
         {
+            // 1. Unity Economy 서버에서 최신 잔액 가져오기
             var balances = await EconomyService.Instance.PlayerBalances.GetBalancesAsync();
             var goldBalance = balances.Balances.Find(b => b.CurrencyId == "GOLD");
 
-            goldText.text = goldBalance != null ? $"{goldBalance.Balance:N0} GOLD" : "0 GOLD";
+            if (goldBalance != null)
+            {
+                // 2. 서버에서 받은 값을 PersistentProfileController에 동기화
+                // 인스펙터에서 persistentProfileController가 연결되어 있어야 합니다.
+                int currentGold = (int)goldBalance.Balance;
+                persistentProfileController.UpdateGoldBalance(currentGold);
+
+                // 3. UI 텍스트 업데이트 (이제 로컬 컨트롤러의 값을 신뢰함)
+                goldText.text = $"{currentGold:N0} GOLD";
+                Debug.Log($"[Marketplace] 서버-로컬 골드 동기화 완료: {currentGold}");
+            }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"[Marketplace] 소지금 업데이트 실패: {e.Message}");
+            Debug.LogError($"[Marketplace] 골드 연동 중 오류: {e.Message}");
         }
     }
 

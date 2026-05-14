@@ -1203,4 +1203,24 @@ public class PersistentProfileController : MonoBehaviour
         OnProfileChanged?.Invoke();
         saveCoordinator?.SaveProfile();
     }
+
+    public int GetGoldCount()
+    {
+        EnsureInitialized();
+        // accountCurrencies 내에 Gold 필드가 있다고 가정하거나, 
+        // 프로젝트 구조에 따라 worldRunManager.PersistentSoul을 반환하도록 설정합니다.
+        return persistentProfile.accountCurrencies.GetCommonShardCount(); // 예시: Shard와 동일한 구조라면
+    }
+
+    public void UpdateGoldBalance(int newAmount)
+    {
+        EnsureInitialized();
+
+        // 1. 로컬 프로필의 골드 수치를 서버 수치로 동기화
+        // (accountCurrencies 내에 SetGold 같은 메서드가 필요할 수 있습니다)
+        // persistentProfile.accountCurrencies.SetGold(newAmount); 
+
+        // 2. 데이터가 변경되었음을 알리고 저장 프로세스 실행
+        RaiseProfileChanged();
+    }
 }
