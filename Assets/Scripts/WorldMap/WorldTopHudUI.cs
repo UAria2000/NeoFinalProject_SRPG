@@ -87,8 +87,8 @@ public class WorldTopHudUI : MonoBehaviour
 
         if (worldTitleText != null)
         {
-            string sizeText = generationSettings != null ? GetSizeLabel(generationSettings.radius) : string.Empty;
-            string difficultyText = generationSettings != null ? GetDifficultyLabel(generationSettings.difficulty) : string.Empty;
+            string sizeText = GetCurrentSizeLabel();
+            string difficultyText = GetCurrentDifficultyLabel();
             worldTitleText.text = $"월드맵 {sizeText} - {difficultyText}";
         }
 
@@ -156,15 +156,35 @@ public class WorldTopHudUI : MonoBehaviour
         text.gameObject.SetActive(false);
     }
 
+    private string GetCurrentSizeLabel()
+    {
+        if (worldRunManager != null && worldRunManager.IsTutorialWorld)
+            return "튜토리얼";
+
+        int radius = generationSettings != null ? generationSettings.radius : 0;
+        return GetSizeLabel(radius);
+    }
+
+    private string GetCurrentDifficultyLabel()
+    {
+        if (worldRunManager != null && worldRunManager.IsTutorialWorld)
+            return "튜토리얼";
+
+        WorldDifficulty difficulty = generationSettings != null ? generationSettings.difficulty : WorldDifficulty.Normal;
+        return GetDifficultyLabel(difficulty);
+    }
+
     private string GetSizeLabel(int radius)
     {
-        switch (radius)
-        {
-            case 3: return "소형";
-            case 4: return "중형";
-            case 5: return "대형";
-            default: return "초대형";
-        }
+        // Bootstrap/WorldRunManager currently use radius 4/5/6 for small/medium/large.
+        // Tutorial worlds use a special line map and are handled before this method.
+        if (radius <= 0)
+            return "-";
+        if (radius <= 4)
+            return "소형";
+        if (radius == 5)
+            return "중형";
+        return "대형";
     }
 
     private string GetDifficultyLabel(WorldDifficulty difficulty)

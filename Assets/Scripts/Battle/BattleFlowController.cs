@@ -275,6 +275,7 @@ public class BattleFlowController : MonoBehaviour
                     continue;
 
                 battleManager.SetCurrentActingUnit(unit);
+                battleManager.ResetConsumableUseForTurn(unit);
                 battleManager.CurrentActingUnit.OnOwnTurnStart();
                 battleManager.ClearDeadUnitPresenceFlags();
 

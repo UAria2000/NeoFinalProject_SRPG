@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: elf_druid
   unitName: "\uB4DC\uB8E8\uC774\uB4DC"
   rangeType: 1
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -55,8 +56,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 59250e727813e494fb963da07ca4d512, type: 2}
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 30
-  lastWillTextTable: {fileID: 0}
+  lastWillChancePercent: 8
+  lastWillTextTable: {fileID: 11400000, guid: 9ff260059128e3a40b772c0df391eb32, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 125
   canBeDecomposed: 0

@@ -172,6 +172,9 @@ public class BattleInputController : MonoBehaviour
         if (!CanAcceptPlayerInput())
             return;
 
+        if (!battleManager.CanUseConsumableThisTurn(battleManager.CurrentActingUnit))
+            return;
+
         List<InventoryStackData> allyInventory = battleManager.GetActiveAllyInventory();
         if (allyInventory == null || inventoryIndex < 0 || inventoryIndex >= allyInventory.Count)
             return;
@@ -384,6 +387,9 @@ public class BattleInputController : MonoBehaviour
     private void HandleItemTargetClick(BattleUnit clickedUnit)
     {
         if (!CanAcceptTargetSelectionInput())
+            return;
+
+        if (!battleManager.CanUseConsumableThisTurn(battleManager.CurrentActingUnit))
             return;
 
         int index = battleManager.SelectedInventoryIndex;

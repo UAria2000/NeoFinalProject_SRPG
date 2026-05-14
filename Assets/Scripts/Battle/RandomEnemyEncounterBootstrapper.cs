@@ -14,6 +14,11 @@ public class RandomEnemyEncounterBootstrapper : MonoBehaviour
 
     private PartyDefinition runtimeGeneratedEnemyParty;
 
+    public void SetGenerateOnAwake(bool enabled)
+    {
+        generateOnAwake = enabled;
+    }
+
     private bool useDynamicLevelScaling;
     private int dynamicReferenceLevel = 1;
     private WorldDifficulty dynamicDifficulty = WorldDifficulty.Normal;

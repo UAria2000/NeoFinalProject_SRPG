@@ -148,6 +148,7 @@ public class BattleActionWheelUI : MonoBehaviour
     [SerializeField] private string unusableLabel = "사용불가";
     [SerializeField] private string noItemLabel = "미지정";
     [SerializeField] private string noAmountLabel = "수량없음";
+    [SerializeField] private string itemUsedThisTurnLabel = "사용 완료";
     [SerializeField] private string moveUnavailableLabel = "이동불가";
     [SerializeField] private string notImplementedLabel = "미구현";
     [SerializeField] private string noManaLabel = "마나부족";
@@ -752,6 +753,9 @@ public class BattleActionWheelUI : MonoBehaviour
         if (!TryGetActionWheelItem(out _, out InventoryStackData stack))
             return MakeDisabledButton(label, icon, configuredItem == null ? noItemLabel : noAmountLabel);
 
+        if (battleManager != null && !battleManager.CanUseConsumableThisTurn(currentActor))
+            return MakeDisabledButton(label, icon, itemUsedThisTurnLabel);
+
         List<BattleUnit> validTargets = BattleTargeting.GetValidItemTargets(
             currentActor,
             stack.item,
@@ -794,6 +798,12 @@ public class BattleActionWheelUI : MonoBehaviour
         int cost = battleManager != null ? battleManager.GetManaActionCost(actionType) : 0;
         string reason = actionSpecificReason;
         bool usable = canAcceptAction && actionSpecificUsable;
+
+        if (usable && battleManager != null && !battleManager.IsManaActionAllowedByTutorial(actionType))
+        {
+            usable = false;
+            reason = unusableLabel;
+        }
 
         if (usable && battleManager != null && !battleManager.CanUseManaActionThisRound())
         {
@@ -1098,7 +1108,7 @@ public class BattleActionWheelUI : MonoBehaviour
         if (manaButtonUI == null)
             return;
 
-        bool interactable = isOpen && canAcceptAction && !IsTargetSelectionMode();
+        bool interactable = isOpen && canAcceptAction && !IsTargetSelectionMode() && (battleManager == null || battleManager.CanOpenManaMenuInCurrentContext());
         manaButtonUI.SetVisible(isOpen);
         manaButtonUI.Apply(currentManaValue, maxManaValue, interactable, () => SwitchToTopLevelDepth(BattleActionWheelDepth.Mana));
     }

@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e662b7d56d718594a8e435db9e994010, type: 3}
+  m_Name: Boss_Barrier
+  m_EditorClassIdentifier: Assembly-CSharp::UnitViewDefinition
+  slotFaceSprite: {fileID: 21300000, guid: 7f01380607d9b3046a0ccaabc4e23186, type: 3}
+  bustPortraitSprite: {fileID: 21300000, guid: 5774720d23341f94f91ba770c0d857ca, type: 3}
+  deadSlotFaceSprite: {fileID: 0}
+  deadBustPortraitSprite: {fileID: 0}
+  battleSprite: {fileID: 21300000, guid: 77bd8758e6e19ab44b922c13dd6da807, type: 3}
+  attackBattleSprite: {fileID: 0}
+  hitBattleSprite: {fileID: 0}
+  battleHighlightSprite: {fileID: 21300000, guid: fb3981f88f1aebe4d95489a95c71bd06, type: 3}
+  attackSpriteAnchoredPosition: {x: 0, y: 0}
+  attackSpriteSizeDelta: {x: 0, y: 0}
+  attackSpriteLocalScale: {x: 1, y: 1, z: 1}
+  hitSpriteAnchoredPosition: {x: 0, y: 0}
+  hitSpriteSizeDelta: {x: 0, y: 0}
+  hitSpriteLocalScale: {x: 1, y: 1, z: 1}
+  deadBattleSprite: {fileID: 0}
+  viewPrefab: {fileID: 7130859592086966948, guid: edca2cd44571b8f4c80b0dfce99d6e95, type: 3}

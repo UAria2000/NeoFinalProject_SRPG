@@ -14,6 +14,12 @@ public class WorldGenerationSettings : ScriptableObject
 
     [Header("Factions")]
     public List<FactionType> enemyFactions = new List<FactionType> { FactionType.FactionA, FactionType.FactionB };
+    [Tooltip("월드 생성 시 팩션별 타일 수를 완전 균등이 아니라 무작위 가중치로 배분합니다.")]
+    public bool randomizeFactionTileRatios = true;
+    [Tooltip("가장 큰 팩션과 가장 작은 팩션의 타일 수 비율 상한입니다. 2면 최대 2:1입니다.")]
+    [Min(1f)] public float maxFactionTileRatio = 2f;
+    [Tooltip("3개 이상 팩션 확장을 대비한 단일 팩션 최대 점유 비율입니다. 기본값은 약 66.6%입니다.")]
+    [Range(0.01f, 1f)] public float maxSingleFactionTileShare = 0.6666667f;
     public List<FactionPresentation> factionPresentations = new List<FactionPresentation>();
 
     [Header("Events")]

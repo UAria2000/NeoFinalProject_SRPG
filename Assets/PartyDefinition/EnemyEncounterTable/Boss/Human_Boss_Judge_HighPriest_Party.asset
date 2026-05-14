@@ -50,10 +50,10 @@ MonoBehaviour:
     equippedItems: []
     battleLootDrops: []
     persistentCurrentHP: -1
-  - unitDefinition: {fileID: 11400000, guid: 0de3def49d4e33b47a081a3f3e2aa671, type: 2}
-    unitViewDefinition: {fileID: 11400000, guid: a36af4934b8ff394495454593ff6b071, type: 2}
+  - unitDefinition: {fileID: 11400000, guid: df851e33232ac8d4f962ad6498ca2c10, type: 2}
+    unitViewDefinition: {fileID: 11400000, guid: b926958fec49d1147b6f504c09449747, type: 2}
     startSlotIndex: 1
-    instanceId: boss_high_priest_boss_slot_1
+    instanceId: boss_barrier_boss_slot_1
     instanceDisplayNameOverride: 
     fixedEpitaph: 
     isExchangeable: 0
@@ -79,7 +79,82 @@ MonoBehaviour:
       stunResistDelta: 0
       frostResistDelta: 0
       blindResistDelta: 0
-    learnedSkills: []
+    learnedSkills:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    equippedItems: []
+    battleLootDrops: []
+    persistentCurrentHP: -1
+  - unitDefinition: {fileID: 11400000, guid: df851e33232ac8d4f962ad6498ca2c10, type: 2}
+    unitViewDefinition: {fileID: 11400000, guid: b926958fec49d1147b6f504c09449747, type: 2}
+    startSlotIndex: 2
+    instanceId: boss_barrier_boss_slot_1
+    instanceDisplayNameOverride: 
+    fixedEpitaph: 
+    isExchangeable: 0
+    isNft: 0
+    currentLevel: 7
+    originalLevel: 7
+    currentExp: 0
+    levelGrowthMaxHp: 0
+    levelGrowthDmg: 0
+    promotionRank: 1
+    promotionBonusPercentPerRank: 1
+    statVariance:
+      maxHpDelta: 0
+      dmgDelta: 0
+      spdDelta: 0
+      idtDelta: 0
+      hitDelta: 0
+      acDelta: 0
+      criDelta: 0
+      crdDelta: 0
+      burnResistDelta: 0
+      bleedResistDelta: 0
+      stunResistDelta: 0
+      frostResistDelta: 0
+      blindResistDelta: 0
+    learnedSkills:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    equippedItems: []
+    battleLootDrops: []
+    persistentCurrentHP: -1
+  - unitDefinition: {fileID: 11400000, guid: 0de3def49d4e33b47a081a3f3e2aa671, type: 2}
+    unitViewDefinition: {fileID: 11400000, guid: a36af4934b8ff394495454593ff6b071, type: 2}
+    startSlotIndex: 3
+    instanceId: boss_high_priest_boss_slot_3
+    instanceDisplayNameOverride: 
+    fixedEpitaph: 
+    isExchangeable: 0
+    isNft: 0
+    currentLevel: 7
+    originalLevel: 7
+    currentExp: 0
+    levelGrowthMaxHp: 0
+    levelGrowthDmg: 0
+    promotionRank: 1
+    promotionBonusPercentPerRank: 1
+    statVariance:
+      maxHpDelta: 0
+      dmgDelta: 0
+      spdDelta: 0
+      idtDelta: 0
+      hitDelta: 0
+      acDelta: 0
+      criDelta: 0
+      crdDelta: 0
+      burnResistDelta: 0
+      bleedResistDelta: 0
+      stunResistDelta: 0
+      frostResistDelta: 0
+      blindResistDelta: 0
+    learnedSkills:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
     equippedItems: []
     battleLootDrops: []
     persistentCurrentHP: -1

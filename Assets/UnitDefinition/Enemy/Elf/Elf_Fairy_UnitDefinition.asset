@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: elf_fairy
   unitName: "\uD398\uC5B4\uB9AC"
   rangeType: 2
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -53,8 +54,8 @@ MonoBehaviour:
   fixedStartingSkills: []
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 30
-  lastWillTextTable: {fileID: 0}
+  lastWillChancePercent: 8
+  lastWillTextTable: {fileID: 11400000, guid: 9ff260059128e3a40b772c0df391eb32, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 90
   canBeDecomposed: 0

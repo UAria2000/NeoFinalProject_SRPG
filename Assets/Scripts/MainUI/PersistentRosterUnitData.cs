@@ -178,6 +178,7 @@ public class PersistentProfileState
     public PersistentAccountCurrencyState accountCurrencies = new PersistentAccountCurrencyState();
     public long nextObtainedOrder = 1;
     public int worldAttemptCount = 0;
+    public bool hasCompletedTutorial = false;
     public WorldSettlementResultState lastWorldSettlementResult = WorldSettlementResultState.None;
 
     public void EnsureDefaults()

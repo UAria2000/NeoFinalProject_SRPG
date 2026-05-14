@@ -26,6 +26,7 @@ public class AccountProfileSaveData
     public ProfileUpgradeSaveData upgrades = new ProfileUpgradeSaveData();
     public long nextObtainedOrder = 1;
     public int worldAttemptCount = 0;
+    public bool hasCompletedTutorial = false;
 
     public WorldSettlementResultState lastWorldSettlementResult = WorldSettlementResultState.None;
 }

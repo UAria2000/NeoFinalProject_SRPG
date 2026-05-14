@@ -110,12 +110,12 @@ public class BattleUnit
 
     public bool IsPositionMovementLocked
     {
-        get { return HasActiveDuelLock; }
+        get { return HasActiveDuelLock || (Definition != null && Definition.positionMovementLocked); }
     }
 
     public bool IsForcedPositionMoveImmune
     {
-        get { return Definition != null && Definition.forcePositionMoveImmune; }
+        get { return Definition != null && (Definition.forcePositionMoveImmune || Definition.positionMovementLocked); }
     }
 
     public bool HasStealth

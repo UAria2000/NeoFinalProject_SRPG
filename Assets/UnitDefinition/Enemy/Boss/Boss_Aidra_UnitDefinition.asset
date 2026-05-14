@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: boss_aidra
   unitName: "\uACE0\uB8E1 \uC5D0\uC774\uB4DC\uB77C"
   rangeType: 1
+  defaultViewDefinition: {fileID: 11400000, guid: f7eae2bcf21afdc4581bb3b809df16ff, type: 2}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -29,11 +30,11 @@ MonoBehaviour:
   ac: 48
   cri: 6
   crd: 125
-  burnResist: 0
-  bleedResist: 0
-  stunResist: 0
-  frostResist: 0
-  blindResist: 0
+  burnResist: 35
+  bleedResist: 40
+  stunResist: 70
+  frostResist: 50
+  blindResist: 30
   basicAttack: {fileID: 11400000, guid: 55f0991a1a51a094cb8a9917d250902c, type: 2}
   varianceRules:
     maxHpRange: {x: 0, y: 0}

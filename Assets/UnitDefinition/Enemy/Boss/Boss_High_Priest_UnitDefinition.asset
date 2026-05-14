@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: boss_high_priest
   unitName: "\uB300\uC0AC\uC81C"
   rangeType: 2
+  defaultViewDefinition: {fileID: 11400000, guid: a36af4934b8ff394495454593ff6b071, type: 2}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -29,11 +30,11 @@ MonoBehaviour:
   ac: 36
   cri: 4
   crd: 150
-  burnResist: 0
-  bleedResist: 0
-  stunResist: 0
-  frostResist: 0
-  blindResist: 0
+  burnResist: 15
+  bleedResist: 15
+  stunResist: 30
+  frostResist: 15
+  blindResist: 30
   basicAttack: {fileID: 11400000, guid: f709c4223c1875a4e9e92a49c4ae0656, type: 2}
   varianceRules:
     maxHpRange: {x: 0, y: 0}

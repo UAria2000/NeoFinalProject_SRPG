@@ -19,14 +19,30 @@ public class SimpleScreenFader : MonoBehaviour
     {
         yield return Fade(0f, 1f, duration);
         if (canvasGroup != null)
+        {
             canvasGroup.blocksRaycasts = true;
+            canvasGroup.interactable = true;
+        }
     }
 
     public IEnumerator FadeIn(float duration)
     {
         yield return Fade(1f, 0f, duration);
         if (canvasGroup != null)
+        {
             canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable = false;
+        }
+    }
+
+    public void ClearImmediate()
+    {
+        if (canvasGroup == null)
+            return;
+
+        canvasGroup.alpha = 0f;
+        canvasGroup.blocksRaycasts = false;
+        canvasGroup.interactable = false;
     }
 
     private IEnumerator Fade(float from, float to, float duration)
@@ -45,7 +61,7 @@ public class SimpleScreenFader : MonoBehaviour
 
         while (elapsed < duration)
         {
-            elapsed += Time.deltaTime;
+            elapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
             canvasGroup.alpha = Mathf.Lerp(from, to, t);
             yield return null;

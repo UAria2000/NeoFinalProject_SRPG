@@ -50,11 +50,11 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 0
+    powerPercent: 10
     useRandomPowerPercentRange: 0
     randomPowerPercentMin: 0
     randomPowerPercentMax: 0
-    flatValue: 100
+    flatValue: 0
     valueReference: 1
     durationTurns: 0
     displayIcon: {fileID: 0}

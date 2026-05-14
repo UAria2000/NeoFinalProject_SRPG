@@ -56,8 +56,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c6ff224a2ea62a144a9ffd9597ee2482, type: 2}
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 30
-  lastWillTextTable: {fileID: 0}
+  lastWillChancePercent: 8
+  lastWillTextTable: {fileID: 11400000, guid: 9ff260059128e3a40b772c0df391eb32, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 130
   canBeDecomposed: 0

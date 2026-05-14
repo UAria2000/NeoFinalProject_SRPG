@@ -25,23 +25,8 @@ public class BattleCaptureController : MonoBehaviour
 
     public void InitializeCaptureAttempts()
     {
+        // 포획 횟수 제한은 제거되었다. 포획 가능 여부는 마나/대상 조건만 사용한다.
         remainingCaptureAttemptsByUnit.Clear();
-
-        List<BattleUnit> enemies = battleManager != null && battleManager.EnemyFormation != null
-            ? battleManager.EnemyFormation.GetAllUnits()
-            : null;
-
-        if (enemies == null)
-            return;
-
-        for (int i = 0; i < enemies.Count; i++)
-        {
-            BattleUnit enemy = enemies[i];
-            if (enemy == null)
-                continue;
-
-            remainingCaptureAttemptsByUnit[enemy] = Mathf.Max(0, maxCaptureAttemptsPerEnemyInstance);
-        }
     }
 
     public void NotifyUnitLeftBattle(BattleUnit unit)
@@ -158,10 +143,7 @@ public class BattleCaptureController : MonoBehaviour
 
         // 새 포획 플로우는 적 자체가 아니라 적에게 연결된 포로 아이템을 획득한 뒤
         // 전투 종료 시 그 아이템을 포로 데이터로 변환한다.
-        if (target.Definition.captureRewardItem == null)
-            return false;
-
-        if (GetRemainingCaptureAttempts(target) <= 0)
+        if (target.Definition.captureRewardItem == null && (battleManager == null || battleManager.WorldRunManager == null || !battleManager.WorldRunManager.AllowsTutorialFallbackCaptureReward(target)))
             return false;
 
         if (!HasInventorySpaceForCapture())
@@ -172,37 +154,31 @@ public class BattleCaptureController : MonoBehaviour
 
     public int GetRemainingCaptureAttempts(BattleUnit target)
     {
-        if (target == null)
-            return 0;
-
-        return remainingCaptureAttemptsByUnit.TryGetValue(target, out int value)
-            ? Mathf.Max(0, value)
-            : 0;
+        // 횟수 제한 삭제. 기존 UI/로그 호환을 위해 큰 값을 반환한다.
+        return target != null ? 999 : 0;
     }
 
     public bool TryConsumeCaptureAttempt(BattleUnit target)
     {
-        int remaining = GetRemainingCaptureAttempts(target);
-        if (remaining <= 0)
-            return false;
-
-        remainingCaptureAttemptsByUnit[target] = remaining - 1;
-        return true;
+        // 횟수 제한 삭제. 실제 비용은 BattleManager.TrySpendManaForAction(Capture)에서 처리한다.
+        return target != null;
     }
 
     public void RefundCaptureAttempt(BattleUnit target)
     {
-        if (target == null)
-            return;
-
-        int remaining = GetRemainingCaptureAttempts(target);
-        remainingCaptureAttemptsByUnit[target] = Mathf.Min(maxCaptureAttemptsPerEnemyInstance, remaining + 1);
+        // 횟수 제한 삭제로 환불할 카운터가 없다.
     }
 
     public int GetCaptureChancePercent(BattleUnit target)
     {
         if (target == null || target.MaxHP <= 0)
             return 0;
+
+        int tutorialOverride = battleManager != null && battleManager.WorldRunManager != null
+            ? battleManager.WorldRunManager.GetTutorialCaptureChanceOverridePercent(target)
+            : -1;
+        if (tutorialOverride >= 0)
+            return Mathf.Clamp(tutorialOverride, 0, 100);
 
         float hpPercent = target.CurrentHP / (float)target.MaxHP * 100f;
 
@@ -225,9 +201,14 @@ public class BattleCaptureController : MonoBehaviour
             ? target.Definition.captureRewardItem
             : null;
 
-        return target != null &&
-               target.Definition != null &&
-               target.Definition.canBeCaptured &&
-               target.Definition.captureRewardItem != null;
+        if (target == null || target.Definition == null || !target.Definition.canBeCaptured)
+            return false;
+
+        if (target.Definition.captureRewardItem != null)
+            return true;
+
+        return battleManager != null &&
+               battleManager.WorldRunManager != null &&
+               battleManager.WorldRunManager.AllowsTutorialFallbackCaptureReward(target);
     }
 }

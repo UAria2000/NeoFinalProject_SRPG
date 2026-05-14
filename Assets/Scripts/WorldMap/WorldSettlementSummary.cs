@@ -41,6 +41,8 @@ public class WorldSettlementSummary
     public string worldSizeLabel;
     public string worldDifficultyLabel;
 
+    public string lordName;
+
     public int lordLevelBefore;
     public int lordExpBefore;
     public int lordExpToNextBefore;

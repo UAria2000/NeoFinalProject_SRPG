@@ -15,6 +15,7 @@ MonoBehaviour:
   unitId: human_royal_alchemist
   unitName: "\uC655\uB9BD \uC5F0\uAE08\uC220\uC0AC"
   rangeType: 1
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 0
   legionSortPriority: 0
@@ -55,8 +56,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 79b34b6d197c2ab45a7bdc8402b82102, type: 2}
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 30
-  lastWillTextTable: {fileID: 0}
+  lastWillChancePercent: 8
+  lastWillTextTable: {fileID: 11400000, guid: bc5025a809afa084ab2522cca5e3c4ad, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 120
   canBeDecomposed: 0
