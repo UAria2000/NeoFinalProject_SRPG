@@ -6,68 +6,87 @@ using System.Collections.Generic;
 public class UnitDetailPanel : MonoBehaviour
 {
     [Header("Top Info")]
-    public Image rankImage;           // 랭크 이미지 (방패 모양)
+    public Image rankImage;
     public TextMeshProUGUI nameText;
-    public TextMeshProUGUI levelText; // Lv. (현재레벨) (포획레벨)
+    public TextMeshProUGUI levelText;
 
     [Header("Visuals")]
-    public Image unitIllustration;    // 전신 일러스트
-    public Image classIcon;           // 클래스 아이콘 (랭크 아래 첫 번째 칸)
-    public Image[] skillIcons;        // 스킬 아이콘들 (그 아래 4개 칸)
-    public GameObject nftBadge;       // NFT 마크
+    public Image unitIllustration;
+    public Image classIcon;
+    public Image[] skillIcons;
+    public GameObject nftBadge;
 
     [Header("HP Bar (Slider)")]
-    public Slider hpSlider;           // 체력바 슬라이더
+    public Slider hpSlider;
     public TextMeshProUGUI hpText;
 
     [Header("Stats")]
-    public TextMeshProUGUI atkText;
-    public TextMeshProUGUI defText;
-    public TextMeshProUGUI armorText;
-    public TextMeshProUGUI blockText;
-    public TextMeshProUGUI critText;
-    public TextMeshProUGUI critDmgText;
-    public TextMeshProUGUI speedText;
+    public TextMeshProUGUI atkText;      // 검 아이콘 (DMG)
+    public TextMeshProUGUI defText;      // 과녁 아이콘 (HIT)
+    public TextMeshProUGUI armorText;    // 갑옷 아이콘 (AC)
+    public TextMeshProUGUI blockText;    // 방패 아이콘 (IDT)
+    public TextMeshProUGUI critText;     // 폭발 아이콘 (CRI)
+    public TextMeshProUGUI critDmgText;  // 폭발+ 아이콘 (CRD)
+    public TextMeshProUGUI speedText;    // 장화 아이콘 (SPD)
 
     [Header("Data Resources")]
-    public Sprite[] rankSprites;      // 랭크별 방패 이미지 (인덱스 0이 1단계)
-    public int baseMaxHp = 100;       // 캐릭터 기본 최대 체력
+    public Sprite[] rankSprites;
 
     public void Setup(RosterUnitSaveData unitData)
     {
         if (unitData == null) return;
 
-        // 1. 랭크 이미지 설정 (promotionRank 기반)
+        // 1. 랭크 설정
         int rankIndex = Mathf.Clamp(unitData.promotionRank - 1, 0, rankSprites.Length - 1);
-        if (rankSprites != null && rankSprites.Length > 0)
-        {
-            rankImage.sprite = rankSprites[rankIndex];
-        }
+        if (rankSprites != null && rankSprites.Length > 0) rankImage.sprite = rankSprites[rankIndex];
 
-        // 2. 이름 및 레벨 설정 (현재레벨, 포획레벨)
+        // 2. 이름 및 레벨 설정 (Rich Text 적용)
         nameText.text = string.IsNullOrEmpty(unitData.instanceDisplayNameOverride)
             ? unitData.unitDefinitionId : unitData.instanceDisplayNameOverride;
-
         levelText.text = $"Lv. {unitData.level} <color=#AAAAAA>({unitData.originalLevel})</color>";
 
-        // 3. 클래스 및 일러스트 설정 (SaveReferenceResolver 활용)
+        // 3. 데이터 리졸버 및 변동치 참조
         var unitDef = SaveReferenceResolver.Instance.FindUnitDefinition(unitData.unitDefinitionId);
         var viewDef = SaveReferenceResolver.Instance.FindUnitViewDefinition(unitData.unitViewDefinitionName);
+        var statVar = unitData.statVariance;
 
-        if (unitDef != null && classIcon != null)
+        // 4. 7개 핵심 능력치 출력 (UnitDefinition 필드명 적용)
+        if (unitDef != null)
         {
-            // UnitDefinition의 아이콘을 클래스 아이콘으로 사용
-            // (에셋 구조에 따라 unitDef.icon 또는 별도 필드 사용)
-            // classIcon.sprite = unitDef.icon; 
+            // 공격력 (DMG): 기본값 + 레벨 성장 + 변동치
+            atkText.text = Mathf.RoundToInt(unitDef.dmg + unitData.levelGrowthDmg + statVar.dmgDelta).ToString();
+
+            // 명중 (HIT): float 형식이므로 반올림 처리
+            defText.text = Mathf.RoundToInt(unitDef.hit + statVar.hitDelta).ToString();
+
+            // 회피 (AC): float 형식이므로 반올림 처리
+            armorText.text = Mathf.RoundToInt(unitDef.ac + statVar.acDelta).ToString();
+
+            // 피해 감소율 (IDT): % 단위 표기
+            blockText.text = $"{Mathf.RoundToInt(unitDef.idt + statVar.idtDelta)}%";
+
+            // 치명타 확률 (CRI): % 단위 표기
+            critText.text = $"{Mathf.RoundToInt(unitDef.cri + statVar.criDelta)}%";
+
+            // 치명타 피해 (CRD)
+            critDmgText.text = Mathf.RoundToInt(unitDef.crd + statVar.crdDelta).ToString();
+
+            // 이동 속도 (SPD)
+            speedText.text = Mathf.RoundToInt(unitDef.spd + statVar.spdDelta).ToString();
         }
 
-        if (viewDef != null && unitIllustration != null)
-        {
-            // 전신 일러스트 적용 (ViewDefinition에 정의된 필드 사용)
-            // unitIllustration.sprite = viewDef.fullIllustration;
-        }
+        // 5. HP 슬라이더 (maxHP 필드 사용)
+        int baseHp = unitDef != null ? unitDef.maxHP : 10;
+        float maxHp = baseHp + unitData.levelGrowthMaxHp + statVar.maxHpDelta;
 
-        // 4. 4개의 스킬 아이콘 설정
+        if (hpSlider != null)
+        {
+            hpSlider.maxValue = maxHp;
+            hpSlider.value = unitData.persistentCurrentHP;
+        }
+        hpText.text = $"{unitData.persistentCurrentHP} / {Mathf.RoundToInt(maxHp)}";
+
+        // 6. 스킬 아이콘 및 NFT 배지 (기존 로직 유지)
         for (int i = 0; i < skillIcons.Length; i++)
         {
             if (i < unitData.learnedSkillIds.Count)
@@ -78,39 +97,12 @@ public class UnitDetailPanel : MonoBehaviour
                     skillIcons[i].sprite = skillDef.icon;
                     skillIcons[i].gameObject.SetActive(true);
                 }
-                else
-                {
-                    skillIcons[i].gameObject.SetActive(false);
-                }
+                else skillIcons[i].gameObject.SetActive(false);
             }
-            else
-            {
-                skillIcons[i].gameObject.SetActive(false); // 배운 스킬이 슬롯보다 적으면 비활성화
-            }
+            else skillIcons[i].gameObject.SetActive(false);
         }
 
-        // 5. NFT 배지 표시 여부
-        if (nftBadge != null)
-        {
-            nftBadge.SetActive(unitData.isNft);
-        }
-
-        // 6. HP 슬라이더 설정
-        float maxHp = baseMaxHp + unitData.levelGrowthMaxHp;
-        if (hpSlider != null)
-        {
-            hpSlider.maxValue = maxHp;
-            hpSlider.value = unitData.persistentCurrentHP;
-        }
-        hpText.text = $"{unitData.persistentCurrentHP} / {maxHp}";
-
-        // 7. 능력치 텍스트 갱신 (보유 데이터 그대로 출력)
-        atkText.text = unitData.levelGrowthDmg.ToString();
-
-        // 데이터 구조에 따라 나머지 스탯도 동일하게 매핑
-        // defText.text = unitData.someDefValue.ToString();
-        // speedText.text = unitData.someSpeedValue.ToString();
-
+        if (nftBadge != null) nftBadge.SetActive(unitData.isNft);
         gameObject.SetActive(true);
     }
 }

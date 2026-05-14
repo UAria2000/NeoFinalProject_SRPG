@@ -12,14 +12,13 @@ public class MarketplaceUI : MonoBehaviour
 {
     [Header("Manager Reference")]
     public MarketplaceManager marketplaceManager;
-    // 변수 선언 추가: 인스펙터에서 PersistentProfileController를 드래그 앤 드롭해야 합니다.
     public PersistentProfileController persistentProfileController;
 
     [Header("Owned Assets (Right)")]
     public TextMeshProUGUI goldText;
 
     [Header("Detail Panel")]
-    public UnitDetailPanel detailPanel; // 인스펙터에서 할당
+    public UnitDetailPanel detailPanel;
 
     [Header("Inventory (Left)")]
     public Transform inventoryContent;
@@ -86,24 +85,18 @@ public class MarketplaceUI : MonoBehaviour
 
     private async Task UpdateGoldUI()
     {
-        // persistentProfileController가 할당되어 있는지 확인
         if (goldText == null || marketplaceManager == null || persistentProfileController == null) return;
 
         try
         {
-            // 1. Unity Economy 서버에서 최신 잔액 가져오기
             var balances = await EconomyService.Instance.PlayerBalances.GetBalancesAsync();
             var goldBalance = balances.Balances.Find(b => b.CurrencyId == "GOLD");
 
             if (goldBalance != null)
             {
-                // 2. 서버에서 받은 값을 PersistentProfileController에 동기화
                 int currentGold = (int)goldBalance.Balance;
                 persistentProfileController.UpdateGoldBalance(currentGold);
-
-                // 3. UI 텍스트 업데이트
                 goldText.text = $"{currentGold:N0} GOLD";
-                Debug.Log($"[Marketplace] 서버-로컬 골드 동기화 완료: {currentGold}");
             }
         }
         catch (System.Exception e)
@@ -121,22 +114,31 @@ public class MarketplaceUI : MonoBehaviour
         {
             foreach (Transform child in inventoryContent) Destroy(child.gameObject);
 
+            // 1. 파일로부터 세이브 데이터 로드
             var profileData = SaveCoordinator.Instance.LoadProfileData();
-            if (profileData == null || profileData.rosterUnits == null) return;
+            if (profileData == null || profileData.rosterUnits == null)
+            {
+                Debug.LogWarning("[Marketplace] 로드할 병사 데이터가 세이브 파일에 없습니다.");
+                return;
+            }
 
-            // 파티 편성 중인 ID 리스트를 미리 가져옵니다.
-            HashSet<string> activePartyIds = new HashSet<string>(profileData.activePartyUnitInstanceIds);
+            // 2. 변수 선언 (오류 해결 핵심): 필터링에 사용할 HashSet을 루프 시작 전에 미리 선언
+            List<string> partyIds = profileData.activePartyUnitInstanceIds ?? new List<string>();
+            HashSet<string> activePartyIds = new HashSet<string>(partyIds);
+
+            Debug.Log($"[Marketplace] 로드된 총 유닛 수: {profileData.rosterUnits.Count}");
 
             foreach (var unit in profileData.rosterUnits)
             {
-                // 1. NFT 태그가 달려 있는 병사만 출력
-                if (!unit.isNft) continue;
+                // 필터링 조건 체크 로그 (디버깅용)
+                bool isNft = unit.isNft;
+                bool isFavorite = unit.isFavorite;
+                bool inParty = activePartyIds.Contains(unit.unitInstanceId);
 
-                // 2. 즐겨찾기 등록된 병사는 제외
-                if (unit.isFavorite) continue;
-
-                // 3. 파티에 편성 중인 병사는 제외
-                if (activePartyIds.Contains(unit.unitInstanceId)) continue;
+                // 필터 적용
+                if (!isNft) continue; // NFT가 아니면 제외
+                if (isFavorite) continue; // 즐겨찾기면 제외
+                if (inParty) continue; // 파티 중이면 제외
 
                 var slot = Instantiate(inventorySlotPrefab, inventoryContent);
                 var card = slot.GetComponent<SoldierCard>();
@@ -193,11 +195,9 @@ public class MarketplaceUI : MonoBehaviour
         UpdateHighlight(clickedCard);
         selectedInstanceId = instanceId;
 
-        // 1. SaveCoordinator에서 해당 병사의 전체 데이터를 찾습니다.
         var profileData = SaveCoordinator.Instance.LoadProfileData();
         var unitData = profileData.rosterUnits.Find(u => u.unitInstanceId == instanceId);
 
-        // 2. 상세 정보 패널 갱신
         if (unitData != null && detailPanel != null)
         {
             detailPanel.Setup(unitData);
