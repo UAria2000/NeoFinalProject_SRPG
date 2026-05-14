@@ -44,9 +44,9 @@ MonoBehaviour:
       frostResistDelta: 0
       blindResistDelta: 0
     learnedSkills:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 11400000, guid: 1c8e67f46e10a6a48b9893039892d321, type: 2}
+    - {fileID: 11400000, guid: 463412996dbf97a4a900be41ea1ee425, type: 2}
+    - {fileID: 11400000, guid: 6feeceb715417814d8da567d8cc69d15, type: 2}
     equippedItems: []
     battleLootDrops: []
     persistentCurrentHP: -1
@@ -152,9 +152,9 @@ MonoBehaviour:
       frostResistDelta: 0
       blindResistDelta: 0
     learnedSkills:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 11400000, guid: 3b9992275b51d5046bcfd88483fa8746, type: 2}
+    - {fileID: 11400000, guid: 17f175cc336772f4caeaafbc010aac98, type: 2}
+    - {fileID: 11400000, guid: f2a8e2e2a8f80414e870365c19777aea, type: 2}
     equippedItems: []
     battleLootDrops: []
     persistentCurrentHP: -1
