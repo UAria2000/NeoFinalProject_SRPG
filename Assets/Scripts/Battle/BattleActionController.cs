@@ -59,7 +59,8 @@ public class BattleActionController : MonoBehaviour
         }
 
         int rolledPrimaryDamagePercent = BattleCalculator.RollSkillDamagePowerPercent(skill);
-        Sprite attackSprite = actor != null && actor.ViewDefinition != null ? actor.ViewDefinition.GetAttackBattleSprite() : null;
+        UnitViewDefinition actorViewDefinition = actor != null ? actor.ViewDefinition : null;
+        Sprite attackSprite = skill.GetAttackMotionSprite(actorViewDefinition);
 
         if (skill.resolutionMode == SkillResolutionMode.Attack && skill.HasDamageEffect())
         {
@@ -72,6 +73,8 @@ public class BattleActionController : MonoBehaviour
                         ? battleManager.PresentationController.StageCameraController
                         : null;
 
+                    yield return StartCoroutine(FocusAttackCameraBeforeMotion(stageCamera, actor, battleManager.AttackApproachDuration));
+
                     yield return StartCoroutine(actorView.PlayAttackMoveWithImpact(
                         targetView.AnchoredPosition,
                         battleManager.AttackMoveRatio,
@@ -82,8 +85,8 @@ public class BattleActionController : MonoBehaviour
                         battleManager.AttackImpactDelayAfterArrival,
                         attackSprite,
                         () => ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent),
-                        () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackApproachDuration),
-                        () => stageCamera?.FocusUnitSmooth(clickedTarget, battleManager.AttackHoldDuration),
+                        null,
+                        () => stageCamera?.FocusUnitSmooth(clickedTarget, GetAttackTargetFocusDuration()),
                         () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackReturnDuration)));
                 }
                 else
@@ -115,12 +118,8 @@ public class BattleActionController : MonoBehaviour
             {
                 BattleUnit primaryTarget = targets[i];
 
-                // --- [이펙트 추가] 대상 위치에서 타격 이펙트 재생 (성공판정형) ---
                 BattleUnitView targetView = viewManager.GetView(primaryTarget);
-                if (targetView != null && skill.hitEffectPrefab != null)
-                {
-                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView.transform.position);
-                }
+                BattleEffectManager.PlayHitEffect(skill, targetView, viewManager);
 
                 PlaySkillHitSfx(skill);
                 ApplySuccessOnlyEffects(actor, primaryTarget, skill.skillName, skill.effects);
@@ -429,6 +428,34 @@ public class BattleActionController : MonoBehaviour
         battleManager.OnActionExecutionFinished(true);
     }
 
+    private IEnumerator FocusAttackCameraBeforeMotion(BattleStageCameraController stageCamera, BattleUnit unit, float duration)
+    {
+        if (stageCamera == null || unit == null)
+            yield break;
+
+        float waitDuration = Mathf.Max(0f, duration);
+        stageCamera.FocusUnitSmooth(unit, waitDuration);
+
+        if (waitDuration > 0f)
+            yield return new WaitForSeconds(waitDuration);
+    }
+
+    private float GetAttackTargetFocusDuration()
+    {
+        if (battleManager == null)
+            return 0f;
+
+        return Mathf.Max(battleManager.AttackHoldDuration, battleManager.AttackImpactDelayAfterArrival);
+    }
+
+    private void FocusAttackCameraOnImpactTarget(BattleUnit target)
+    {
+        if (target == null || battleManager == null || battleManager.PresentationController == null)
+            return;
+
+        battleManager.PresentationController.StageCameraController?.FocusUnitSmooth(target, GetAttackTargetFocusDuration());
+    }
+
     private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, float rolledPrimaryDamagePercent)
     {
         int totalHpDamageDealt = 0;
@@ -450,9 +477,7 @@ public class BattleActionController : MonoBehaviour
                 if (primaryTarget == null || primaryTarget.IsDead)
                     break;
 
-                BattleUnitView targetView = viewManager.GetView(primaryTarget);
-                if (targetView != null && skill.hitEffectPrefab != null)
-                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView.transform.position);
+                FocusAttackCameraOnImpactTarget(primaryTarget);
 
                 PlaySkillHitSfx(skill);
 
@@ -488,6 +513,7 @@ public class BattleActionController : MonoBehaviour
 
                 if (secondaryTarget != null && !secondaryTarget.IsDead)
                 {
+                    FocusAttackCameraOnImpactTarget(secondaryTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -505,6 +531,7 @@ public class BattleActionController : MonoBehaviour
                 else if (skill.HasMissingSecondaryTargetDamageBonus())
                 {
                     float bonusPower = Mathf.Max(primaryDamagePowerPercent, skill.GetMissingSecondaryTargetDamagePowerPercent());
+                    FocusAttackCameraOnImpactTarget(primaryTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -526,6 +553,7 @@ public class BattleActionController : MonoBehaviour
                 BattleUnit pierceTarget = GetBackUnit(primaryTarget);
                 if (pierceTarget != null && !pierceTarget.IsDead)
                 {
+                    FocusAttackCameraOnImpactTarget(pierceTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -634,6 +662,7 @@ public class BattleActionController : MonoBehaviour
         {
             if (result.DidHit)
             {
+                BattleEffectManager.PlayHitEffect(skill, view, viewManager);
                 Coroutine hpRoutine = StartCoroutine(view.AnimateHPChange(0.15f));
                 yield return StartCoroutine(view.PlayHitReaction(battleManager != null ? battleManager.HitFlashDuration : 1f));
                 if (hpRoutine != null)
@@ -642,6 +671,9 @@ public class BattleActionController : MonoBehaviour
             else
             {
                 yield return StartCoroutine(view.AnimateHPChange(0.15f));
+                float missHold = battleManager != null ? battleManager.MissCameraHoldDuration : 0f;
+                if (missHold > 0f)
+                    yield return new WaitForSeconds(missHold);
             }
         }
 
@@ -1050,6 +1082,7 @@ public class BattleActionController : MonoBehaviour
             if (target == null)
                 yield break;
 
+            FocusAttackCameraOnImpactTarget(target);
             PlaySkillHitSfx(skill);
             yield return StartCoroutine(ResolveAndApplyAttack(
                 actor,
@@ -1078,6 +1111,7 @@ public class BattleActionController : MonoBehaviour
             if (target == null || target.IsDead)
                 yield break;
 
+            FocusAttackCameraOnImpactTarget(target);
             PlaySkillHitSfx(skill);
             yield return StartCoroutine(ResolveAndApplyAttack(
                 actor,
