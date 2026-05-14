@@ -67,6 +67,10 @@ public class BattleStageCameraController : MonoBehaviour
     [Tooltip("Normalized pan amount per second while the mouse stays on the screen edge.")]
     [Min(0f)] [SerializeField] private float edgeScrollNormalizedSpeed = 0.65f;
     [SerializeField] private bool blockEdgeScrollWhenPointerOverUI = true;
+    [Tooltip("자동 포커스 이동 중에는 마우스가 화면 끝에 있어도 엣지 스크롤을 막습니다.")]
+    [SerializeField] private bool lockEdgeScrollDuringAutoFocus = true;
+    [Tooltip("자동 포커스 이동이 끝난 뒤 엣지 스크롤 입력을 추가로 막는 시간입니다.")]
+    [Min(0f)] [SerializeField] private float autoFocusEdgeScrollLockDuration = 0.5f;
     [Tooltip("UI raycast hits under these roots are ignored when deciding whether UI blocks edge-scroll. Put the battle stage/background root here if it is also UI.")]
     [SerializeField] private RectTransform[] pointerUIBlockExclusionRoots;
 
@@ -106,6 +110,7 @@ public class BattleStageCameraController : MonoBehaviour
     private Vector2 stageInitialAnchoredPosition;
     private bool initialized;
     private float activeSmoothTime;
+    private float edgeScrollLockedUntilRealtime;
 
     private bool dragPointerHeld;
     private bool draggingStage;
@@ -176,7 +181,10 @@ public class BattleStageCameraController : MonoBehaviour
 
         float normalized;
         if (TryGetNormalizedPanForUnit(unit, out normalized))
+        {
+            LockEdgeScrollForAutoFocus(0f);
             SetNormalizedPanInstant(normalized);
+        }
     }
 
     public void FocusUnitSmooth(BattleUnit unit)
@@ -193,8 +201,7 @@ public class BattleStageCameraController : MonoBehaviour
         if (!TryGetNormalizedPanForUnit(unit, out normalized))
             return;
 
-        targetNormalizedPan = Mathf.Clamp01(normalized);
-        activeSmoothTime = requestedSmoothTime > 0f ? requestedSmoothTime : smoothTime;
+        SetAutoFocusTargetNormalizedPan(normalized, requestedSmoothTime);
     }
 
     public void FocusUnitsSmooth(BattleUnit a, BattleUnit b)
@@ -243,15 +250,13 @@ public class BattleStageCameraController : MonoBehaviour
 
         float centerX = sum / count;
         float normalized = GetNormalizedPanForStageLocalX(centerX);
-        targetNormalizedPan = Mathf.Clamp01(normalized);
-        activeSmoothTime = requestedSmoothTime > 0f ? requestedSmoothTime : smoothTime;
+        SetAutoFocusTargetNormalizedPan(normalized, requestedSmoothTime);
     }
 
     public void FocusWorldPositionSmooth(Vector3 worldPosition)
     {
         float normalized = GetNormalizedPanForWorldPosition(worldPosition);
-        targetNormalizedPan = Mathf.Clamp01(normalized);
-        activeSmoothTime = actionFocusSmoothTime > 0f ? actionFocusSmoothTime : smoothTime;
+        SetAutoFocusTargetNormalizedPan(normalized, actionFocusSmoothTime > 0f ? actionFocusSmoothTime : smoothTime);
     }
 
     public void ResetToCenterInstant()
@@ -262,6 +267,27 @@ public class BattleStageCameraController : MonoBehaviour
     public void ResetToCenterSmooth()
     {
         SetNormalizedPanSmooth(0.5f);
+    }
+
+    private void SetAutoFocusTargetNormalizedPan(float normalizedPan, float requestedSmoothTime)
+    {
+        targetNormalizedPan = Mathf.Clamp01(normalizedPan);
+        activeSmoothTime = requestedSmoothTime > 0f ? requestedSmoothTime : smoothTime;
+        LockEdgeScrollForAutoFocus(activeSmoothTime);
+    }
+
+    private void LockEdgeScrollForAutoFocus(float focusDuration)
+    {
+        if (!lockEdgeScrollDuringAutoFocus)
+            return;
+
+        float duration = Mathf.Max(0f, focusDuration) + Mathf.Max(0f, autoFocusEdgeScrollLockDuration);
+        edgeScrollLockedUntilRealtime = Mathf.Max(edgeScrollLockedUntilRealtime, Time.unscaledTime + duration);
+    }
+
+    private bool IsEdgeScrollLockedByAutoFocus()
+    {
+        return lockEdgeScrollDuringAutoFocus && Time.unscaledTime < edgeScrollLockedUntilRealtime;
     }
 
     private void CaptureInitialStateIfNeeded()
@@ -539,6 +565,9 @@ public class BattleStageCameraController : MonoBehaviour
 
     private void UpdateEdgeScrollTarget()
     {
+        if (IsEdgeScrollLockedByAutoFocus())
+            return;
+
         Vector2 pointerPosition;
         if (!TryGetPointerPosition(out pointerPosition))
             return;
@@ -752,6 +781,8 @@ public class BattleStageCameraController : MonoBehaviour
         cameraRightX = 640f;
         edgeScrollZoneReferencePixels = 90f;
         edgeScrollNormalizedSpeed = 0.65f;
+        lockEdgeScrollDuringAutoFocus = true;
+        autoFocusEdgeScrollLockDuration = 0.5f;
         smoothTime = 0.18f;
         turnStartFocusSmoothTime = 0.22f;
         actionFocusSmoothTime = 0.16f;

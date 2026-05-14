@@ -243,12 +243,45 @@ public class BattleViewManager : MonoBehaviour
 
     public void PlayEffect(GameObject prefab, Vector3 worldPosition, float duration = 2f)
     {
+        PlayEffect(prefab, worldPosition, duration, false);
+    }
+
+    public void PlayEffect(GameObject prefab, Vector3 worldPosition, float duration, bool mirrorX)
+    {
         if (prefab == null || viewRoot == null) return;
 
         GameObject effect = Instantiate(prefab, viewRoot);
         effect.transform.position = worldPosition;
+        if (mirrorX)
+        {
+            Vector3 scale = effect.transform.localScale;
+            scale.x = -Mathf.Abs(scale.x);
+            effect.transform.localScale = scale;
+        }
+
+        if (effect.TryGetComponent(out BattleRichHitEffectUI richEffect))
+        {
+            richEffect.SetDuration(duration);
+            Vector2 spawnOffset = richEffect.SpawnOffset;
+            if (mirrorX)
+                spawnOffset.x = -spawnOffset.x;
+
+            RectTransform rect = effect.GetComponent<RectTransform>();
+            if (rect != null)
+                rect.anchoredPosition += spawnOffset;
+            else
+                effect.transform.position += new Vector3(spawnOffset.x, spawnOffset.y, 0f);
+        }
 
         Destroy(effect, duration);
+    }
+
+    public void PlayEffect(GameObject prefab, BattleUnitView targetView, float duration = 2f)
+    {
+        if (targetView == null)
+            return;
+
+        PlayEffect(prefab, targetView.HitEffectAnchorPosition, duration);
     }
 
     public void ShowFloatingText(BattleUnit unit, string text, Color color, float duration = -1f)

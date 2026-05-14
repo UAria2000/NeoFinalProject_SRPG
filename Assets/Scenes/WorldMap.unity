@@ -66340,6 +66340,8 @@ MonoBehaviour:
   edgeScrollZoneReferencePixels: 90
   edgeScrollNormalizedSpeed: 0.65
   blockEdgeScrollWhenPointerOverUI: 1
+  lockEdgeScrollDuringAutoFocus: 1
+  autoFocusEdgeScrollLockDuration: 0.5
   pointerUIBlockExclusionRoots:
   - {fileID: 790467865}
   - {fileID: 1524486138}
@@ -66350,9 +66352,9 @@ MonoBehaviour:
   requirePointerInsideViewportForDrag: 1
   dragStartThresholdReferencePixels: 6
   dragPanSensitivity: 1
-  smoothTime: 0.18
-  turnStartFocusSmoothTime: 0.22
-  actionFocusSmoothTime: 0.16
+  smoothTime: 0.2
+  turnStartFocusSmoothTime: 0.2
+  actionFocusSmoothTime: 0.2
   initialNormalizedPan: 0.5
   centerOnStart: 1
 --- !u!114 &1494918043
