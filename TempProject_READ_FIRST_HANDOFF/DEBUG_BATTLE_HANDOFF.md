@@ -130,6 +130,15 @@
 전투 중단 시 씬이 초기화되어야 한다.
 필드 위 유닛, 전투 UI, 플로팅 텍스트, 디버그 이펙트 오브젝트가 남으면 안 된다.
 
+## 이펙트 시스템 연결
+
+- 디버그 전투는 `useDebugEffectOverrides`가 켜진 경우에만 런타임 스킬 이펙트 override 적용.
+- `debugHitEffectPrefab`이 지정되면 프리팹 직접 override 사용.
+- `debugHitEffectPrefab`이 비어 있으면 기존 스킬에 이펙트 지정이 없는 경우에만 `debugHitEffectType`을 fallback으로 사용.
+- 현재 `DebugBattle` 씬은 `debugHitEffectType = Slashing`으로 설정되어 공용 슬래싱 피격 이펙트를 테스트한다.
+- 기존 스킬 에셋의 전용 `hitEffectPrefab`은 디버그 override가 꺼져 있을 때 그대로 유지된다.
+- 흑기사 기본 공격처럼 `hitEffectType`이 지정된 스킬은 디버그 fallback으로 덮어쓰지 않는다.
+
 ## 캡처 규칙
 
 게임 뷰 캡처 경로:

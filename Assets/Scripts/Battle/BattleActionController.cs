@@ -118,12 +118,8 @@ public class BattleActionController : MonoBehaviour
             {
                 BattleUnit primaryTarget = targets[i];
 
-                // --- [이펙트 추가] 대상 위치에서 타격 이펙트 재생 (성공판정형) ---
                 BattleUnitView targetView = viewManager.GetView(primaryTarget);
-                if (targetView != null && skill.hitEffectPrefab != null)
-                {
-                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView);
-                }
+                BattleEffectManager.PlayHitEffect(skill, targetView, viewManager);
 
                 PlaySkillHitSfx(skill);
                 ApplySuccessOnlyEffects(actor, primaryTarget, skill.skillName, skill.effects);
@@ -483,10 +479,6 @@ public class BattleActionController : MonoBehaviour
 
                 FocusAttackCameraOnImpactTarget(primaryTarget);
 
-                BattleUnitView targetView = viewManager.GetView(primaryTarget);
-                if (targetView != null && skill.hitEffectPrefab != null)
-                    viewManager.PlayEffect(skill.hitEffectPrefab, targetView);
-
                 PlaySkillHitSfx(skill);
 
                 string primaryLogSuffix = primaryHitCount > 1
@@ -670,6 +662,7 @@ public class BattleActionController : MonoBehaviour
         {
             if (result.DidHit)
             {
+                BattleEffectManager.PlayHitEffect(skill, view, viewManager);
                 Coroutine hpRoutine = StartCoroutine(view.AnimateHPChange(0.15f));
                 yield return StartCoroutine(view.PlayHitReaction(battleManager != null ? battleManager.HitFlashDuration : 1f));
                 if (hpRoutine != null)

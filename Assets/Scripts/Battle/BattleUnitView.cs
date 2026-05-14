@@ -67,28 +67,44 @@ public class BattleUnitView : MonoBehaviour
 
     public BattleUnit Unit { get; private set; }
     public RectTransform HoverAnchor => hoverAnchor != null ? hoverAnchor : rectTransform;
-    public Vector3 HitEffectAnchorPosition
+    public Vector3 HitEffectAnchorPosition => GetHitEffectAnchorPosition(HitEffectAnchorType.Default, Vector2.zero);
+
+    public Vector3 GetHitEffectAnchorPosition(HitEffectAnchorType anchorType, Vector2 additionalOffset)
     {
-        get
+        RectTransform sourceRect = unitBodyImage != null ? unitBodyImage.rectTransform : rectTransform;
+        if (sourceRect == null)
+            return transform.position;
+
+        Vector3[] corners = new Vector3[4];
+        sourceRect.GetWorldCorners(corners);
+
+        Vector3 bottomCenter = (corners[0] + corners[3]) * 0.5f;
+        Vector3 topCenter = (corners[1] + corners[2]) * 0.5f;
+        Vector3 anchor;
+
+        switch (anchorType)
         {
-            RectTransform sourceRect = unitBodyImage != null ? unitBodyImage.rectTransform : rectTransform;
-            if (sourceRect == null)
-                return transform.position;
-
-            Vector3[] corners = new Vector3[4];
-            sourceRect.GetWorldCorners(corners);
-
-            Vector3 bottomCenter = (corners[0] + corners[3]) * 0.5f;
-            Vector3 topCenter = (corners[1] + corners[2]) * 0.5f;
-            Vector3 anchor = Vector3.Lerp(bottomCenter, topCenter, hitEffectHeightNormalized);
-
-            if (rectTransform != null)
-                anchor += rectTransform.TransformVector(hitEffectOffset);
-            else
-                anchor += new Vector3(hitEffectOffset.x, hitEffectOffset.y, 0f);
-
-            return anchor;
+            case HitEffectAnchorType.Center:
+                anchor = Vector3.Lerp(bottomCenter, topCenter, 0.5f);
+                break;
+            case HitEffectAnchorType.Overhead:
+                anchor = topCenter;
+                break;
+            case HitEffectAnchorType.Feet:
+                anchor = bottomCenter;
+                break;
+            default:
+                anchor = Vector3.Lerp(bottomCenter, topCenter, hitEffectHeightNormalized);
+                break;
         }
+
+        Vector2 totalOffset = hitEffectOffset + additionalOffset;
+        if (rectTransform != null)
+            anchor += rectTransform.TransformVector(totalOffset);
+        else
+            anchor += new Vector3(totalOffset.x, totalOffset.y, 0f);
+
+        return anchor;
     }
     public RectTransform ClickableArea => clickableArea;
     public Vector2 AnchoredPosition

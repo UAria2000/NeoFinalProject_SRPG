@@ -233,7 +233,12 @@ public class SkillDefinition : ScriptableObject
     [Header("Visual Effects")]
     public Sprite attackMotionSprite;
     public GameObject castEffectPrefab; // 시전 시 사용자 위치에서 발생
-    public GameObject hitEffectPrefab;  // 타격 시 대상 위치에서 발생
+    [Tooltip("스킬 전용 타격 이펙트입니다. 비워두면 Hit Effect Type에 맞는 공용 이펙트를 사용합니다.")]
+    public GameObject hitEffectPrefab;
+    public HitEffectType hitEffectType = HitEffectType.None;
+    public HitEffectAnchorType hitEffectAnchorType = HitEffectAnchorType.Default;
+    [Tooltip("0이면 레지스트리 또는 기본 재생 시간을 사용합니다.")]
+    [Min(0f)] public float hitEffectDurationOverride = 0f;
 
     [Header("Audio")]
     [Tooltip("현재는 자동 재생하지 않습니다. 추후 시전 시작 사운드가 필요할 때 사용합니다.")]
@@ -256,6 +261,11 @@ public class SkillDefinition : ScriptableObject
             return attackMotionSprite;
 
         return fallbackViewDefinition != null ? fallbackViewDefinition.GetAttackBattleSprite() : null;
+    }
+
+    public float GetHitEffectDurationOverride(float fallbackDuration)
+    {
+        return hitEffectDurationOverride > 0f ? hitEffectDurationOverride : Mathf.Max(0.01f, fallbackDuration);
     }
 
     public bool CanBeUsedFromSlot(int slotIndex)

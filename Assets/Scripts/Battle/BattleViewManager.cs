@@ -248,6 +248,16 @@ public class BattleViewManager : MonoBehaviour
         GameObject effect = Instantiate(prefab, viewRoot);
         effect.transform.position = worldPosition;
 
+        if (effect.TryGetComponent(out BattleRichHitEffectUI richEffect))
+        {
+            richEffect.SetDuration(duration);
+            RectTransform rect = effect.GetComponent<RectTransform>();
+            if (rect != null)
+                rect.anchoredPosition += richEffect.SpawnOffset;
+            else
+                effect.transform.position += new Vector3(richEffect.SpawnOffset.x, richEffect.SpawnOffset.y, 0f);
+        }
+
         Destroy(effect, duration);
     }
 

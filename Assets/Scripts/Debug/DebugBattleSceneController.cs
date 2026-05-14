@@ -27,6 +27,9 @@ public partial class DebugBattleSceneController : MonoBehaviour
     [SerializeField] private bool useDebugEffectOverrides;
     [SerializeField] private GameObject debugCastEffectPrefab;
     [SerializeField] private GameObject debugHitEffectPrefab;
+    [SerializeField] private HitEffectType debugHitEffectType = HitEffectType.Slashing;
+    [SerializeField] private HitEffectAnchorType debugHitEffectAnchorType = HitEffectAnchorType.Default;
+    [SerializeField, Min(0f)] private float debugHitEffectDurationOverride;
 
     [Header("Runtime Debug Options")]
     [SerializeField] private bool debugAllyInvincible;
@@ -228,7 +231,7 @@ public partial class DebugBattleSceneController : MonoBehaviour
                 DestroyDebugRuntimeObject(floatingTexts[i].gameObject);
         }
 
-        DebugBattleHitEffectUI[] debugHitEffects = UnityEngine.Object.FindObjectsByType<DebugBattleHitEffectUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        BattleHitEffectUI[] debugHitEffects = UnityEngine.Object.FindObjectsByType<BattleHitEffectUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         for (int i = 0; i < debugHitEffects.Length; i++)
         {
             if (debugHitEffects[i] != null)
@@ -366,12 +369,34 @@ public partial class DebugBattleSceneController : MonoBehaviour
         SkillDefinition clone = Instantiate(source);
         clone.name = source.name + "_DebugRuntime";
         RememberRuntimeSkillCooldown(clone);
-        if (debugCastEffectPrefab != null)
-            clone.castEffectPrefab = debugCastEffectPrefab;
-        if (debugHitEffectPrefab != null)
-            clone.hitEffectPrefab = debugHitEffectPrefab;
+        ApplyDebugEffectOverrides(clone);
         ApplyNoCooldownToRuntimeSkill(clone);
         return clone;
+    }
+
+    private void ApplyDebugEffectOverrides(SkillDefinition skill)
+    {
+        if (skill == null || !useDebugEffectOverrides)
+            return;
+
+        if (debugCastEffectPrefab != null)
+            skill.castEffectPrefab = debugCastEffectPrefab;
+
+        if (debugHitEffectPrefab != null)
+        {
+            skill.hitEffectPrefab = debugHitEffectPrefab;
+            skill.hitEffectAnchorType = debugHitEffectAnchorType;
+            skill.hitEffectDurationOverride = debugHitEffectDurationOverride;
+            return;
+        }
+
+        if (skill.hitEffectPrefab != null || skill.hitEffectType != HitEffectType.None)
+            return;
+
+        skill.hitEffectPrefab = null;
+        skill.hitEffectType = debugHitEffectType;
+        skill.hitEffectAnchorType = debugHitEffectAnchorType;
+        skill.hitEffectDurationOverride = debugHitEffectDurationOverride;
     }
 
     private void RememberRuntimeSkillCooldown(SkillDefinition skill)

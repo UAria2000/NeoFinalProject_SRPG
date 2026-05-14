@@ -36253,15 +36253,16 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   turnDelay: 0.25
-  moveAnimationDuration: 0.35
-  attackMoveRatio: 0.45
-  attackMoveMaxDistance: 260
-  attackMoveDuration: 0.55
-  attackApproachDuration: 0.3
-  attackHoldDuration: 1
-  attackReturnDuration: 0.15
-  attackImpactDelayAfterArrival: 0.15
-  hitFlashDuration: 0.8
+  moveAnimationDuration: 0.5
+  attackMoveRatio: 0.3
+  attackMoveMaxDistance: 200
+  attackMoveDuration: 0.3
+  attackApproachDuration: 0.25
+  attackHoldDuration: 0.25
+  attackReturnDuration: 0.25
+  attackImpactDelayAfterArrival: 0.5
+  missCameraHoldDuration: -1
+  hitFlashDuration: 0.5
   popupLogPanel: {fileID: 907927938}
   inventoryMaxSlotCount: 8
   maxCaptureAttemptsPerEnemyInstance: 3
@@ -59965,6 +59966,8 @@ MonoBehaviour:
   edgeScrollZoneReferencePixels: 90
   edgeScrollNormalizedSpeed: 0.65
   blockEdgeScrollWhenPointerOverUI: 1
+  lockEdgeScrollDuringAutoFocus: 1
+  autoFocusEdgeScrollLockDuration: 0.5
   pointerUIBlockExclusionRoots:
   - {fileID: 790467865}
   - {fileID: 1524486138}
@@ -59975,9 +59978,9 @@ MonoBehaviour:
   requirePointerInsideViewportForDrag: 1
   dragStartThresholdReferencePixels: 6
   dragPanSensitivity: 1
-  smoothTime: 0.18
-  turnStartFocusSmoothTime: 0.22
-  actionFocusSmoothTime: 0.16
+  smoothTime: 0.2
+  turnStartFocusSmoothTime: 0.2
+  actionFocusSmoothTime: 0.2
   initialNormalizedPan: 0.5
   centerOnStart: 1
 --- !u!114 &1494918043
@@ -73777,7 +73780,10 @@ MonoBehaviour:
   promotionRankSprites: []
   useDebugEffectOverrides: 1
   debugCastEffectPrefab: {fileID: 8044248948510086152, guid: 8018841b39c4107479f174ef0067c0c6, type: 3}
-  debugHitEffectPrefab: {fileID: 165964024477834777, guid: 99a8ceff253f8ee469e5f2f0eafc6aa0, type: 3}
+  debugHitEffectPrefab: {fileID: 0}
+  debugHitEffectType: 1
+  debugHitEffectAnchorType: 0
+  debugHitEffectDurationOverride: 0
   debugAllyInvincible: 0
   debugNoSkillCooldown: 0
 --- !u!4 &1883209015
