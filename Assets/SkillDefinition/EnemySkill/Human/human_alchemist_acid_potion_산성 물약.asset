@@ -119,6 +119,9 @@ MonoBehaviour:
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   castEffectPrefab: {fileID: 0}
-  hitEffectPrefab: {fileID: 5691736663297753136, guid: e3154417192c1904eb89807a5a6626ae, type: 3}
+  hitEffectPrefab: {fileID: 0}
+  hitEffectType: 8
+  hitEffectAnchorType: 0
+  hitEffectDurationOverride: 0
   useSfx: {fileID: 0}
   hitSfx: {fileID: 0}

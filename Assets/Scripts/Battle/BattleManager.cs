@@ -68,6 +68,8 @@ public class BattleManager : MonoBehaviour
     [Tooltip("공격자가 목표 지점에 도착한 뒤 실제 피해/효과가 들어가기까지의 대기 시간입니다.")]
     [FormerlySerializedAs("attackImpactDelayAfterArrive")]
     [SerializeField, Min(0f)] private float attackImpactDelayAfterArrival = 0f;
+    [Tooltip("빗나감 표시 후 카메라가 대상에게 머무는 시간입니다. 음수면 Attack Hold Duration 값을 사용합니다.")]
+    [SerializeField] private float missCameraHoldDuration = -1f;
     [Tooltip("피격/도트 피해 시 붉게 점등하고 피격 모션을 유지하는 시간입니다.")]
     [SerializeField, Min(0.01f)] private float hitFlashDuration = 1f;
 
@@ -164,6 +166,7 @@ public class BattleManager : MonoBehaviour
     public float AttackHoldDuration { get { return Mathf.Max(0f, attackHoldDuration); } }
     public float AttackReturnDuration { get { return Mathf.Max(0.01f, attackReturnDuration); } }
     public float AttackImpactDelayAfterArrival { get { return Mathf.Max(0f, attackImpactDelayAfterArrival); } }
+    public float MissCameraHoldDuration { get { return missCameraHoldDuration >= 0f ? missCameraHoldDuration : AttackHoldDuration; } }
     public float AttackMoveDuration { get { return AttackApproachDuration + AttackHoldDuration + AttackReturnDuration; } }
     public float HitFlashDuration { get { return Mathf.Max(0.01f, hitFlashDuration); } }
     public float SupportSkillPreImpactDelay { get { return Mathf.Max(0f, supportSkillPreImpactDelay); } }
