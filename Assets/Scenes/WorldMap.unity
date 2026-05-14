@@ -47761,7 +47761,7 @@ MonoBehaviour:
   restEffectHeaderText: "\uD734\uC2DD \uD6A8\uACFC"
   restEffectHeaderColor: {r: 0.05490196, g: 0.8784314, b: 0.10980392, a: 1}
   restPartyPreviewHeaderText: "\uD30C\uD2F0 \uC0C1\uD0DC"
-  restPartyPreviewHeaderColor: {r: 0.62, g: 0.78, b: 1, a: 1}
+  restPartyPreviewHeaderColor: {r: 1, g: 1, b: 1, a: 1}
   restDescriptionSuffix: "\uD734\uC2DD\uC744 \uCDE8\uD574 \uCCB4\uB825\uC744 \uD68C\uBCF5\uD569\uB2C8\uB2E4."
   restHealMode: 1
   restHealPercentOfMaxHp: 30
