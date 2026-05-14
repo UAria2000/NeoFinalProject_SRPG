@@ -429,7 +429,7 @@ public class BattleActionController : MonoBehaviour
         battleManager.OnActionExecutionFinished(true);
     }
 
-    private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, int rolledPrimaryDamagePercent)
+    private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, float rolledPrimaryDamagePercent)
     {
         int totalHpDamageDealt = 0;
         bool killedWithPrimarySkill = false;
@@ -438,6 +438,8 @@ public class BattleActionController : MonoBehaviour
             yield break;
 
         int primaryHitCount = skill != null ? skill.GetPrimaryHitCount() : 1;
+        int damageDistributionDivisor = GetDamageDistributionDivisor(skill, targets);
+        float primaryDamagePowerPercent = GetDistributedPrimaryDamagePowerPercent(skill, rolledPrimaryDamagePercent, damageDistributionDivisor);
 
         for (int i = 0; i < targets.Count; i++)
         {
@@ -462,7 +464,7 @@ public class BattleActionController : MonoBehaviour
                     actor,
                     skill,
                     primaryTarget,
-                    rolledPrimaryDamagePercent,
+                    primaryDamagePowerPercent,
                     -1f,
                     primaryLogSuffix,
                     true,
@@ -502,7 +504,7 @@ public class BattleActionController : MonoBehaviour
                 }
                 else if (skill.HasMissingSecondaryTargetDamageBonus())
                 {
-                    float bonusPower = Mathf.Max(rolledPrimaryDamagePercent, skill.GetMissingSecondaryTargetDamagePowerPercent());
+                    float bonusPower = Mathf.Max(primaryDamagePowerPercent, skill.GetMissingSecondaryTargetDamagePowerPercent());
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -529,7 +531,7 @@ public class BattleActionController : MonoBehaviour
                         actor,
                         skill,
                         pierceTarget,
-                        rolledPrimaryDamagePercent,
+                        primaryDamagePowerPercent,
                         -1f,
                         " [관통]",
                         false,
@@ -601,9 +603,14 @@ public class BattleActionController : MonoBehaviour
             if (applyNonDamageEffects)
             {
                 if (skill.activeGimmick == ActiveSkillGimmick.BleedDrainStrike)
+                {
                     ApplyBleedDrainStrikeEffects(actor, target, skill, hpDamageDealt);
+                }
                 else
-                    ApplyNonDamageEffects(actor, target, skill.skillName, skill.effects, true);
+                {
+                    BattleUnit nonDamageEffectTarget = GetNonDamageEffectTarget(actor, target, skill);
+                    ApplyNonDamageEffects(actor, nonDamageEffectTarget, skill.skillName, skill.effects, true);
+                }
             }
 
             if (allowPrimaryHitGimmicks &&
@@ -658,6 +665,41 @@ public class BattleActionController : MonoBehaviour
             yield return StartCoroutine(HandleForcedTargetMoveAfterHit(actor, skill, target));
             yield return StartCoroutine(HandleRandomRepositionAfterHit(actor, skill, target));
         }
+    }
+
+    private int GetDamageDistributionDivisor(SkillDefinition skill, List<BattleUnit> targets)
+    {
+        if (skill == null || !skill.DistributesDamageByLivingTargets())
+            return 1;
+
+        if (targets == null || targets.Count <= 0)
+            return 1;
+
+        int count = 0;
+        for (int i = 0; i < targets.Count; i++)
+        {
+            BattleUnit target = targets[i];
+            if (target != null && !target.IsDead)
+                count++;
+        }
+
+        return Mathf.Max(1, count);
+    }
+
+    private float GetDistributedPrimaryDamagePowerPercent(SkillDefinition skill, float rolledPrimaryDamagePercent, int divisor)
+    {
+        if (skill == null || !skill.DistributesDamageByLivingTargets())
+            return rolledPrimaryDamagePercent;
+
+        return rolledPrimaryDamagePercent / Mathf.Max(1, divisor);
+    }
+
+    private BattleUnit GetNonDamageEffectTarget(BattleUnit actor, BattleUnit originalTarget, SkillDefinition skill)
+    {
+        if (skill != null && skill.ShouldApplyNonDamageEffectsToSelf())
+            return actor;
+
+        return originalTarget;
     }
 
     private float GetResolvedDamagePowerPercentForThisAttack(
@@ -1021,7 +1063,7 @@ public class BattleActionController : MonoBehaviour
         }
     }
 
-    private IEnumerator ApplyChainExecutionOnce(BattleUnit actor, SkillDefinition skill, int rolledPrimaryDamagePercent)
+    private IEnumerator ApplyChainExecutionOnce(BattleUnit actor, SkillDefinition skill, float rolledPrimaryDamagePercent)
     {
         if (actor == null || actor.IsDead || skill == null)
             yield break;
