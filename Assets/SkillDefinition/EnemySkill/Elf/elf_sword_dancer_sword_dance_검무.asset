@@ -44,6 +44,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -98,10 +99,10 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 60
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
-    randomPowerPercentMax: 100
+    powerPercent: 0
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 50
+    randomPowerPercentMax: 60
     flatValue: 0
     valueReference: 0
     durationTurns: 0

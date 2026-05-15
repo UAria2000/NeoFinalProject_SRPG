@@ -43,6 +43,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -99,11 +100,24 @@ MonoBehaviour:
     affectedByResistance: 0
     powerPercent: 0
     useRandomPowerPercentRange: 1
-    randomPowerPercentMin: 55
-    randomPowerPercentMax: 75
+    randomPowerPercentMin: 60
+    randomPowerPercentMax: 80
     flatValue: 0
     valueReference: 0
     durationTurns: 0
+    displayIcon: {fileID: 0}
+  - kind: 5
+    statusType: 1
+    statModifierType: 0
+    successChancePercent: 100
+    affectedByResistance: 0
+    powerPercent: 0
+    useRandomPowerPercentRange: 0
+    randomPowerPercentMin: 60
+    randomPowerPercentMax: 80
+    flatValue: 0
+    valueReference: 0
+    durationTurns: 2
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   attackMotionSprite: {fileID: 7740031619727199848, guid: 957f3327f140a8e4193ea6cf7f44becc, type: 3}

@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillId: elf_fairy_magic_prank
   skillName: "\uB9C8\uBC95 \uC7A5\uB09C"
-  description: "\uD53C\uD574 100%. \uC2E4\uBA85 15% \uD655\uB960 \uBD80\uC5EC."
+  description: "\uD398\uC5B4\uB9AC\uAC00 \uC608\uCE21\uD560 \uC218 \uC5C6\uB294 \uAE5C\uC9C1\uD55C 
+    \uB9C8\uBC95 \uC7A5\uB09C\uC744 \uCE69\uB2C8\uB2E4"
   icon: {fileID: 21300000, guid: 14878d9e05a2a2045bf146381fbd15c3, type: 3}
   isBasicAttack: 1
   castType: 0
@@ -42,6 +43,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -96,9 +98,9 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    powerPercent: 0
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 30
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
@@ -107,7 +109,7 @@ MonoBehaviour:
   - kind: 5
     statusType: 9
     statModifierType: 0
-    successChancePercent: 15
+    successChancePercent: 25
     affectedByResistance: 1
     powerPercent: 100
     useRandomPowerPercentRange: 0
