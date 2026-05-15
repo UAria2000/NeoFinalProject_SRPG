@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -66,7 +65,17 @@ public class BattleUnitView : MonoBehaviour
     private bool movementMotionActive;
 
     public BattleUnit Unit { get; private set; }
-    public RectTransform HoverAnchor => hoverAnchor != null ? hoverAnchor : rectTransform;
+    public RectTransform RectTransform
+    {
+        get
+        {
+            if (rectTransform == null)
+                rectTransform = GetComponent<RectTransform>();
+            return rectTransform;
+        }
+    }
+
+    public RectTransform HoverAnchor => hoverAnchor != null ? hoverAnchor : RectTransform;
     public Vector3 HitEffectAnchorPosition => GetHitEffectAnchorPosition(HitEffectAnchorType.Default, Vector2.zero);
 
     public Vector3 GetHitEffectAnchorPosition(HitEffectAnchorType anchorType, Vector2 additionalOffset)
@@ -282,6 +291,26 @@ public class BattleUnitView : MonoBehaviour
         SetSelectableHighlight(active);
     }
 
+    public void SetCinematicChromeVisible(bool visible)
+    {
+        SetOptionalActive(labelText, visible);
+        SetOptionalActive(hpFillImage, visible);
+        if (hpFillImage != null && hpFillImage.transform.parent != null && hpFillImage.transform.parent != transform)
+            SetOptionalActive(hpFillImage.transform.parent.gameObject, visible);
+        SetOptionalActive(statusIconBar, visible);
+        SetOptionalActive(turnMark, visible);
+        SetOptionalActive(targetMark, visible);
+        SetOptionalActive(highlightImage, visible);
+        SetOptionalActive(activeRingRoot, visible);
+        SetOptionalActive(infoSelectedRingRoot, visible);
+        if (clickableArea != null && clickableArea != RectTransform)
+            SetOptionalActive(clickableArea, visible);
+        if (clickableAreaGraphic != null && clickableAreaGraphic.transform != transform)
+            SetOptionalActive(clickableAreaGraphic, visible);
+        SetOptionalActive(upcomingGrayOverlayImage, false);
+        SetOptionalActive(finishedGrayOverlayImage, false);
+    }
+
     public void SetCurrentTurnHighlight(bool active)
     {
         currentTurnHighlightActive = active;
@@ -440,6 +469,30 @@ public class BattleUnitView : MonoBehaviour
         RefreshHighlightVisual();
     }
 
+    public void ApplyCinematicAttackMotionAlignment(TeamType team, float overflowRatio)
+    {
+        if (attackMotionImage == null || !usingAttackMotionImage || attackMotionImage.sprite == null || Unit == null || Unit.ViewDefinition == null)
+            return;
+
+        RectTransform rect = attackMotionImage.rectTransform;
+        if (rect == null)
+            return;
+
+        rect.anchoredPosition = Unit.ViewDefinition.attackSpriteAnchoredPosition;
+
+        float width = rect.rect.width;
+        if (width <= 0f)
+            width = rect.sizeDelta.x;
+        if (width <= 0f && attackMotionImage.sprite != null)
+            width = attackMotionImage.sprite.rect.width;
+
+        float shift = width * Mathf.Clamp01(overflowRatio) * 0.5f;
+        if (team == TeamType.Enemy)
+            shift = -shift;
+
+        rect.anchoredPosition += new Vector2(shift, 0f);
+    }
+
     private void ConfigureAttackMotionImage(bool active, Sprite sprite = null)
     {
         if (attackMotionImage == null)
@@ -552,115 +605,6 @@ public class BattleUnitView : MonoBehaviour
         yield return MoveToPosition(new Vector2(anchoredPosition.x, anchoredPosition.y), duration);
     }
 
-    public IEnumerator PlayAttackMove(Vector2 targetAnchoredPosition, float moveRatio, float maxDistance, float duration, Sprite temporaryBodySprite = null)
-    {
-        yield return PlayAttackMoveWithImpact(targetAnchoredPosition, moveRatio, maxDistance, duration, temporaryBodySprite, null);
-    }
-
-    public IEnumerator PlayAttackMoveWithImpact(
-        Vector2 targetAnchoredPosition,
-        float moveRatio,
-        float maxDistance,
-        float duration,
-        Sprite temporaryBodySprite,
-        Func<IEnumerator> impactRoutine)
-    {
-        float half = Mathf.Max(0.01f, duration * 0.5f);
-        yield return PlayAttackMoveWithImpact(
-            targetAnchoredPosition,
-            moveRatio,
-            maxDistance,
-            half,
-            0f,
-            half,
-            0f,
-            temporaryBodySprite,
-            impactRoutine,
-            null,
-            null,
-            null);
-    }
-
-    public IEnumerator PlayAttackMoveWithImpact(
-        Vector2 targetAnchoredPosition,
-        float moveRatio,
-        float maxDistance,
-        float approachDuration,
-        float holdDuration,
-        float returnDuration,
-        float impactDelayAfterArrival,
-        Sprite temporaryBodySprite,
-        Func<IEnumerator> impactRoutine,
-        Action onApproachStarted,
-        Action onHoldStarted,
-        Action onReturnStarted)
-    {
-        if (rectTransform == null)
-            rectTransform = GetComponent<RectTransform>();
-
-        if (rectTransform == null)
-            yield break;
-
-        SetMotionHighlightSuppressed(true);
-
-        bool usedTemporarySprite = temporaryBodySprite != null;
-        if (usedTemporarySprite)
-            SetBodySpriteOverride(temporaryBodySprite);
-
-        Vector2 originalPos = rectTransform.anchoredPosition;
-        Vector2 dir = targetAnchoredPosition - originalPos;
-        float distance = dir.magnitude;
-        if (distance > 0.001f)
-            dir.Normalize();
-        float moveDistance = Mathf.Min(distance * moveRatio, maxDistance);
-        Vector2 attackPos = originalPos + dir * moveDistance;
-
-        onApproachStarted?.Invoke();
-
-        float elapsed = 0f;
-        float approach = Mathf.Max(0.01f, approachDuration);
-        while (elapsed < approach)
-        {
-            elapsed += Time.deltaTime;
-            rectTransform.anchoredPosition = Vector2.Lerp(originalPos, attackPos, Mathf.Clamp01(elapsed / approach));
-            yield return null;
-        }
-
-        rectTransform.anchoredPosition = attackPos;
-
-        onHoldStarted?.Invoke();
-
-        float hold = Mathf.Max(0f, holdDuration);
-        float delay = Mathf.Max(0f, impactDelayAfterArrival);
-        if (delay > 0f)
-            yield return new WaitForSeconds(delay);
-
-        if (impactRoutine != null)
-            yield return StartCoroutine(impactRoutine());
-
-        float remainingHold = Mathf.Max(0f, hold - delay);
-        if (remainingHold > 0f)
-            yield return new WaitForSeconds(remainingHold);
-
-        onReturnStarted?.Invoke();
-
-        elapsed = 0f;
-        float ret = Mathf.Max(0.01f, returnDuration);
-        while (elapsed < ret)
-        {
-            elapsed += Time.deltaTime;
-            rectTransform.anchoredPosition = Vector2.Lerp(attackPos, originalPos, Mathf.Clamp01(elapsed / ret));
-            yield return null;
-        }
-
-        rectTransform.anchoredPosition = originalPos;
-
-        if (usedTemporarySprite)
-            ClearBodySpriteOverride();
-
-        SetMotionHighlightSuppressed(false);
-    }
-
     private IEnumerator MoveAnchoredPosition(Vector2 from, Vector2 to, float duration)
     {
         if (rectTransform == null)
@@ -702,6 +646,37 @@ public class BattleUnitView : MonoBehaviour
 
         hitFlashRoutine = StartCoroutine(HitFlashRoutine(Mathf.Max(0.01f, duration)));
         yield return hitFlashRoutine;
+    }
+
+    public void ShowHitReactionPose()
+    {
+        if (!gameObject.activeInHierarchy || unitBodyImage == null)
+            return;
+
+        StopHitReactionImmediate();
+
+        Sprite hitSprite = Unit != null && Unit.ViewDefinition != null ? Unit.ViewDefinition.GetHitBattleSprite() : null;
+        bool useDedicatedHitImage = hitMotionImage != null && hitSprite != null;
+
+        Color flash = hitFlashColor;
+        flash.a = Mathf.Clamp01(hitFlashColor.a);
+        Color flashColor = Color.Lerp(baseBodyColor, flash, flash.a);
+
+        hitReactionActive = true;
+        RefreshPrimaryMotionVisibility();
+        RefreshHighlightVisual();
+
+        if (useDedicatedHitImage)
+        {
+            ConfigureHitMotionImage(true, hitSprite, flashColor);
+            return;
+        }
+
+        if (hitSprite != null)
+            unitBodyImage.sprite = hitSprite;
+
+        unitBodyImage.gameObject.SetActive(true);
+        unitBodyImage.color = flashColor;
     }
 
     private void StopHitReactionImmediate()
@@ -790,8 +765,15 @@ public class BattleUnitView : MonoBehaviour
         hitFlashRoutine = null;
     }
 
-    public IEnumerator PlayAttackMove(Vector3 targetAnchoredPosition, float moveRatio, float maxDistance, float duration)
+    private static void SetOptionalActive(Component component, bool active)
     {
-        yield return PlayAttackMove(new Vector2(targetAnchoredPosition.x, targetAnchoredPosition.y), moveRatio, maxDistance, duration);
+        if (component != null)
+            component.gameObject.SetActive(active);
+    }
+
+    private static void SetOptionalActive(GameObject gameObject, bool active)
+    {
+        if (gameObject != null)
+            gameObject.SetActive(active);
     }
 }

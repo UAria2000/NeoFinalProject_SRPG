@@ -8,6 +8,7 @@ public class BattleActionController : MonoBehaviour
     private BattleManager battleManager;
     private BattleViewManager viewManager;
     private BattleLogController logController;
+    private IBattleCinematicDriver cinematicDriver;
     private int lastResolvedAttackHpDamageDealt;
 
     public void Initialize(BattleManager manager, BattleViewManager view, BattleLogController log)
@@ -15,6 +16,9 @@ public class BattleActionController : MonoBehaviour
         battleManager = manager;
         viewManager = view;
         logController = log;
+        cinematicDriver = GetComponent<IBattleCinematicDriver>();
+        if (cinematicDriver == null)
+            cinematicDriver = gameObject.AddComponent<DebugBattleCinematicDirector>();
     }
 
     public IEnumerator ExecuteSkill(BattleUnit actor, SkillDefinition skill, BattleUnit clickedTarget)
@@ -40,6 +44,9 @@ public class BattleActionController : MonoBehaviour
             ownFormation,
             opponentFormation);
 
+        if (targets.Count <= 0 && ShouldUseActorAsFallbackSkillTarget(actor, skill))
+            targets.Add(actor);
+
         if (targets.Count > 0 && skill.ShouldAlsoApplyToSelfWhenTargetingAlly() && actor != null && !actor.IsDead && !targets.Contains(actor))
             targets.Add(actor);
 
@@ -51,48 +58,28 @@ public class BattleActionController : MonoBehaviour
 
         battleManager.SetTurnState(TurnState.ExecutingAction);
 
-        // --- [이펙트 추가] 시전자 위치에서 시전 이펙트 재생 ---
         BattleUnitView actorView = viewManager.GetView(actor);
-        if (actorView != null && skill.castEffectPrefab != null)
+        int rolledPrimaryDamagePercent = BattleCalculator.RollSkillDamagePowerPercent(skill);
+        UnitViewDefinition actorViewDefinition = actor != null ? actor.ViewDefinition : null;
+        Sprite attackSprite = skill.GetAttackMotionSprite(actorViewDefinition);
+        bool useCinematicSkill = ShouldUseCinematicSkill(skill);
+
+        // --- [이펙트 추가] 시전자 위치에서 시전 이펙트 재생 ---
+        if (!useCinematicSkill && actorView != null && skill.castEffectPrefab != null)
         {
             viewManager.PlayEffect(skill.castEffectPrefab, actorView.transform.position);
         }
 
-        int rolledPrimaryDamagePercent = BattleCalculator.RollSkillDamagePowerPercent(skill);
-        UnitViewDefinition actorViewDefinition = actor != null ? actor.ViewDefinition : null;
-        Sprite attackSprite = skill.GetAttackMotionSprite(actorViewDefinition);
-
         if (skill.resolutionMode == SkillResolutionMode.Attack && skill.HasDamageEffect())
         {
-            if (skill.IsEnemyTargetAttackSkill() && clickedTarget != null)
+            if (useCinematicSkill)
             {
-                BattleUnitView targetView = viewManager.GetView(clickedTarget);
-                if (actorView != null && targetView != null)
-                {
-                    BattleStageCameraController stageCamera = battleManager != null && battleManager.PresentationController != null
-                        ? battleManager.PresentationController.StageCameraController
-                        : null;
-
-                    yield return StartCoroutine(FocusAttackCameraBeforeMotion(stageCamera, actor, battleManager.AttackApproachDuration));
-
-                    yield return StartCoroutine(actorView.PlayAttackMoveWithImpact(
-                        targetView.AnchoredPosition,
-                        battleManager.AttackMoveRatio,
-                        battleManager.AttackMoveMaxDistance,
-                        battleManager.AttackApproachDuration,
-                        battleManager.AttackHoldDuration,
-                        battleManager.AttackReturnDuration,
-                        battleManager.AttackImpactDelayAfterArrival,
-                        attackSprite,
-                        () => ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent),
-                        null,
-                        () => stageCamera?.FocusUnitSmooth(clickedTarget, GetAttackTargetFocusDuration()),
-                        () => stageCamera?.FocusUnitSmooth(actor, battleManager.AttackReturnDuration)));
-                }
-                else
-                {
-                    yield return StartCoroutine(ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent));
-                }
+                yield return StartCoroutine(cinematicDriver.PlayAttackCinematic(
+                    actor,
+                    skill,
+                    targets,
+                    attackSprite,
+                    () => ResolveAttackSkillImpacts(actor, skill, targets, rolledPrimaryDamagePercent)));
             }
             else
             {
@@ -107,55 +94,25 @@ public class BattleActionController : MonoBehaviour
         }
         else
         {
-            if (actorView != null && attackSprite != null)
-                actorView.SetBodySpriteOverride(attackSprite);
-
-            float preImpactDelay = battleManager != null ? battleManager.SupportSkillPreImpactDelay : 0f;
-            if (preImpactDelay > 0f)
-                yield return new WaitForSeconds(preImpactDelay);
-
-            for (int i = 0; i < targets.Count; i++)
+            if (useCinematicSkill)
             {
-                BattleUnit primaryTarget = targets[i];
-
-                BattleUnitView targetView = viewManager.GetView(primaryTarget);
-                BattleEffectManager.PlayHitEffect(skill, targetView, viewManager);
-
-                PlaySkillHitSfx(skill);
-                ApplySuccessOnlyEffects(actor, primaryTarget, skill.skillName, skill.effects);
-
-                BattleUnitView primaryView = viewManager.GetView(primaryTarget);
-                if (primaryView != null)
-                    yield return StartCoroutine(primaryView.AnimateHPChange(0.1f));
-
-                if (skill.targetScope == TargetScope.Single &&
-                    skill.secondaryTargetRule != SecondaryTargetRule.None)
-                {
-                    BattleUnit secondaryTarget = BattleTargeting.GetSecondaryTarget(
-                        actor,
-                        skill,
-                        primaryTarget,
-                        battleManager.AllyFormation,
-                        battleManager.EnemyFormation);
-
-                    if (secondaryTarget != null && !secondaryTarget.IsDead)
-                    {
-                        PlaySkillHitSfx(skill);
-                        ApplySuccessOnlyEffects(actor, secondaryTarget, skill.skillName + " [후열]", skill.effects);
-
-                        BattleUnitView secondaryView = viewManager.GetView(secondaryTarget);
-                        if (secondaryView != null)
-                            yield return StartCoroutine(secondaryView.AnimateHPChange(0.1f));
-                    }
-                }
+                yield return StartCoroutine(cinematicDriver.PlayAttackCinematic(
+                    actor,
+                    skill,
+                    targets,
+                    attackSprite,
+                    () => ResolveSupportSkillImpacts(actor, skill, targets)));
             }
+            else
+            {
+                if (actorView != null && attackSprite != null)
+                    actorView.SetBodySpriteOverride(attackSprite);
 
-            float postImpactDelay = battleManager != null ? battleManager.SupportSkillPostImpactDelay : 0f;
-            if (postImpactDelay > 0f)
-                yield return new WaitForSeconds(postImpactDelay);
+                yield return StartCoroutine(ResolveSupportSkillImpacts(actor, skill, targets));
 
-            if (actorView != null && attackSprite != null)
-                actorView.ClearBodySpriteOverride();
+                if (actorView != null && attackSprite != null)
+                    actorView.ClearBodySpriteOverride();
+            }
         }
 
         if (battleManager.SkillGimmickController != null)
@@ -170,6 +127,63 @@ public class BattleActionController : MonoBehaviour
         yield return StartCoroutine(battleManager.HandleDeathsAndCompressionRoutine());
         yield return StartCoroutine(HandleSelfMoveAfterSkill(actor, skill));
         battleManager.OnActionExecutionFinished(true);
+    }
+
+    private IEnumerator ResolveSupportSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets)
+    {
+        float preImpactDelay = battleManager != null ? battleManager.SupportSkillPreImpactDelay : 0f;
+        if (preImpactDelay > 0f)
+            yield return new WaitForSeconds(preImpactDelay);
+
+        for (int i = 0; i < targets.Count; i++)
+        {
+            BattleUnit primaryTarget = targets[i];
+
+            if (IsCinematicPlaying())
+            {
+                cinematicDriver.PlaySupportImpact(primaryTarget, skill);
+            }
+            else
+            {
+                BattleUnitView targetView = viewManager.GetView(primaryTarget);
+                BattleEffectManager.PlayHitEffect(skill, targetView, viewManager);
+            }
+
+            PlaySkillHitSfx(skill);
+            ApplySuccessOnlyEffects(actor, primaryTarget, skill.skillName, skill.effects);
+
+            BattleUnitView primaryView = viewManager.GetView(primaryTarget);
+            if (primaryView != null)
+                yield return StartCoroutine(primaryView.AnimateHPChange(0.1f));
+
+            if (skill.targetScope == TargetScope.Single &&
+                skill.secondaryTargetRule != SecondaryTargetRule.None)
+            {
+                BattleUnit secondaryTarget = BattleTargeting.GetSecondaryTarget(
+                        actor,
+                        skill,
+                        primaryTarget,
+                        battleManager.AllyFormation,
+                        battleManager.EnemyFormation);
+
+                if (secondaryTarget != null && !secondaryTarget.IsDead)
+                {
+                    if (IsCinematicPlaying())
+                        cinematicDriver.PlaySupportImpact(secondaryTarget, skill);
+
+                    PlaySkillHitSfx(skill);
+                    ApplySuccessOnlyEffects(actor, secondaryTarget, skill.skillName + " [후열]", skill.effects);
+
+                    BattleUnitView secondaryView = viewManager.GetView(secondaryTarget);
+                    if (secondaryView != null)
+                        yield return StartCoroutine(secondaryView.AnimateHPChange(0.1f));
+                }
+            }
+        }
+
+        float postImpactDelay = battleManager != null ? battleManager.SupportSkillPostImpactDelay : 0f;
+        if (postImpactDelay > 0f)
+            yield return new WaitForSeconds(postImpactDelay);
     }
 
     public IEnumerator ExecuteMove(BattleUnit actor, BattleUnit target)
@@ -428,34 +442,6 @@ public class BattleActionController : MonoBehaviour
         battleManager.OnActionExecutionFinished(true);
     }
 
-    private IEnumerator FocusAttackCameraBeforeMotion(BattleStageCameraController stageCamera, BattleUnit unit, float duration)
-    {
-        if (stageCamera == null || unit == null)
-            yield break;
-
-        float waitDuration = Mathf.Max(0f, duration);
-        stageCamera.FocusUnitSmooth(unit, waitDuration);
-
-        if (waitDuration > 0f)
-            yield return new WaitForSeconds(waitDuration);
-    }
-
-    private float GetAttackTargetFocusDuration()
-    {
-        if (battleManager == null)
-            return 0f;
-
-        return Mathf.Max(battleManager.AttackHoldDuration, battleManager.AttackImpactDelayAfterArrival);
-    }
-
-    private void FocusAttackCameraOnImpactTarget(BattleUnit target)
-    {
-        if (target == null || battleManager == null || battleManager.PresentationController == null)
-            return;
-
-        battleManager.PresentationController.StageCameraController?.FocusUnitSmooth(target, GetAttackTargetFocusDuration());
-    }
-
     private IEnumerator ResolveAttackSkillImpacts(BattleUnit actor, SkillDefinition skill, List<BattleUnit> targets, float rolledPrimaryDamagePercent)
     {
         int totalHpDamageDealt = 0;
@@ -476,8 +462,6 @@ public class BattleActionController : MonoBehaviour
             {
                 if (primaryTarget == null || primaryTarget.IsDead)
                     break;
-
-                FocusAttackCameraOnImpactTarget(primaryTarget);
 
                 PlaySkillHitSfx(skill);
 
@@ -513,7 +497,6 @@ public class BattleActionController : MonoBehaviour
 
                 if (secondaryTarget != null && !secondaryTarget.IsDead)
                 {
-                    FocusAttackCameraOnImpactTarget(secondaryTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -531,7 +514,6 @@ public class BattleActionController : MonoBehaviour
                 else if (skill.HasMissingSecondaryTargetDamageBonus())
                 {
                     float bonusPower = Mathf.Max(primaryDamagePowerPercent, skill.GetMissingSecondaryTargetDamagePowerPercent());
-                    FocusAttackCameraOnImpactTarget(primaryTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -553,7 +535,6 @@ public class BattleActionController : MonoBehaviour
                 BattleUnit pierceTarget = GetBackUnit(primaryTarget);
                 if (pierceTarget != null && !pierceTarget.IsDead)
                 {
-                    FocusAttackCameraOnImpactTarget(pierceTarget);
                     PlaySkillHitSfx(skill);
                     yield return StartCoroutine(ResolveAndApplyAttack(
                         actor,
@@ -660,7 +641,14 @@ public class BattleActionController : MonoBehaviour
         BattleUnitView view = viewManager.GetView(target);
         if (view != null)
         {
-            if (result.DidHit)
+            if (IsCinematicPlaying())
+            {
+                float hitDuration = battleManager != null ? battleManager.HitFlashDuration : 1f;
+                float missHold = battleManager != null ? battleManager.MissCameraHoldDuration : 0f;
+                yield return StartCoroutine(cinematicDriver.PlayAttackImpact(target, skill, result, hitDuration, missHold));
+                view.RefreshHPInstant();
+            }
+            else if (result.DidHit)
             {
                 BattleEffectManager.PlayHitEffect(skill, view, viewManager);
                 Coroutine hpRoutine = StartCoroutine(view.AnimateHPChange(0.15f));
@@ -1082,7 +1070,6 @@ public class BattleActionController : MonoBehaviour
             if (target == null)
                 yield break;
 
-            FocusAttackCameraOnImpactTarget(target);
             PlaySkillHitSfx(skill);
             yield return StartCoroutine(ResolveAndApplyAttack(
                 actor,
@@ -1111,7 +1098,6 @@ public class BattleActionController : MonoBehaviour
             if (target == null || target.IsDead)
                 yield break;
 
-            FocusAttackCameraOnImpactTarget(target);
             PlaySkillHitSfx(skill);
             yield return StartCoroutine(ResolveAndApplyAttack(
                 actor,
@@ -1239,16 +1225,56 @@ public class BattleActionController : MonoBehaviour
 
     private void ShowFloatingFeedback(BattleUnit target, string text, Color color)
     {
-        if (viewManager != null)
+        if (IsCinematicPlaying())
+        {
+            cinematicDriver.ShowFloatingText(target, text, color, 1f);
+        }
+        else if (viewManager != null)
+        {
             viewManager.ShowFloatingText(target, text, color, 1f);
+        }
     }
 
     private void ShowFloatingFeedback(BattleUnit target, string title, string value, Color valueColor)
     {
+        if (IsCinematicPlaying())
+        {
+            cinematicDriver.ShowFloatingTextParts(target, title, value, Color.white, valueColor, 1f);
+            return;
+        }
+
         if (viewManager == null)
             return;
 
         viewManager.ShowFloatingTextParts(target, title, value, Color.white, valueColor, 1f);
+    }
+
+    private bool ShouldUseCinematicSkill(SkillDefinition skill)
+    {
+        return skill != null &&
+               cinematicDriver != null &&
+               cinematicDriver.IsCinematicEnabled;
+    }
+
+    private bool ShouldUseActorAsFallbackSkillTarget(BattleUnit actor, SkillDefinition skill)
+    {
+        if (actor == null || actor.IsDead || skill == null)
+            return false;
+
+        switch (skill.activeGimmick)
+        {
+            case ActiveSkillGimmick.DelayedReinforcement:
+            case ActiveSkillGimmick.FleeOnNextOwnTurn:
+            case ActiveSkillGimmick.ImmediateSummonInFront:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private bool IsCinematicPlaying()
+    {
+        return cinematicDriver != null && cinematicDriver.IsCinematicPlaying;
     }
 
     private string GetEffectDisplayName(BattleEffectBlock block)
