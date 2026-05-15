@@ -126,5 +126,5 @@ MonoBehaviour:
   hitEffectType: 7
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
-  useSfx: {fileID: 0}
+  useSfx: {fileID: 8300000, guid: 86020682963e4344185f98897d49a32a, type: 3}
   hitSfx: {fileID: 0}

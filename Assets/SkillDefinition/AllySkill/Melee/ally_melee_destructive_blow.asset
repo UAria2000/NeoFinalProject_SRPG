@@ -44,6 +44,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -113,5 +114,5 @@ MonoBehaviour:
   hitEffectType: 3
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
-  useSfx: {fileID: 0}
+  useSfx: {fileID: 8300000, guid: d330db2c4a70fa74aa004cc833fb7334, type: 3}
   hitSfx: {fileID: 0}
