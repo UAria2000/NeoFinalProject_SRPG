@@ -20,14 +20,14 @@ MonoBehaviour:
   showInLegion: 1
   legionSortPriority: 0
   legionCategoryLabel: 
-  maxHP: 105
+  maxHP: 118
   dmg: 42
   spd: 45
   idt: 10
-  hpGrowthPerLevel: {x: 4, y: 6}
+  hpGrowthPerLevel: {x: 3, y: 5}
   dmgGrowthPerLevel: {x: 1, y: 3}
   hit: 54
-  ac: 52
+  ac: 51
   cri: 6
   crd: 150
   burnResist: 0
@@ -51,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 0
+  positionMovementLocked: 0
   fixedStartingSkills: []
   extraLearnableSkills: []
   randomEnemyEquipment: []

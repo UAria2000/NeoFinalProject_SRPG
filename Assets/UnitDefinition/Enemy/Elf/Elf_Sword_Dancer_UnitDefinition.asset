@@ -22,7 +22,7 @@ MonoBehaviour:
   legionCategoryLabel: Elf
   maxHP: 75
   dmg: 20
-  spd: 78
+  spd: 70
   idt: 0
   hpGrowthPerLevel: {x: 2, y: 4}
   dmgGrowthPerLevel: {x: 1, y: 3}
@@ -51,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 0
+  positionMovementLocked: 0
   fixedStartingSkills:
   - {fileID: 11400000, guid: 6862869fb47e4c942b0a99a4f5a70223, type: 2}
   - {fileID: 11400000, guid: 4764c7fb956ff0c41b691adefe989720, type: 2}

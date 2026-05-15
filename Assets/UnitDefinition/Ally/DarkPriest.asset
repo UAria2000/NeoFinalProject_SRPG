@@ -15,15 +15,16 @@ MonoBehaviour:
   unitId: dark_priest
   unitName: "\uC554\uD751 \uC0AC\uC81C"
   rangeType: 2
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 1
   legionSortPriority: 0
   legionCategoryLabel: 
   maxHP: 92
-  dmg: 31
+  dmg: 37
   spd: 55
   idt: 0
-  hpGrowthPerLevel: {x: 3, y: 5}
+  hpGrowthPerLevel: {x: 2, y: 4}
   dmgGrowthPerLevel: {x: 1, y: 3}
   hit: 62
   ac: 48
@@ -50,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 0
+  positionMovementLocked: 0
   fixedStartingSkills: []
   extraLearnableSkills: []
   randomEnemyEquipment: []

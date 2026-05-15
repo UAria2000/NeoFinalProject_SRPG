@@ -24,7 +24,7 @@ MonoBehaviour:
   dmg: 40
   spd: 30
   idt: 10
-  hpGrowthPerLevel: {x: 18, y: 24}
+  hpGrowthPerLevel: {x: 12, y: 18}
   dmgGrowthPerLevel: {x: 1, y: 3}
   hit: 64
   ac: 48
@@ -33,8 +33,8 @@ MonoBehaviour:
   burnResist: 35
   bleedResist: 40
   stunResist: 70
-  frostResist: 50
-  blindResist: 30
+  frostResist: 0
+  blindResist: 15
   basicAttack: {fileID: 11400000, guid: 55f0991a1a51a094cb8a9917d250902c, type: 2}
   varianceRules:
     maxHpRange: {x: 0, y: 0}
@@ -51,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 1
+  positionMovementLocked: 0
   fixedStartingSkills:
   - {fileID: 11400000, guid: 55f0991a1a51a094cb8a9917d250902c, type: 2}
   - {fileID: 11400000, guid: 727e4fe8b4594fd42a3ea6639fde4d2c, type: 2}
