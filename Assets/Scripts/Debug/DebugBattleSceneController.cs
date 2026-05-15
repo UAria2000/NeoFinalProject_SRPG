@@ -1,6 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public partial class DebugBattleSceneController : MonoBehaviour
 {
@@ -43,6 +48,9 @@ public partial class DebugBattleSceneController : MonoBehaviour
     private string pickerSearch = string.Empty;
     private bool gameViewCaptureQueued;
     private bool debugBattleRunning;
+    private TMP_FontAsset resolvedDebugTmpFont;
+
+    private const string DebugTmpFontGuid = "8d0e77bb7a4240940a76383f64640283";
 
     private void Awake()
     {
@@ -67,6 +75,7 @@ public partial class DebugBattleSceneController : MonoBehaviour
             battleSceneRoot.SetActive(true);
 
         AutoFillSlots();
+        ApplyDebugRuntimeFonts();
 
         if (battleManager != null)
             battleManager.BattleEnded += HandleDebugBattleEnded;
@@ -129,6 +138,8 @@ public partial class DebugBattleSceneController : MonoBehaviour
         battleManager.PrepareBattle(allyState, enemyState, new List<InventoryStackData>());
         battleManager.StartBattle();
         ApplyRuntimeCooldownMode();
+        ApplyDebugRuntimeFonts();
+        StartCoroutine(ApplyDebugRuntimeFontsNextFrame());
         showSetupPanel = false;
         debugBattleRunning = true;
     }
@@ -188,6 +199,8 @@ public partial class DebugBattleSceneController : MonoBehaviour
             battleSceneRoot.SetActive(true);
         if (worldMapRoot != null)
             worldMapRoot.SetActive(false);
+
+        ApplyDebugRuntimeFonts();
     }
 
     private void ResetDebugBattleRuntimeScene()
@@ -874,6 +887,65 @@ public partial class DebugBattleSceneController : MonoBehaviour
         return string.IsNullOrWhiteSpace(value)
             ? string.Empty
             : value.Replace("_", string.Empty).Replace(" ", string.Empty).ToLowerInvariant();
+    }
+
+    private IEnumerator ApplyDebugRuntimeFontsNextFrame()
+    {
+        yield return null;
+        ApplyDebugRuntimeFonts();
+    }
+
+    private void ApplyDebugRuntimeFonts()
+    {
+        TMP_FontAsset font = ResolveDebugTmpFont();
+        if (font == null)
+            return;
+
+        TMP_Text[] texts = FindObjectsByType<TMP_Text>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            TMP_Text text = texts[i];
+            if (text == null)
+                continue;
+
+            if (!ShouldReplaceDebugTmpFont(text))
+                continue;
+
+            text.font = font;
+            if (font.material != null)
+                text.fontSharedMaterial = font.material;
+
+            text.SetAllDirty();
+            if (text.gameObject.activeInHierarchy)
+                text.ForceMeshUpdate();
+        }
+    }
+
+    private static bool ShouldReplaceDebugTmpFont(TMP_Text text)
+    {
+        if (text == null || text.font == null)
+            return true;
+
+        string fontName = text.font.name.ToLowerInvariant();
+        return fontName.Contains("liberation") ||
+               fontName.Contains("arial") ||
+               fontName.Contains("default") ||
+               fontName.Contains("fallback");
+    }
+
+    private TMP_FontAsset ResolveDebugTmpFont()
+    {
+        if (resolvedDebugTmpFont != null)
+            return resolvedDebugTmpFont;
+
+#if UNITY_EDITOR
+        string path = AssetDatabase.GUIDToAssetPath(DebugTmpFontGuid);
+        resolvedDebugTmpFont = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path);
+#endif
+        if (resolvedDebugTmpFont == null)
+            resolvedDebugTmpFont = TMP_Settings.defaultFontAsset;
+
+        return resolvedDebugTmpFont;
     }
 
     private enum PickerKind
