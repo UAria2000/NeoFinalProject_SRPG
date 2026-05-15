@@ -293,6 +293,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -1263,6 +1264,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -2085,6 +2087,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -2347,6 +2350,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -2706,6 +2710,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -3107,7 +3112,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &862492889
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3361,9 +3366,10 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: 4bac1a09cac65a845867e65ec40ef97d, type: 3}
   hoverSprite: {fileID: 21300000, guid: 5f991776720a2f1479d1d00186c80185, type: 3}
   pressedSprite: {fileID: 21300000, guid: 5f991776720a2f1479d1d00186c80185, type: 3}
-  toggleOnNormalSprite: {fileID: 0}
-  toggleOnHoverSprite: {fileID: 0}
-  toggleOnPressedSprite: {fileID: 0}
+  visualMode: 0
+  toggleOnNormalSprite: {fileID: 21300000, guid: f976cf5fc89f99c46aa597af4b1ef11e, type: 3}
+  toggleOnHoverSprite: {fileID: 21300000, guid: 5f991776720a2f1479d1d00186c80185, type: 3}
+  toggleOnPressedSprite: {fileID: 21300000, guid: 5f991776720a2f1479d1d00186c80185, type: 3}
   toggleOnIndicatorRoot: {fileID: 0}
   pressedOffset: {x: 0, y: 0}
   pressedScale: 0.96
@@ -3479,14 +3485,28 @@ MonoBehaviour:
   masterVolume: 1
   bgmVolume: 0.5
   sfxVolume: 1
-  uiVolume: 1
+  uiVolume: 0.7
   buttonHoverSfx: {fileID: 8300000, guid: 238827792e48734478cb3bb3e5ce0580, type: 3}
   buttonClickSfx: {fileID: 8300000, guid: 028552387cda2cb439fd02184a617062, type: 3}
   autoBindButtons: 1
   bootstrapBgm: {fileID: 8300000, guid: 7a0d281dc60ed414d97105cc0f4027b1, type: 3}
-  worldMapBgm: {fileID: 0}
+  worldMapBgm: {fileID: 8300000, guid: 7593fc96f4ceff94386fa93abf9781d4, type: 3}
   battleBgm: {fileID: 8300000, guid: 1ed964e8eb12dcc4d815fc586f04ddd2, type: 3}
   bgmFadeSeconds: 1
+  titleSceneKeywords:
+  - bootstrap
+  - title
+  - lobby
+  - mainmenu
+  - menu
+  worldMapSceneKeywords:
+  - worldmap
+  - world
+  - map
+  battleSceneKeywords:
+  - battle
+  - combat
+  logMissingBgmClip: 1
 --- !u!4 &1055667345
 Transform:
   m_ObjectHideFlags: 0
@@ -3640,9 +3660,10 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: f975948eb5a3ea14780bb11869577379, type: 3}
   hoverSprite: {fileID: 21300000, guid: fda647b5d9850dd4ebe81d02129c8c21, type: 3}
   pressedSprite: {fileID: 21300000, guid: fda647b5d9850dd4ebe81d02129c8c21, type: 3}
-  toggleOnNormalSprite: {fileID: 0}
-  toggleOnHoverSprite: {fileID: 0}
-  toggleOnPressedSprite: {fileID: 0}
+  visualMode: 0
+  toggleOnNormalSprite: {fileID: 21300000, guid: 1abe8642e99088a4dbdad1f3d5067d7f, type: 3}
+  toggleOnHoverSprite: {fileID: 21300000, guid: fda647b5d9850dd4ebe81d02129c8c21, type: 3}
+  toggleOnPressedSprite: {fileID: 21300000, guid: fda647b5d9850dd4ebe81d02129c8c21, type: 3}
   toggleOnIndicatorRoot: {fileID: 0}
   pressedOffset: {x: 0, y: 0}
   pressedScale: 0.96
@@ -4250,6 +4271,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -4572,6 +4594,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -4755,6 +4778,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -5675,6 +5699,7 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   hoverSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
   pressedSprite: {fileID: 21300000, guid: ead3bfb93f2639b40962b616f1a651d6, type: 3}
+  visualMode: 0
   toggleOnNormalSprite: {fileID: 0}
   toggleOnHoverSprite: {fileID: 0}
   toggleOnPressedSprite: {fileID: 0}
@@ -5977,9 +6002,10 @@ MonoBehaviour:
   normalSprite: {fileID: 21300000, guid: 7801bec8c079d7e4ab8746ef6a0db0f6, type: 3}
   hoverSprite: {fileID: 21300000, guid: 41952204329a90646ac55bf9aa42845f, type: 3}
   pressedSprite: {fileID: 21300000, guid: 41952204329a90646ac55bf9aa42845f, type: 3}
-  toggleOnNormalSprite: {fileID: 0}
-  toggleOnHoverSprite: {fileID: 0}
-  toggleOnPressedSprite: {fileID: 0}
+  visualMode: 0
+  toggleOnNormalSprite: {fileID: 21300000, guid: 05b3075b1aec25243bd4dd2b1a36495c, type: 3}
+  toggleOnHoverSprite: {fileID: 21300000, guid: 41952204329a90646ac55bf9aa42845f, type: 3}
+  toggleOnPressedSprite: {fileID: 21300000, guid: 41952204329a90646ac55bf9aa42845f, type: 3}
   toggleOnIndicatorRoot: {fileID: 0}
   pressedOffset: {x: 0, y: 0}
   pressedScale: 0.96

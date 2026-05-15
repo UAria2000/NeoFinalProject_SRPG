@@ -14,6 +14,9 @@ public class BattleStatusIconBarUI : MonoBehaviour
     [SerializeField] private RectTransform iconContainer;
     [SerializeField] private BattleStatusIconUI iconPrefab;
 
+    [Header("Tooltip")]
+    [SerializeField] private BattleStatusTooltipUI tooltipUI;
+
     [Header("Special / Gimmick Icons")]
     [SerializeField] private Sprite tauntIcon;
     [SerializeField] private Sprite counterStanceIcon;
@@ -61,14 +64,18 @@ public class BattleStatusIconBarUI : MonoBehaviour
         public bool showCount;
         public Sprite arrowIcon;
         public bool showArrow;
+        public string tooltipTitle;
+        public string tooltipBody;
 
-        public Entry(Sprite icon, int count, bool showCount, Sprite arrowIcon, bool showArrow)
+        public Entry(Sprite icon, int count, bool showCount, Sprite arrowIcon, bool showArrow, string tooltipTitle, string tooltipBody)
         {
             this.icon = icon;
             this.count = count;
             this.showCount = showCount;
             this.arrowIcon = arrowIcon;
             this.showArrow = showArrow;
+            this.tooltipTitle = tooltipTitle;
+            this.tooltipBody = tooltipBody;
         }
     }
 
@@ -103,13 +110,13 @@ public class BattleStatusIconBarUI : MonoBehaviour
             AddTimedModifierEntries(unit);
 
             if (unit.HasElitePermanentBuff)
-                AddEntry(eliteIcon, unit.ElitePermanentAllStatsBuffPercent, eliteIcon != null && unit.ElitePermanentAllStatsBuffPercent > 0);
+                AddEntry(eliteIcon, unit.ElitePermanentAllStatsBuffPercent, eliteIcon != null && unit.ElitePermanentAllStatsBuffPercent > 0, null, false, "정예", BattleStatusUtility.GetEliteTooltipText(unit.ElitePermanentAllStatsBuffPercent));
 
             if (unit.HasEndTurnGuard)
-                AddEntry(endTurnGuardIcon, unit.EndTurnGuardPercent, endTurnGuardIcon != null && unit.EndTurnGuardPercent > 0);
+                AddEntry(endTurnGuardIcon, unit.EndTurnGuardPercent, endTurnGuardIcon != null && unit.EndTurnGuardPercent > 0, null, false, "방어 태세", BattleStatusUtility.GetEndTurnGuardTooltipText(unit.EndTurnGuardPercent));
 
             if (unit.CurrentShield > 0)
-                AddEntry(shieldIcon, unit.CurrentShield, true);
+                AddEntry(shieldIcon, unit.CurrentShield, true, null, false, "보호막", BattleStatusUtility.GetShieldTooltipText(unit.CurrentShield));
 
             AddAilment(unit, StatusEffectType.Stun, stunIcon);
             AddAilment(unit, StatusEffectType.Bleed, bleedIcon);
@@ -130,6 +137,7 @@ public class BattleStatusIconBarUI : MonoBehaviour
                 Entry entry = entries[i];
                 icon.gameObject.SetActive(true);
                 icon.Set(entry.icon, entry.count, entry.showCount, entry.arrowIcon, entry.showArrow);
+                icon.SetTooltip(tooltipUI, entry.tooltipTitle, entry.tooltipBody);
                 PositionIcon(icon.RectTransform, i, entries.Count);
             }
             else
@@ -149,6 +157,7 @@ public class BattleStatusIconBarUI : MonoBehaviour
                 iconPool[i].Clear();
         }
 
+        tooltipUI?.Hide();
         gameObject.SetActive(false);
     }
 
@@ -157,7 +166,7 @@ public class BattleStatusIconBarUI : MonoBehaviour
         if (unit == null || !unit.HasStatus(type))
             return;
 
-        AddEntry(icon, 0, false);
+        AddEntry(icon, 0, false, null, false, BattleStatusUtility.GetTooltipTitle(type), BattleStatusUtility.GetStatusTooltipText(unit, type));
     }
 
     private void AddAilment(BattleUnit unit, StatusEffectType type, Sprite icon)
@@ -170,20 +179,15 @@ public class BattleStatusIconBarUI : MonoBehaviour
             return;
 
         bool showCount = BattleStatusUtility.IsStackingAilment(type);
-        AddEntry(icon, stack, showCount);
+        AddEntry(icon, stack, showCount, null, false, BattleStatusUtility.GetTooltipTitle(type), BattleStatusUtility.GetStatusTooltipText(unit, type));
     }
 
-    private void AddEntry(Sprite icon, int count, bool showCount)
-    {
-        AddEntry(icon, count, showCount, null, false);
-    }
-
-    private void AddEntry(Sprite icon, int count, bool showCount, Sprite arrowIcon, bool showArrow)
+    private void AddEntry(Sprite icon, int count, bool showCount, Sprite arrowIcon, bool showArrow, string tooltipTitle, string tooltipBody)
     {
         if (icon == null)
             return;
 
-        entries.Add(new Entry(icon, Mathf.Max(0, count), showCount, arrowIcon, showArrow && arrowIcon != null));
+        entries.Add(new Entry(icon, Mathf.Max(0, count), showCount, arrowIcon, showArrow && arrowIcon != null, tooltipTitle, tooltipBody));
     }
 
     private void AddTimedModifierEntries(BattleUnit unit)
@@ -203,7 +207,7 @@ public class BattleStatusIconBarUI : MonoBehaviour
 
             bool isUp = IsPositiveModifierShownAsUp(modifier);
             Sprite arrow = isUp ? statUpArrowSprite : statDownArrowSprite;
-            AddEntry(statIcon, modifier.remainingTurns, true, arrow, true);
+            AddEntry(statIcon, modifier.remainingTurns, true, arrow, true, BattleStatusUtility.GetTimedModifierTooltipTitle(modifier), BattleStatusUtility.GetTimedModifierTooltipText(modifier));
         }
     }
 
@@ -278,6 +282,9 @@ public class BattleStatusIconBarUI : MonoBehaviour
 
         if (iconPrefab == null)
             iconPrefab = GetComponentInChildren<BattleStatusIconUI>(true);
+
+        if (tooltipUI == null)
+            tooltipUI = Object.FindFirstObjectByType<BattleStatusTooltipUI>(FindObjectsInactive.Include);
 
         if (iconPrefab != null && !iconPool.Contains(iconPrefab))
             iconPrefab.gameObject.SetActive(false);

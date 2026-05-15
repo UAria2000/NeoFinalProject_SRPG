@@ -25,6 +25,10 @@ public class UnitViewDefinition : ScriptableObject
     [Tooltip("전투 중 현재 턴/선택 가능/호버 상태를 표시할 유닛별 하이라이트 이미지입니다.")]
     public Sprite battleHighlightSprite;
 
+    [Header("Legion Highlight")]
+    [Tooltip("군단 카드에서 분해 선택 상태를 표시할 유닛별 하이라이트 이미지입니다. 비워두면 battleHighlightSprite를 사용합니다.")]
+    public Sprite legionDecomposeSelectedHighlightSprite;
+
     [Header("Attack Motion Transform")]
     [Tooltip("공격 모션 전용 Image의 RectTransform anchoredPosition입니다.")]
     public Vector2 attackSpriteAnchoredPosition = Vector2.zero;
@@ -77,6 +81,13 @@ public class UnitViewDefinition : ScriptableObject
 
     public Sprite GetBattleHighlightSprite()
     {
+        return battleHighlightSprite;
+    }
+
+    public Sprite GetLegionDecomposeSelectedHighlightSprite()
+    {
+        if (legionDecomposeSelectedHighlightSprite != null)
+            return legionDecomposeSelectedHighlightSprite;
         return battleHighlightSprite;
     }
 

@@ -2,6 +2,14 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum GameBgmType
+{
+    None,
+    Title,
+    WorldMap,
+    Battle
+}
+
 [DisallowMultipleComponent]
 public class GameAudioManager : MonoBehaviour
 {
@@ -30,13 +38,24 @@ public class GameAudioManager : MonoBehaviour
     [SerializeField] private AudioClip battleBgm;
     [SerializeField] private float bgmFadeSeconds = 1f;
 
+    [Header("Scene Name Matching")]
+    [SerializeField] private string[] titleSceneKeywords = { "bootstrap", "title", "lobby", "mainmenu", "menu" };
+    [SerializeField] private string[] worldMapSceneKeywords = { "worldmap", "world", "map" };
+    [SerializeField] private string[] battleSceneKeywords = { "battle", "combat" };
+
+    [Header("Debug")]
+    [SerializeField] private bool logMissingBgmClip = true;
+
     private Coroutine bgmRoutine;
     private AudioClip currentBgm;
+    private GameBgmType currentBgmType = GameBgmType.None;
 
     private void Awake()
     {
         if (instance != null && instance != this)
         {
+            instance.AbsorbSettingsFrom(this);
+            instance.PlayBgmForScene(SceneManager.GetActiveScene().name);
             Destroy(gameObject);
             return;
         }
@@ -102,30 +121,90 @@ public class GameAudioManager : MonoBehaviour
             uiSource.volume = masterVolume * uiVolume;
     }
 
+    private void AbsorbSettingsFrom(GameAudioManager other)
+    {
+        if (other == null)
+            return;
+
+        if (bootstrapBgm == null && other.bootstrapBgm != null)
+            bootstrapBgm = other.bootstrapBgm;
+        if (worldMapBgm == null && other.worldMapBgm != null)
+            worldMapBgm = other.worldMapBgm;
+        if (battleBgm == null && other.battleBgm != null)
+            battleBgm = other.battleBgm;
+        if (buttonHoverSfx == null && other.buttonHoverSfx != null)
+            buttonHoverSfx = other.buttonHoverSfx;
+        if (buttonClickSfx == null && other.buttonClickSfx != null)
+            buttonClickSfx = other.buttonClickSfx;
+
+        masterVolume = Mathf.Clamp01(other.masterVolume > 0f ? other.masterVolume : masterVolume);
+        bgmVolume = Mathf.Clamp01(other.bgmVolume > 0f ? other.bgmVolume : bgmVolume);
+        sfxVolume = Mathf.Clamp01(other.sfxVolume > 0f ? other.sfxVolume : sfxVolume);
+        uiVolume = Mathf.Clamp01(other.uiVolume > 0f ? other.uiVolume : uiVolume);
+        bgmFadeSeconds = Mathf.Max(0f, other.bgmFadeSeconds);
+        autoBindButtons = autoBindButtons || other.autoBindButtons;
+        RefreshVolumes();
+    }
+
     private void PlayBgmForScene(string sceneName)
     {
-        AudioClip clip = ResolveBgm(sceneName);
-        if (clip == currentBgm)
+        PlayBgm(ResolveBgmType(sceneName));
+    }
+
+    public void PlayBgm(GameBgmType type)
+    {
+        AudioClip clip = ResolveBgm(type);
+        if (clip == currentBgm && type == currentBgmType && bgmSource != null && bgmSource.isPlaying)
             return;
+
+        if (clip == null && type != GameBgmType.None && logMissingBgmClip)
+            Debug.LogWarning($"[GameAudioManager] {type} BGM clip is not assigned. BGM will be silent.", this);
 
         if (bgmRoutine != null)
             StopCoroutine(bgmRoutine);
-        bgmRoutine = StartCoroutine(SwitchBgmRoutine(clip));
+        bgmRoutine = StartCoroutine(SwitchBgmRoutine(type, clip));
     }
 
-    private AudioClip ResolveBgm(string sceneName)
+    private GameBgmType ResolveBgmType(string sceneName)
     {
         string key = string.IsNullOrWhiteSpace(sceneName) ? string.Empty : sceneName.ToLowerInvariant();
-        if (key.Contains("battle"))
-            return battleBgm;
-        if (key.Contains("world"))
-            return worldMapBgm;
-        if (key.Contains("bootstrap") || key.Contains("title"))
-            return bootstrapBgm;
-        return null;
+        if (MatchesAny(key, battleSceneKeywords))
+            return GameBgmType.Battle;
+        if (MatchesAny(key, worldMapSceneKeywords))
+            return GameBgmType.WorldMap;
+        if (MatchesAny(key, titleSceneKeywords))
+            return GameBgmType.Title;
+        return GameBgmType.None;
     }
 
-    private IEnumerator SwitchBgmRoutine(AudioClip next)
+    private static bool MatchesAny(string key, string[] keywords)
+    {
+        if (string.IsNullOrEmpty(key) || keywords == null)
+            return false;
+
+        for (int i = 0; i < keywords.Length; i++)
+        {
+            string keyword = keywords[i];
+            if (!string.IsNullOrWhiteSpace(keyword) && key.Contains(keyword.Trim().ToLowerInvariant()))
+                return true;
+        }
+
+        return false;
+    }
+
+    private AudioClip ResolveBgm(GameBgmType type)
+    {
+        switch (type)
+        {
+            case GameBgmType.Title: return bootstrapBgm;
+            case GameBgmType.WorldMap: return worldMapBgm;
+            case GameBgmType.Battle: return battleBgm;
+            case GameBgmType.None:
+            default: return null;
+        }
+    }
+
+    private IEnumerator SwitchBgmRoutine(GameBgmType nextType, AudioClip next)
     {
         EnsureSources();
         float targetVolume = masterVolume * bgmVolume;
@@ -143,6 +222,7 @@ public class GameAudioManager : MonoBehaviour
             }
         }
 
+        currentBgmType = nextType;
         currentBgm = next;
         bgmSource.clip = next;
 
@@ -170,12 +250,52 @@ public class GameAudioManager : MonoBehaviour
         bgmSource.volume = targetVolume;
     }
 
+    private static GameAudioManager EnsureInstanceForSfx()
+    {
+        if (instance != null)
+            return instance;
+
+        GameObject go = new GameObject("GameAudioManager_Runtime");
+        GameAudioManager manager = go.AddComponent<GameAudioManager>();
+        manager.EnsureSources();
+        return manager;
+    }
+
+    public static void PlayTitleBgm()
+    {
+        if (instance != null)
+            instance.PlayBgm(GameBgmType.Title);
+    }
+
+    public static void PlayWorldMapBgm()
+    {
+        if (instance != null)
+            instance.PlayBgm(GameBgmType.WorldMap);
+    }
+
+    public static void PlayBattleBgm()
+    {
+        if (instance != null)
+            instance.PlayBgm(GameBgmType.Battle);
+    }
+
+    public static void StopBgm()
+    {
+        if (instance != null)
+            instance.PlayBgm(GameBgmType.None);
+    }
+
     public static void PlaySfx(AudioClip clip)
     {
-        if (instance == null || clip == null)
+        if (clip == null)
             return;
-        instance.EnsureSources();
-        instance.sfxSource.PlayOneShot(clip, instance.masterVolume * instance.sfxVolume);
+
+        GameAudioManager manager = EnsureInstanceForSfx();
+        if (manager == null)
+            return;
+
+        manager.EnsureSources();
+        manager.sfxSource.PlayOneShot(clip, manager.masterVolume * manager.sfxVolume);
     }
 
     public static void PlayButtonHover()

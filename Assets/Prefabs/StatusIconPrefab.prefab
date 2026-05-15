@@ -59,7 +59,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -74,8 +74,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -148,6 +148,7 @@ GameObject:
   - component: {fileID: 2117078145611129766}
   - component: {fileID: 3376471352888508216}
   - component: {fileID: 5242093218382711648}
+  - component: {fileID: 4040324912248421452}
   m_Layer: 5
   m_Name: IconImage
   m_TagString: Untagged
@@ -212,6 +213,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4040324912248421452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6099720127795753276}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9acc83afaa121a14b92d02724e8ae2e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BattleStatusIconHoverTarget
 --- !u!1 &7295102935189492715
 GameObject:
   m_ObjectHideFlags: 0
@@ -342,3 +355,4 @@ MonoBehaviour:
   upDownImage: {fileID: 2368772259823511900}
   countText: {fileID: 4699282090866043546}
   countRoot: {fileID: 5949695297085583180}
+  hoverRaycastImage: {fileID: 5242093218382711648}

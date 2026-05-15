@@ -23,6 +23,8 @@ public class WorldEventController : MonoBehaviour
     [SerializeField] private Color treasureRewardHeaderColor = new Color(0.2f, 1f, 0.25f, 1f);
     [SerializeField] private string treasureEmptyText = "보물 후보 아이템이 없습니다. Treasure Candidate Items를 설정해 주세요.";
     [SerializeField] private string treasureNoRewardText = "획득 가능한 아이템이 없습니다.";
+    [Tooltip("끄면 보물 팝업 본문에는 아이템 목록을 적지 않고 소울만 표시합니다. 아이템은 슬롯 UI에서만 보여줍니다.")]
+    [SerializeField] private bool showTreasureItemListInBody = false;
     [Tooltip("{0} 자리에 지급 소울량이 들어갑니다. 예: {0} 소울")]
     [SerializeField] private string treasureSoulTextFormat = "{0} 소울";
     [SerializeField] private List<ItemDefinition> treasureCandidateItems = new List<ItemDefinition>();
@@ -72,6 +74,8 @@ public class WorldEventController : MonoBehaviour
     [SerializeField] private bool restCanReviveDeadUnits = false;
     [SerializeField] private string restNoPartyText = "휴식할 파티원이 없습니다.";
     [SerializeField] private string restDeadUnitText = "사망 - 휴식 불가";
+    [Tooltip("끄면 휴식 팝업 본문에 파티원별 HP 변동 목록을 표시하지 않습니다.")]
+    [SerializeField] private bool showRestPartyPreviewInBody = false;
 
     private WorldRunManager runManager;
     private WorldGenerationSettings settings;
@@ -504,31 +508,16 @@ public class WorldEventController : MonoBehaviour
 
     private void AppendTreasureRewardLines(StringBuilder sb, WorldTreasureResult treasure)
     {
-        if (treasureCandidateItems == null || treasureCandidateItems.Count == 0)
-        {
-            if (treasure != null && treasure.soulAmount > 0)
-            {
-                sb.Append(FormatTreasureSoulText(treasure.soulAmount));
-                return;
-            }
-
-            sb.Append(string.IsNullOrWhiteSpace(treasureEmptyText) ? "보물 후보 아이템이 없습니다." : treasureEmptyText);
-            return;
-        }
-
         if (treasure != null && treasure.soulAmount > 0)
-        {
             sb.Append(FormatTreasureSoulText(treasure.soulAmount));
-            if (treasure.rewards != null && treasure.rewards.Count > 0)
-                sb.Append("\n");
-        }
+        else
+            sb.Append(string.IsNullOrWhiteSpace(treasureNoRewardText) ? "획득 가능한 소울이 없습니다." : treasureNoRewardText);
+
+        if (!showTreasureItemListInBody)
+            return;
 
         if (treasure == null || treasure.rewards == null || treasure.rewards.Count == 0)
-        {
-            if (treasure == null || treasure.soulAmount <= 0)
-                sb.Append(string.IsNullOrWhiteSpace(treasureNoRewardText) ? "획득 가능한 아이템이 없습니다." : treasureNoRewardText);
             return;
-        }
 
         for (int i = 0; i < treasure.rewards.Count; i++)
         {
@@ -536,15 +525,12 @@ public class WorldEventController : MonoBehaviour
             if (reward == null || reward.item == null)
                 continue;
 
-            sb.Append("- ");
+            sb.Append("\n- ");
             sb.Append(GetItemTierLabel(reward.item.itemTier));
             sb.Append(" ");
             sb.Append(reward.GetDisplayName());
             sb.Append(" x");
             sb.Append(Mathf.Max(1, reward.amount));
-
-            if (i < treasure.rewards.Count - 1)
-                sb.Append("\n");
         }
     }
 
@@ -676,14 +662,17 @@ public class WorldEventController : MonoBehaviour
         sb.Append(": ");
         sb.Append(GetRestEffectDescription());
 
-        WorldRestResult preview = runManager != null
-            ? runManager.PreviewRestForActiveParty(restHealMode, restHealPercentOfMaxHp, restFlatHealAmount, restCanReviveDeadUnits)
-            : null;
+        if (showRestPartyPreviewInBody)
+        {
+            WorldRestResult preview = runManager != null
+                ? runManager.PreviewRestForActiveParty(restHealMode, restHealPercentOfMaxHp, restFlatHealAmount, restCanReviveDeadUnits)
+                : null;
 
-        sb.Append("\n\n");
-        sb.Append(ColorizeText(string.IsNullOrWhiteSpace(restPartyPreviewHeaderText) ? "파티 상태" : restPartyPreviewHeaderText, restPartyPreviewHeaderColor));
-        sb.Append("\n");
-        AppendRestPreviewLines(sb, preview);
+            sb.Append("\n\n");
+            sb.Append(ColorizeText(string.IsNullOrWhiteSpace(restPartyPreviewHeaderText) ? "파티 상태" : restPartyPreviewHeaderText, restPartyPreviewHeaderColor));
+            sb.Append("\n");
+            AppendRestPreviewLines(sb, preview);
+        }
 
         return sb.ToString();
     }

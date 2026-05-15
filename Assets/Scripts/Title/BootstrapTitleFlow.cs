@@ -273,6 +273,17 @@ public class BootstrapTitleFlow : MonoBehaviour
         ApplyDifficultyVisual(easyButtonImage, easySelectedRoot, easySelected);
         ApplyDifficultyVisual(normalButtonImage, normalSelectedRoot, normalSelected);
         ApplyDifficultyVisual(hardButtonImage, hardSelectedRoot, hardSelected);
+
+        ApplyHoverPressToggle(easyButton, easySelected);
+        ApplyHoverPressToggle(normalButton, normalSelected);
+        ApplyHoverPressToggle(hardButton, hardSelected);
+    }
+
+    private static void ApplyHoverPressToggle(Button button, bool selected)
+    {
+        WorldMapHoverPressButtonUI visual = button != null ? button.GetComponent<WorldMapHoverPressButtonUI>() : null;
+        if (visual != null)
+            visual.SetToggleOn(selected);
     }
 
     private void ApplyDifficultyVisual(Image targetImage, GameObject selectedRoot, bool selected)

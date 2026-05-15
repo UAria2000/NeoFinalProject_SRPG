@@ -234,7 +234,33 @@ public class DebugBattleCinematicDirector : MonoBehaviour, IBattleCinematicDrive
             return;
         }
 
-        ShowFloatingText(target, value, valueColor, duration);
+        RectTransform rect = CreateFloatingTextRoot(target);
+        if (rect == null)
+            return;
+
+        TMP_Text titleTmp = CreateFloatingTextElement(rect, "FloatingSkillNameText", Mathf.Max(24f, floatingTextFontSize * 0.42f));
+        TMP_Text valueTmp = CreateFloatingTextElement(rect, "FloatingValueText", floatingTextFontSize);
+        if (titleTmp == null || valueTmp == null)
+            return;
+
+        titleTmp.text = title;
+        titleTmp.color = titleColor;
+        titleTmp.fontStyle = FontStyles.Bold;
+        ApplyFloatingTextStyle(titleTmp, titleColor);
+
+        valueTmp.text = value;
+        valueTmp.color = valueColor;
+        valueTmp.fontStyle = FontStyles.Bold;
+        ApplyFloatingTextStyle(valueTmp, valueColor);
+
+        RectTransform titleRect = titleTmp.transform as RectTransform;
+        RectTransform valueRect = valueTmp.transform as RectTransform;
+        if (titleRect != null)
+            titleRect.anchoredPosition = new Vector2(0f, floatingTextFontSize * 0.38f);
+        if (valueRect != null)
+            valueRect.anchoredPosition = new Vector2(0f, -floatingTextFontSize * 0.18f);
+
+        StartCoroutine(FloatUntilCinematicEnd(rect, endHoldDuration));
     }
 
     private void EnsureLayer()

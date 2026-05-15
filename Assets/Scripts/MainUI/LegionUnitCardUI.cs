@@ -18,6 +18,10 @@ public class LegionUnitCardUI : MonoBehaviour, IPointerClickHandler, IBeginDragH
     [SerializeField] private Image frameImage;
     [SerializeField] private Image selectedGoldFrameImage;
     [SerializeField] private Image multiSelectSelectedFrameImage;
+    [Tooltip("분해 선택 상태에서 UnitViewDefinition의 유닛별 하이라이트 스프라이트를 표시할 Image입니다.")]
+    [SerializeField] private Image decomposeSelectedHighlightImage;
+    [Tooltip("분해 선택 하이라이트 루트입니다. 비워두면 decomposeSelectedHighlightImage의 GameObject를 사용합니다.")]
+    [SerializeField] private GameObject decomposeSelectedHighlightRoot;
     [Tooltip("레기온에서 파티 편성 후보로 선택된 카드 표시. 비워도 동작한다.")]
     [SerializeField] private Image partyPendingFrameImage;
 
@@ -247,11 +251,40 @@ public class LegionUnitCardUI : MonoBehaviour, IPointerClickHandler, IBeginDragH
         if (multiSelectSelectedFrameImage != null)
             multiSelectSelectedFrameImage.gameObject.SetActive(isDecomposeMode && isSelectedForDecompose);
 
+        RefreshDecomposeSelectedHighlight();
+
         if (partyPendingFrameImage != null)
             partyPendingFrameImage.gameObject.SetActive(!isDecomposeMode && owner != null && owner.IsPendingPartyCandidate(boundUnit));
 
         if (inPartyRoot != null)
             inPartyRoot.SetActive(isInParty);
+    }
+
+    private void RefreshDecomposeSelectedHighlight()
+    {
+        bool show = isDecomposeMode && isSelectedForDecompose && boundUnit != null;
+        Sprite highlightSprite = show ? ResolveLegionDecomposeHighlightSprite(boundUnit) : null;
+
+        if (decomposeSelectedHighlightImage != null)
+        {
+            decomposeSelectedHighlightImage.sprite = highlightSprite;
+            decomposeSelectedHighlightImage.enabled = show && highlightSprite != null;
+        }
+
+        GameObject root = decomposeSelectedHighlightRoot != null
+            ? decomposeSelectedHighlightRoot
+            : (decomposeSelectedHighlightImage != null ? decomposeSelectedHighlightImage.gameObject : null);
+
+        if (root != null)
+            root.SetActive(show && (highlightSprite != null || decomposeSelectedHighlightImage == null));
+    }
+
+    private static Sprite ResolveLegionDecomposeHighlightSprite(PersistentRosterUnitData unit)
+    {
+        if (unit == null || unit.unitViewDefinition == null)
+            return null;
+
+        return unit.unitViewDefinition.GetLegionDecomposeSelectedHighlightSprite();
     }
 
     private void RefreshPortrait()

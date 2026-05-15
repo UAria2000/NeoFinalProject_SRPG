@@ -1237,16 +1237,10 @@ public class BattleActionController : MonoBehaviour
 
     private void ShowFloatingFeedback(BattleUnit target, string title, string value, Color valueColor)
     {
-        if (IsCinematicPlaying())
-        {
-            cinematicDriver.ShowFloatingTextParts(target, title, value, Color.white, valueColor, 1f);
-            return;
-        }
-
-        if (viewManager == null)
-            return;
-
-        viewManager.ShowFloatingTextParts(target, title, value, Color.white, valueColor, 1f);
+        // 스킬명은 별도 컷씬/타이틀 UI에서 이미 표시한다.
+        // 대상 머리 위 플로팅 텍스트에는 결과값만 표시한다.
+        string resultText = !string.IsNullOrWhiteSpace(value) ? value : title;
+        ShowFloatingFeedback(target, resultText, valueColor);
     }
 
     private bool ShouldUseCinematicSkill(SkillDefinition skill)

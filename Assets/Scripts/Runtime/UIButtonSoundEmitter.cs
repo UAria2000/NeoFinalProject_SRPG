@@ -6,6 +6,10 @@ using UnityEngine.UI;
 public class UIButtonSoundEmitter : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [SerializeField] private Button button;
+    [Tooltip("켜면 이 버튼에서는 호버 사운드를 재생하지 않습니다.")]
+    [SerializeField] private bool suppressHoverSound;
+    [Tooltip("월드맵 HexTileView 하위 버튼에서는 호버 사운드를 자동으로 막습니다.")]
+    [SerializeField] private bool suppressHoverSoundOnWorldMapTile = true;
     private bool inside;
 
     private void Awake()
@@ -20,7 +24,7 @@ public class UIButtonSoundEmitter : MonoBehaviour, IPointerEnterHandler, IPointe
             return;
 
         inside = true;
-        if (IsPlayable())
+        if (IsPlayable() && !IsHoverSoundSuppressed())
             GameAudioManager.PlayButtonHover();
     }
 
@@ -40,6 +44,17 @@ public class UIButtonSoundEmitter : MonoBehaviour, IPointerEnterHandler, IPointe
         if (button == null)
             button = GetComponent<Button>();
         return button == null || button.interactable;
+    }
+
+    private bool IsHoverSoundSuppressed()
+    {
+        if (suppressHoverSound)
+            return true;
+
+        if (suppressHoverSoundOnWorldMapTile && GetComponentInParent<HexTileView>(true) != null)
+            return true;
+
+        return false;
     }
 
     public static void BindAllButtonsInScene()

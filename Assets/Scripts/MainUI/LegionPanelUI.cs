@@ -257,6 +257,8 @@ public class LegionPanelUI : MainUIPanelBase, IDropHandler
         if (multiSelectButtonText != null)
             multiSelectButtonText.text = decomposeSelectionMode ? "일괄선택 해제" : "일괄선택";
 
+        ApplyHoverPressToggle(multiSelectButton, decomposeSelectionMode);
+
         int soulGain = 0;
         int shardGain = 0;
         List<PersistentRosterUnitData> selectedUnits = GetSelectedUnitsForDecompose();
@@ -879,6 +881,13 @@ public class LegionPanelUI : MainUIPanelBase, IDropHandler
         }
 
         return result;
+    }
+
+    private static void ApplyHoverPressToggle(Button button, bool selected)
+    {
+        WorldMapHoverPressButtonUI visual = button != null ? button.GetComponent<WorldMapHoverPressButtonUI>() : null;
+        if (visual != null)
+            visual.SetToggleOn(selected);
     }
 
     private static void BindButton(Button button, UnityAction action)

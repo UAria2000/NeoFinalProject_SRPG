@@ -2,6 +2,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+public enum WorldMapHoverPressButtonVisualMode
+{
+    NormalButton,
+    ToggleButton
+}
+
 [RequireComponent(typeof(Button))]
 public class WorldMapHoverPressButtonUI : MonoBehaviour,
     IPointerEnterHandler,
@@ -17,6 +23,10 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
     [SerializeField] private Sprite normalSprite;
     [SerializeField] private Sprite hoverSprite;
     [SerializeField] private Sprite pressedSprite;
+
+    [Header("Behavior")]
+    [Tooltip("NormalButton이면 일반 호버/프레스 버튼으로만 동작하고 Toggle On 이미지는 사용하지 않습니다. ToggleButton으로 설정한 버튼만 SetToggleOn 상태가 시각적으로 표시됩니다.")]
+    [SerializeField] private WorldMapHoverPressButtonVisualMode visualMode = WorldMapHoverPressButtonVisualMode.NormalButton;
 
     [Header("Toggle On Sprites (Optional)")]
     [Tooltip("토글 ON 상태의 기본 이미지입니다. 비워두면 normalSprite를 사용합니다.")]
@@ -42,6 +52,7 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
     private bool isHovered;
     private bool isPressed;
 
+    public bool IsToggleButton => visualMode == WorldMapHoverPressButtonVisualMode.ToggleButton;
     public bool ToggleOn => toggleOn;
 
     private void Awake()
@@ -132,8 +143,10 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
             targetImage.color = isPressed ? pressedColor : originalColor;
         }
 
+        bool effectiveToggleOn = IsToggleButton && toggleOn;
+
         if (toggleOnIndicatorRoot != null)
-            toggleOnIndicatorRoot.SetActive(toggleOn);
+            toggleOnIndicatorRoot.SetActive(effectiveToggleOn);
 
         if (targetRect != null)
         {
@@ -149,7 +162,7 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
 
     private Sprite ResolveSprite()
     {
-        if (toggleOn)
+        if (IsToggleButton && toggleOn)
         {
             Sprite toggleNormal = toggleOnNormalSprite != null ? toggleOnNormalSprite : normalSprite;
             Sprite toggleHover = toggleOnHoverSprite != null ? toggleOnHoverSprite : (hoverSprite != null ? hoverSprite : toggleNormal);

@@ -51,12 +51,13 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 0
+  positionMovementLocked: 0
   fixedStartingSkills:
   - {fileID: 11400000, guid: 6471b3a409390cb49ad89bc01391fad8, type: 2}
   - {fileID: 11400000, guid: ebb9e7f7886b28f4bb2f36e70dfb1ce6, type: 2}
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 8
+  lastWillChancePercent: 15
   lastWillTextTable: {fileID: 11400000, guid: 9ff260059128e3a40b772c0df391eb32, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 150

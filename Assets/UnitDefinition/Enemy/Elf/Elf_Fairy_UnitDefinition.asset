@@ -55,7 +55,7 @@ MonoBehaviour:
   fixedStartingSkills: []
   extraLearnableSkills: []
   randomEnemyEquipment: []
-  lastWillChancePercent: 8
+  lastWillChancePercent: 15
   lastWillTextTable: {fileID: 11400000, guid: 9ff260059128e3a40b772c0df391eb32, type: 2}
   isMainPlayerCharacter: 0
   baseSoulReward: 90

@@ -51,6 +51,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BattleStatusIconBarUI
   iconContainer: {fileID: 4958952226707649764}
   iconPrefab: {fileID: 1841482482518567224, guid: 0df96864e7abb4e419a9e0ca639b5f50, type: 3}
+  tooltipUI: {fileID: 0}
   tauntIcon: {fileID: 21300000, guid: cb1bfeba104350143840e1976fe47b53, type: 3}
   counterStanceIcon: {fileID: 21300000, guid: 1ae46050cf355ba48ad68a88486a7af7, type: 3}
   duelArenaIcon: {fileID: 21300000, guid: 2f94685d6b3b5d54a9cfb6a40c625092, type: 3}
@@ -638,9 +639,9 @@ RectTransform:
   - {fileID: 147681396805468997}
   - {fileID: 1239232832372018552}
   - {fileID: 6764135442579022428}
-  - {fileID: 3048236013354262831}
   - {fileID: 2022853459941967324}
   - {fileID: 6005599725473208488}
+  - {fileID: 3048236013354262831}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -718,6 +719,8 @@ MonoBehaviour:
   infoSelectedRingRoot: {fileID: 0}
   finishedTurnBodyAlpha: 0.88
   hitFlashColor: {r: 1, g: 0, b: 0, a: 0.65}
+  hitEffectHeightNormalized: 0.62
+  hitEffectOffset: {x: 0, y: 0}
   upcomingGrayOverlayImage: {fileID: 0}
   finishedGrayOverlayImage: {fileID: 0}
 --- !u!1 &8968532968539434593

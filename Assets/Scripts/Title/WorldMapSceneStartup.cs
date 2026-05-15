@@ -17,6 +17,8 @@ public class WorldMapSceneStartup : MonoBehaviour
 
     private void Start()
     {
+        GameAudioManager.PlayWorldMapBgm();
+
         if (saveCoordinator == null)
             saveCoordinator = SaveCoordinator.Instance;
 

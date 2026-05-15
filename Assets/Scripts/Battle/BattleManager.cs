@@ -361,6 +361,7 @@ public class BattleManager : MonoBehaviour
 
     private void Start()
     {
+        GameAudioManager.PlayBattleBgm();
         EnsureControllersInitialized();
 
         if (autoStartBattleOnStart)
@@ -481,6 +482,7 @@ public class BattleManager : MonoBehaviour
 
     public void StartBattle()
     {
+        GameAudioManager.PlayBattleBgm();
         EnsureControllersInitialized();
         EnsureRuntimePartyStates();
 
