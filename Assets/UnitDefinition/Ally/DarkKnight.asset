@@ -23,7 +23,7 @@ MonoBehaviour:
   maxHP: 105
   dmg: 42
   spd: 45
-  idt: 10
+  idt: -10
   hpGrowthPerLevel: {x: 4, y: 6}
   dmgGrowthPerLevel: {x: 1, y: 3}
   hit: 54
@@ -51,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 0
+  positionMovementLocked: 0
   fixedStartingSkills: []
   extraLearnableSkills: []
   randomEnemyEquipment: []

@@ -652,54 +652,81 @@ public class EnemyInfoPanel : MonoBehaviour
         if (skill == null)
         {
             RefreshPositionHexGroup(usablePositionHexRoots, usablePositionHexImages, usablePositionHexTexts,
-                -1, -1, usablePositionHexSprite);
+                -1, -1, usablePositionHexSprite, false);
             RefreshPositionHexGroup(targetPositionHexRoots, targetPositionHexImages, targetPositionHexTexts,
-                -1, -1, targetEnemyPositionHexSprite);
+                -1, -1, targetEnemyPositionHexSprite, true);
             return;
         }
 
+        // 적군 스킬의 사용 가능 위치는 적 진영 기준으로 화면 왼쪽부터 1, 2, 3, 4 순서로 표시한다.
         RefreshPositionHexGroup(usablePositionHexRoots, usablePositionHexImages, usablePositionHexTexts,
-            skill.usableMinSlotIndex, skill.usableMaxSlotIndex, usablePositionHexSprite);
+            skill.usableMinSlotIndex, skill.usableMaxSlotIndex, usablePositionHexSprite, false);
 
+        // 적군 스킬이 Enemy를 대상으로 하면 플레이어/아군 진영을 때리는 것이므로 4, 3, 2, 1 순서로 표시한다.
+        bool mirrorTargetSlots = IsPlayerSideTargetSkill(skill);
         Sprite targetSprite = GetTargetPositionHexSprite(skill);
         RefreshPositionHexGroup(targetPositionHexRoots, targetPositionHexImages, targetPositionHexTexts,
-            skill.targetMinSlotIndex, skill.targetMaxSlotIndex, targetSprite);
+            skill.targetMinSlotIndex, skill.targetMaxSlotIndex, targetSprite, mirrorTargetSlots);
     }
 
     private Sprite GetTargetPositionHexSprite(SkillDefinition skill)
     {
-        if (skill != null && (skill.targetTeam == SkillTargetTeam.Ally || skill.targetTeam == SkillTargetTeam.Self))
+        if (IsEnemySideTargetSkill(skill))
             return targetAllyPositionHexSprite;
 
         return targetEnemyPositionHexSprite;
     }
 
-    private void RefreshPositionHexGroup(GameObject[] roots, Image[] images, TMP_Text[] texts, int minSlot, int maxSlot, Sprite enabledSprite)
+    private static bool IsEnemySideTargetSkill(SkillDefinition skill)
+    {
+        return skill != null && (skill.targetTeam == SkillTargetTeam.Ally || skill.targetTeam == SkillTargetTeam.Self);
+    }
+
+    private static bool IsPlayerSideTargetSkill(SkillDefinition skill)
+    {
+        return skill != null && skill.targetTeam == SkillTargetTeam.Enemy;
+    }
+
+    private void RefreshPositionHexGroup(GameObject[] roots, Image[] images, TMP_Text[] texts, int minSlot, int maxSlot, Sprite enabledSprite, bool mirrorSlotsLeftToRight)
     {
         bool hasValidRange = minSlot >= 0 && maxSlot >= minSlot;
         minSlot = Mathf.Clamp(minSlot, 0, 3);
         maxSlot = Mathf.Clamp(maxSlot, 0, 3);
 
-        for (int i = 0; i < 4; i++)
+        for (int visualIndex = 0; visualIndex < 4; visualIndex++)
         {
-            bool enabled = hasValidRange && i >= minSlot && i <= maxSlot;
+            int slotIndex = mirrorSlotsLeftToRight ? 3 - visualIndex : visualIndex;
+            bool enabled = hasValidRange && slotIndex >= minSlot && slotIndex <= maxSlot;
 
-            SetActiveInArray(roots, i, true);
+            SetActiveInArray(roots, visualIndex, true);
 
-            if (images != null && i < images.Length && images[i] != null)
+            if (images != null && visualIndex < images.Length && images[visualIndex] != null)
             {
                 Sprite sprite = enabled ? enabledSprite : emptyPositionHexSprite;
-                images[i].sprite = sprite;
-                images[i].color = Color.white;
-                images[i].enabled = sprite != null;
+                images[visualIndex].sprite = sprite;
+                images[visualIndex].color = Color.white;
+                images[visualIndex].enabled = sprite != null;
             }
 
-            if (texts != null && i < texts.Length && texts[i] != null)
-            {
-                texts[i].text = enabled ? (i + 1).ToString() : string.Empty;
-                texts[i].color = Color.white;
-            }
+            ClearPositionHexText(roots, texts, visualIndex);
         }
+    }
+
+    private static void ClearPositionHexText(GameObject[] roots, TMP_Text[] texts, int index)
+    {
+        TMP_Text text = null;
+
+        if (texts != null && index >= 0 && index < texts.Length)
+            text = texts[index];
+
+        if (text == null && roots != null && index >= 0 && index < roots.Length && roots[index] != null)
+            text = roots[index].GetComponentInChildren<TMP_Text>(true);
+
+        if (text == null)
+            return;
+
+        text.text = string.Empty;
+        text.gameObject.SetActive(false);
     }
 
     private static void SetActiveInArray(GameObject[] roots, int index, bool active)

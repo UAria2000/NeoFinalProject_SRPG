@@ -18,16 +18,31 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
     [SerializeField] private Sprite hoverSprite;
     [SerializeField] private Sprite pressedSprite;
 
+    [Header("Toggle On Sprites (Optional)")]
+    [Tooltip("토글 ON 상태의 기본 이미지입니다. 비워두면 normalSprite를 사용합니다.")]
+    [SerializeField] private Sprite toggleOnNormalSprite;
+    [Tooltip("토글 ON 상태에서 호버 중일 때의 이미지입니다. 비워두면 hoverSprite, normalSprite 순서로 대체합니다.")]
+    [SerializeField] private Sprite toggleOnHoverSprite;
+    [Tooltip("토글 ON 상태에서 누르는 중일 때의 이미지입니다. 비워두면 pressedSprite, toggleOnNormalSprite, normalSprite 순서로 대체합니다.")]
+    [SerializeField] private Sprite toggleOnPressedSprite;
+    [Tooltip("토글 ON 상태일 때 켤 체크/선택 프레임/불빛 오브젝트입니다. 선택 사항입니다.")]
+    [SerializeField] private GameObject toggleOnIndicatorRoot;
+
     [Header("Pressed Feel")]
     [SerializeField] private Vector2 pressedOffset = new Vector2(3f, -3f);
     [SerializeField] private float pressedScale = 0.96f;
     [SerializeField] private Color pressedColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+
+    [Header("State")]
+    [SerializeField] private bool toggleOn;
 
     private Vector2 originalAnchoredPosition;
     private Vector3 originalScale;
     private Color originalColor;
     private bool isHovered;
     private bool isPressed;
+
+    public bool ToggleOn => toggleOn;
 
     private void Awake()
     {
@@ -47,6 +62,35 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
             originalColor = targetImage.color;
 
         ApplyVisual();
+    }
+
+    private void OnEnable()
+    {
+        ApplyVisual();
+    }
+
+    public void SetToggleOn(bool value)
+    {
+        if (toggleOn == value)
+            return;
+
+        toggleOn = value;
+        ApplyVisual();
+    }
+
+    public void SetToggleOn()
+    {
+        SetToggleOn(true);
+    }
+
+    public void SetToggleOff()
+    {
+        SetToggleOn(false);
+    }
+
+    public void Toggle()
+    {
+        SetToggleOn(!toggleOn);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -84,13 +128,12 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
     {
         if (targetImage != null)
         {
-            if (isPressed && pressedSprite != null)
-                targetImage.sprite = pressedSprite;
-            else
-                targetImage.sprite = isHovered && hoverSprite != null ? hoverSprite : normalSprite;
-
+            targetImage.sprite = ResolveSprite();
             targetImage.color = isPressed ? pressedColor : originalColor;
         }
+
+        if (toggleOnIndicatorRoot != null)
+            toggleOnIndicatorRoot.SetActive(toggleOn);
 
         if (targetRect != null)
         {
@@ -102,5 +145,27 @@ public class WorldMapHoverPressButtonUI : MonoBehaviour,
                 ? originalScale * pressedScale
                 : originalScale;
         }
+    }
+
+    private Sprite ResolveSprite()
+    {
+        if (toggleOn)
+        {
+            Sprite toggleNormal = toggleOnNormalSprite != null ? toggleOnNormalSprite : normalSprite;
+            Sprite toggleHover = toggleOnHoverSprite != null ? toggleOnHoverSprite : (hoverSprite != null ? hoverSprite : toggleNormal);
+            Sprite togglePressed = toggleOnPressedSprite != null ? toggleOnPressedSprite : (pressedSprite != null ? pressedSprite : toggleNormal);
+
+            if (isPressed && togglePressed != null)
+                return togglePressed;
+            if (isHovered && toggleHover != null)
+                return toggleHover;
+            return toggleNormal;
+        }
+
+        if (isPressed && pressedSprite != null)
+            return pressedSprite;
+        if (isHovered && hoverSprite != null)
+            return hoverSprite;
+        return normalSprite;
     }
 }

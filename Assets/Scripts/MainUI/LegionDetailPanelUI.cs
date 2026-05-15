@@ -823,16 +823,26 @@ public class LegionDetailPanelUI : MonoBehaviour
 
     private void RefreshPositionHexes(SkillDefinition skill)
     {
-        for (int i = 0; i < 4; i++)
-        {
-            bool usable = skill != null && skill.CanBeUsedFromSlot(i);
-            SetHex(usablePositionHexRoots, usablePositionHexImages, usablePositionHexTexts, i, usable ? usablePositionHexSprite : emptyPositionHexSprite, i + 1);
+        bool targetUsesAllySideOrder = IsAllyTargetSkill(skill);
 
-            bool target = skill != null && skill.CanTargetSlot(i);
+        for (int visualIndex = 0; visualIndex < 4; visualIndex++)
+        {
+            // 군단/아군 스킬의 사용 가능 위치는 화면 왼쪽부터 4, 3, 2, 1 순서로 표시한다.
+            int usableSlotIndex = 3 - visualIndex;
+            bool usable = skill != null && skill.CanBeUsedFromSlot(usableSlotIndex);
+            SetHex(usablePositionHexRoots, usablePositionHexImages, usablePositionHexTexts, visualIndex,
+                usable ? usablePositionHexSprite : emptyPositionHexSprite,
+                usableSlotIndex + 1);
+
+            // 적 대상은 1, 2, 3, 4 / 아군 또는 자기 대상은 4, 3, 2, 1 순서로 표시한다.
+            int targetSlotIndex = targetUsesAllySideOrder ? 3 - visualIndex : visualIndex;
+            bool target = skill != null && skill.CanTargetSlot(targetSlotIndex);
             Sprite targetSprite = emptyPositionHexSprite;
             if (target)
-                targetSprite = IsAllyTargetSkill(skill) ? targetAllyPositionHexSprite : targetEnemyPositionHexSprite;
-            SetHex(targetPositionHexRoots, targetPositionHexImages, targetPositionHexTexts, i, targetSprite, i + 1);
+                targetSprite = targetUsesAllySideOrder ? targetAllyPositionHexSprite : targetEnemyPositionHexSprite;
+            SetHex(targetPositionHexRoots, targetPositionHexImages, targetPositionHexTexts, visualIndex,
+                targetSprite,
+                targetSlotIndex + 1);
         }
     }
 
@@ -855,8 +865,24 @@ public class LegionDetailPanelUI : MonoBehaviour
             images[index].enabled = sprite != null;
         }
 
-        if (texts != null && index >= 0 && index < texts.Length && texts[index] != null)
-            texts[index].text = label.ToString();
+        ClearPositionHexText(roots, texts, index);
+    }
+
+    private static void ClearPositionHexText(GameObject[] roots, TMP_Text[] texts, int index)
+    {
+        TMP_Text text = null;
+
+        if (texts != null && index >= 0 && index < texts.Length)
+            text = texts[index];
+
+        if (text == null && roots != null && index >= 0 && index < roots.Length && roots[index] != null)
+            text = roots[index].GetComponentInChildren<TMP_Text>(true);
+
+        if (text == null)
+            return;
+
+        text.text = string.Empty;
+        text.gameObject.SetActive(false);
     }
 
     private void BindStatHoverTargets()
