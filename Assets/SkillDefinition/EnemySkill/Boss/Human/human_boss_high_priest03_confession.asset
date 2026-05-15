@@ -10,16 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: human_boss_high_priest_basic
+  m_Name: human_boss_high_priest03_confession
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_boss_high_priest_basic
-  skillName: "\uC9D5\uBC8C\uC758 \uBE5B"
-  description: "\uD53C\uD574 100%."
-  icon: {fileID: 21300000, guid: 9086c5808a585be4294f5615667edc4f, type: 3}
-  isBasicAttack: 1
+  skillId: human_boss_high_priest_confession
+  skillName: "\uACE0\uD574\uC131\uC0AC"
+  description: "\uC544\uAD70 \uC804\uCCB4\uC5D0\uAC8C \uAC01 \uB300\uC0C1 \uCD5C\uB300
+    \uCCB4\uB825\uC758 20% \uBCF4\uD638\uB9C9\uC744 \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+  icon: {fileID: 21300000, guid: 869f02c642456e64a8e01eef15b30527, type: 3}
+  isBasicAttack: 0
   castType: 0
-  activeRole: 0
-  skillClass: 1
+  activeRole: 1
+  skillClass: 16
   rangeTag: 2
   passiveGimmick: 0
   activeGimmick: 0
@@ -27,21 +28,22 @@ MonoBehaviour:
   usableMaxSlotIndex: 3
   targetMinSlotIndex: 0
   targetMaxSlotIndex: 3
-  targetTeam: 0
-  targetScope: 0
+  targetTeam: 1
+  targetScope: 1
   requiredSelfStatusToUse: 0
   blockedSelfStatusToUse: 0
   onlyUsableWhenAlone: 0
   requireOwnTeamLivingCountAtOrBelow: 0
   maxOwnTeamLivingCountToUse: 3
-  resolutionMode: 0
+  resolutionMode: 1
   primaryHitCount: 1
-  cooldownTurns: 0
+  cooldownTurns: 4
   initialCooldownTurns: 0
   accuracyCoefficientPercent: 100
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -91,24 +93,24 @@ MonoBehaviour:
   dragonSoldierUnitDefinition: {fileID: 0}
   dragonSoldierProtectionIdtPercent: 99
   effects:
-  - kind: 0
+  - kind: 2
     statusType: 0
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 100
+    powerPercent: 20
     useRandomPowerPercentRange: 0
     randomPowerPercentMin: 100
     randomPowerPercentMax: 100
     flatValue: 0
-    valueReference: 0
+    valueReference: 1
     durationTurns: 0
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
-  attackMotionSprite: {fileID: 4167526862733591240, guid: 8423681070ecb9e4d9d275e4149e78a4, type: 3}
+  attackMotionSprite: {fileID: 1364730499660012105, guid: be3b67d4869dcfd41a586842d82684ca, type: 3}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 9
+  hitEffectType: 10
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

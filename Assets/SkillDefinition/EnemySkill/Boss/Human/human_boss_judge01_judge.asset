@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_farmer_stone_throw_\uD22C\uC11D"
+  m_Name: human_boss_judge01_judge
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_farmer_stone_throw
-  skillName: "\uD22C\uC11D"
-  description: "\uD53C\uD574 70%, \uAE30\uC808 90% \uD655\uB960"
-  icon: {fileID: 21300000, guid: c7aff0025a030c14dab80ffcdf0307a8, type: 3}
-  isBasicAttack: 0
+  skillId: human_boss_judge_basic
+  skillName: "\uC2EC\uD310"
+  description: "\uBE5B\uC758 \uB9DD\uCE58\uB85C \uC801\uC744 \uC751\uC9D5\uD569\uB2C8\uB2E4"
+  icon: {fileID: 21300000, guid: 3529ed3d69bf1dc4b8cc71cc77d6f442, type: 3}
+  isBasicAttack: 1
   castType: 0
   activeRole: 0
-  skillClass: 4
+  skillClass: 1
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0
-  usableMinSlotIndex: 2
-  usableMaxSlotIndex: 3
+  usableMinSlotIndex: 0
+  usableMaxSlotIndex: 1
   targetMinSlotIndex: 0
-  targetMaxSlotIndex: 2
+  targetMaxSlotIndex: 1
   targetTeam: 0
   targetScope: 0
   requiredSelfStatusToUse: 0
@@ -36,12 +36,13 @@ MonoBehaviour:
   maxOwnTeamLivingCountToUse: 3
   resolutionMode: 0
   primaryHitCount: 1
-  cooldownTurns: 1
+  cooldownTurns: 0
   initialCooldownTurns: 0
   accuracyCoefficientPercent: 100
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -96,9 +97,9 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 70
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    powerPercent: 100
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 80
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
@@ -107,18 +108,18 @@ MonoBehaviour:
   - kind: 5
     statusType: 3
     statModifierType: 0
-    successChancePercent: 90
+    successChancePercent: 20
     affectedByResistance: 1
     powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 80
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
     durationTurns: 1
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
-  attackMotionSprite: {fileID: 0}
+  attackMotionSprite: {fileID: -8593126472501112182, guid: e9351956bf38d304eae24f1b9cdc0dfa, type: 3}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
   hitEffectType: 3

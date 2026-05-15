@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: human_boss_judge_basic
+  m_Name: "human_alchemist01_acid_potion_\uD3ED\uBC1C \uBB3C\uC57D"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_boss_judge_basic
-  skillName: "\uC2EC\uD310\uC758 \uCCA0\uD1F4"
-  description: "\uD53C\uD574 100%."
-  icon: {fileID: 21300000, guid: 3529ed3d69bf1dc4b8cc71cc77d6f442, type: 3}
+  skillId: human_alchemist_acid_potion
+  skillName: "\uC0B0\uC131 \uBB3C\uC57D"
+  description: "\uD53C\uD574 100%, \uD654\uC0C1 80% \uD655\uB960"
+  icon: {fileID: 21300000, guid: 9d918ec79eff2c84f981f46f78aab5bf, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0
-  skillClass: 1
+  skillClass: 2
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0
   usableMinSlotIndex: 0
-  usableMaxSlotIndex: 1
+  usableMaxSlotIndex: 2
   targetMinSlotIndex: 0
-  targetMaxSlotIndex: 1
+  targetMaxSlotIndex: 2
   targetTeam: 0
   targetScope: 0
   requiredSelfStatusToUse: 0
@@ -42,6 +42,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -97,18 +98,31 @@ MonoBehaviour:
     successChancePercent: 100
     affectedByResistance: 0
     powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 60
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
     durationTurns: 0
     displayIcon: {fileID: 0}
+  - kind: 5
+    statusType: 1
+    statModifierType: 0
+    successChancePercent: 60
+    affectedByResistance: 1
+    powerPercent: 100
+    useRandomPowerPercentRange: 0
+    randomPowerPercentMin: 100
+    randomPowerPercentMax: 100
+    flatValue: 0
+    valueReference: 0
+    durationTurns: 3
+    displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
-  attackMotionSprite: {fileID: -8593126472501112182, guid: e9351956bf38d304eae24f1b9cdc0dfa, type: 3}
+  attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 3
+  hitEffectType: 8
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

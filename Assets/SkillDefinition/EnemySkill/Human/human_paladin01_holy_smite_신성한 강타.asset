@@ -10,23 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_paladin_brave_charge_\uC6A9\uAC10\uD55C \uB3CC\uC9C4"
+  m_Name: "human_paladin01_holy_smite_\uC2E0\uC131\uD55C \uAC15\uD0C0"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_paladin_brave_charge
-  skillName: "\uC6A9\uAC10\uD55C \uB3CC\uC9C4"
-  description: "\uD53C\uD574 60%. \uC0AC\uC6A9 \uD6C4 \uC804\uBC29 2\uCE78 \uC804\uC9C4\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: c4a6810c0310e9244bd4223bc2aba99a, type: 3}
-  isBasicAttack: 0
+  skillId: human_paladin_holy_smite
+  skillName: "\uC2E0\uC131\uD55C \uAC15\uD0C0"
+  description: "\uD53C\uD574 100%, \uAE30\uC808 30% \uD655\uB960"
+  icon: {fileID: 21300000, guid: ffd25651fd561ce43aba6b9f40a01c98, type: 3}
+  isBasicAttack: 1
   castType: 0
   activeRole: 0
-  skillClass: 4
+  skillClass: 2
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0
-  usableMinSlotIndex: 1
-  usableMaxSlotIndex: 2
+  usableMinSlotIndex: 0
+  usableMaxSlotIndex: 0
   targetMinSlotIndex: 0
-  targetMaxSlotIndex: 0
+  targetMaxSlotIndex: 1
   targetTeam: 0
   targetScope: 0
   requiredSelfStatusToUse: 0
@@ -36,14 +36,15 @@ MonoBehaviour:
   maxOwnTeamLivingCountToUse: 3
   resolutionMode: 0
   primaryHitCount: 1
-  cooldownTurns: 2
+  cooldownTurns: 0
   initialCooldownTurns: 0
   accuracyCoefficientPercent: 100
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
-  selfMoveDirection: 1
-  selfMoveSteps: 2
+  nonDamageEffectTarget: 0
+  selfMoveDirection: 0
+  selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
   selfApplyStatusDurationTurns: 0
   useMissingHpPowerBonus: 0
@@ -96,19 +97,32 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 60
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    powerPercent: 100
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 80
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
     durationTurns: 0
     displayIcon: {fileID: 0}
+  - kind: 5
+    statusType: 3
+    statModifierType: 0
+    successChancePercent: 30
+    affectedByResistance: 1
+    powerPercent: 100
+    useRandomPowerPercentRange: 0
+    randomPowerPercentMin: 100
+    randomPowerPercentMax: 100
+    flatValue: 0
+    valueReference: 0
+    durationTurns: 1
+    displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 3
+  hitEffectType: 9
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

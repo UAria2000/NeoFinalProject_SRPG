@@ -35,7 +35,7 @@ MonoBehaviour:
   stunResist: 20
   frostResist: 20
   blindResist: 40
-  basicAttack: {fileID: 11400000, guid: f709c4223c1875a4e9e92a49c4ae0656, type: 2}
+  basicAttack: {fileID: 11400000, guid: 3b9992275b51d5046bcfd88483fa8746, type: 2}
   varianceRules:
     maxHpRange: {x: 0, y: 0}
     dmgRange: {x: 0, y: 0}
@@ -53,7 +53,7 @@ MonoBehaviour:
   forcePositionMoveImmune: 1
   positionMovementLocked: 0
   fixedStartingSkills:
-  - {fileID: 11400000, guid: 3b9992275b51d5046bcfd88483fa8746, type: 2}
+  - {fileID: 11400000, guid: f709c4223c1875a4e9e92a49c4ae0656, type: 2}
   - {fileID: 11400000, guid: 17f175cc336772f4caeaafbc010aac98, type: 2}
   - {fileID: 11400000, guid: f2a8e2e2a8f80414e870365c19777aea, type: 2}
   extraLearnableSkills: []

@@ -10,24 +10,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_crossbow_piercing_shot_\uAD00\uD1B5 \uC0AC\uACA9"
+  m_Name: "human_farmer01_thrust_\uB0B4\uC9C0\uB974\uAE30"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_crossbow_piercing_shot
-  skillName: "\uAD00\uD1B5 \uC0AC\uACA9"
-  description: "\uC9C0\uC815 \uB300\uC0C1\uACFC \uADF8 \uB4A4 1\uC5F4\uC744 \uACF5\uACA9\uD569\uB2C8\uB2E4.
-    \uD53C\uD574 70%, \uCD9C\uD608 20% \uD655\uB960."
-  icon: {fileID: 21300000, guid: 76f93c81cc1279a428d6324672476a3c, type: 3}
-  isBasicAttack: 0
+  skillId: human_farmer_thrust
+  skillName: "\uB0B4\uC9C0\uB974\uAE30"
+  description: "\uD53C\uD574 100%"
+  icon: {fileID: 21300000, guid: 58b9d8312b60e16408a0e39d5b8a0905, type: 3}
+  isBasicAttack: 1
   castType: 0
   activeRole: 0
-  skillClass: 4
+  skillClass: 2
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0
-  usableMinSlotIndex: 2
-  usableMaxSlotIndex: 3
+  usableMinSlotIndex: 0
+  usableMaxSlotIndex: 1
   targetMinSlotIndex: 0
-  targetMaxSlotIndex: 3
+  targetMaxSlotIndex: 1
   targetTeam: 0
   targetScope: 0
   requiredSelfStatusToUse: 0
@@ -37,7 +36,7 @@ MonoBehaviour:
   maxOwnTeamLivingCountToUse: 3
   resolutionMode: 0
   primaryHitCount: 1
-  cooldownTurns: 2
+  cooldownTurns: 0
   initialCooldownTurns: 0
   accuracyCoefficientPercent: 100
   allowCrit: 1
@@ -51,10 +50,10 @@ MonoBehaviour:
   useMissingHpPowerBonus: 0
   missingHpPercentStep: 1
   bonusPowerPerStep: 0
-  secondaryTargetRule: 1
+  secondaryTargetRule: 0
   secondaryAccuracyCoefficientPercent: 100
-  secondaryDamagePercent: 70
-  secondaryApplyNonDamageEffects: 1
+  secondaryDamagePercent: 0
+  secondaryApplyNonDamageEffects: 0
   forcedTargetMoveToRank: 1
   forcedTargetMoveSteps: 1
   forcedTargetMoveChancePercent: 100
@@ -98,32 +97,19 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 70
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    powerPercent: 100
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 50
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
     durationTurns: 0
     displayIcon: {fileID: 0}
-  - kind: 5
-    statusType: 2
-    statModifierType: 0
-    successChancePercent: 20
-    affectedByResistance: 1
-    powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
-    randomPowerPercentMax: 100
-    flatValue: 0
-    valueReference: 0
-    durationTurns: 1
-    displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 6
+  hitEffectType: 2
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_guard_thrust_\uCC0C\uB974\uAE30"
+  m_Name: "human_crossbow01_shot_\uC0AC\uACA9"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_guard_thrust
-  skillName: "\uCC0C\uB974\uAE30"
+  skillId: human_crossbow_shot
+  skillName: "\uC0AC\uACA9"
   description: "\uD53C\uD574 100%"
-  icon: {fileID: 21300000, guid: 072a32e28622ae441ae0e61457d1628f, type: 3}
+  icon: {fileID: 21300000, guid: 7126e8c061ecdf747a62397521a898ea, type: 3}
   isBasicAttack: 1
   castType: 0
   activeRole: 0
@@ -23,10 +23,10 @@ MonoBehaviour:
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0
-  usableMinSlotIndex: 0
-  usableMaxSlotIndex: 1
+  usableMinSlotIndex: 1
+  usableMaxSlotIndex: 3
   targetMinSlotIndex: 0
-  targetMaxSlotIndex: 1
+  targetMaxSlotIndex: 3
   targetTeam: 0
   targetScope: 0
   requiredSelfStatusToUse: 0
@@ -98,8 +98,8 @@ MonoBehaviour:
     successChancePercent: 100
     affectedByResistance: 0
     powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 80
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0

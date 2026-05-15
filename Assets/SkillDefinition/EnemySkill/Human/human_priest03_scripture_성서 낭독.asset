@@ -10,25 +10,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: human_boss_judge_righteous_revenge
+  m_Name: "human_priest03_scripture_\uC131\uC11C \uB0AD\uB3C5"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_boss_judge_righteous_revenge
-  skillName: "\uC815\uC758\uB85C\uC6B4 \uBCF5\uC218"
-  description: "\uC790\uC2E0\uC5D0\uAC8C \uB3C4\uBC1C 1\uD134\uACFC \uBC18\uACA9
-    \uD0DC\uC138 1\uD134\uC744 \uBD80\uC5EC\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 536957d937fefc340926ac1ffd7d4fa6, type: 3}
+  skillId: human_priest_scripture
+  skillName: "\uC131\uC11C \uB0AD\uB3C5"
+  description: "\uC544\uAD70 1\uBA85\uC5D0\uAC8C 2\uD134\uAC04 IDT 20%\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+  icon: {fileID: 21300000, guid: 8f89ce6d65a639747b6d206cc4118170, type: 3}
   isBasicAttack: 0
   castType: 0
-  activeRole: 3
-  skillClass: 4
+  activeRole: 1
+  skillClass: 2
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0
   usableMinSlotIndex: 0
-  usableMaxSlotIndex: 1
+  usableMaxSlotIndex: 3
   targetMinSlotIndex: 0
   targetMaxSlotIndex: 3
-  targetTeam: 2
+  targetTeam: 1
   targetScope: 0
   requiredSelfStatusToUse: 0
   blockedSelfStatusToUse: 0
@@ -37,11 +36,11 @@ MonoBehaviour:
   maxOwnTeamLivingCountToUse: 3
   resolutionMode: 1
   primaryHitCount: 1
-  cooldownTurns: 3
+  cooldownTurns: 2
   initialCooldownTurns: 0
   accuracyCoefficientPercent: 100
-  allowCrit: 1
-  allowGraze: 1
+  allowCrit: 0
+  allowGraze: 0
   alsoApplyToSelfWhenTargetingAlly: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
@@ -92,34 +91,21 @@ MonoBehaviour:
   dragonSoldierUnitDefinition: {fileID: 0}
   dragonSoldierProtectionIdtPercent: 99
   effects:
-  - kind: 5
-    statusType: 4
-    statModifierType: 0
+  - kind: 3
+    statusType: 0
+    statModifierType: 5
     successChancePercent: 100
     affectedByResistance: 0
     powerPercent: 100
     useRandomPowerPercentRange: 0
     randomPowerPercentMin: 100
     randomPowerPercentMax: 100
-    flatValue: 0
+    flatValue: 20
     valueReference: 0
-    durationTurns: 1
-    displayIcon: {fileID: 0}
-  - kind: 5
-    statusType: 5
-    statModifierType: 0
-    successChancePercent: 100
-    affectedByResistance: 0
-    powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
-    randomPowerPercentMax: 100
-    flatValue: 0
-    valueReference: 0
-    durationTurns: 1
+    durationTurns: 2
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
-  attackMotionSprite: {fileID: -6022104017872209274, guid: c11393a4255cef14f978cb6d2632d372, type: 3}
+  attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
   hitEffectType: 5

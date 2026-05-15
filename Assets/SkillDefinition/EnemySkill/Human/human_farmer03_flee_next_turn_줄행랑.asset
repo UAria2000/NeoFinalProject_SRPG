@@ -10,33 +10,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: human_boss_judge_enrage_when_high_priest_dies
+  m_Name: "human_farmer03_flee_next_turn_\uC904\uD589\uB791"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_boss_judge_enrage_when_high_priest_dies
-  skillName: "\uC21C\uAD50\uC758 \uC2EC\uD310"
-  description: "\uD328\uC2DC\uBE0C: \uB300\uC0AC\uC81C \uC0AC\uB9DD \uC2DC \uC804\uD22C
-    \uC911 1\uD68C, DMG +40%, HIT +15%, \uBC1B\uB294 \uD53C\uD574 +15%, \uCD5C\uB300
-    \uCCB4\uB825 25% \uD68C\uBCF5."
-  icon: {fileID: 21300000, guid: 416626b0c3cb1964fb72bb5757626ec3, type: 3}
+  skillId: human_farmer_flee_next_turn
+  skillName: "\uC904\uD589\uB791"
+  description: "\uC544\uAD70 \uC9C4\uD615\uC5D0 \uC790\uC2E0\uB9CC \uB0A8\uC558\uC744
+    \uB54C \uC0AC\uC6A9\uD569\uB2C8\uB2E4. \uB2E4\uC74C \uC790\uAE30 \uD134 \uC2DC\uC791
+    \uC2DC \uB3C4\uC8FC\uD569\uB2C8\uB2E4."
+  icon: {fileID: 21300000, guid: 22b9b8c622e51d04aaad69497f71cd32, type: 3}
   isBasicAttack: 0
-  castType: 1
+  castType: 0
   activeRole: 3
-  skillClass: 1
+  skillClass: 2
   rangeTag: 0
-  passiveGimmick: 7
-  activeGimmick: 0
+  passiveGimmick: 0
+  activeGimmick: 7
   usableMinSlotIndex: 0
   usableMaxSlotIndex: 3
   targetMinSlotIndex: 0
   targetMaxSlotIndex: 3
-  targetTeam: 0
+  targetTeam: 2
   targetScope: 0
   requiredSelfStatusToUse: 0
   blockedSelfStatusToUse: 0
-  onlyUsableWhenAlone: 0
+  onlyUsableWhenAlone: 1
   requireOwnTeamLivingCountAtOrBelow: 0
   maxOwnTeamLivingCountToUse: 3
-  resolutionMode: 0
+  resolutionMode: 1
   primaryHitCount: 1
   cooldownTurns: 0
   initialCooldownTurns: 0
@@ -83,7 +83,7 @@ MonoBehaviour:
   blackAuraShieldFlatBonus: 0
   turnStartSelfHealMaxHpPercent: 5
   teamStatusResistAuraPercent: 30
-  linkedBossUnitDefinition: {fileID: 11400000, guid: 0de3def49d4e33b47a081a3f3e2aa671, type: 2}
+  linkedBossUnitDefinition: {fileID: 0}
   bossEnrageDmgPercent: 40
   bossEnrageHitPercent: 15
   bossEnrageIncomingDamageTakenPercent: 15

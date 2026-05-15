@@ -10,26 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_alchemist_chemical_cloud_\uD654\uD559 \uAD6C\uB984"
+  m_Name: "human_guard02_shield_bash_\uBC29\uD328 \uD0C0\uACA9"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_alchemist_chemical_cloud
-  skillName: "\uD654\uD559 \uAD6C\uB984"
-  description: "\uC801 \uC804\uCCB4\uC5D0\uAC8C \uD53C\uD574 20%. \uD53C\uACA9\uD55C
-    \uC801\uC744 20% \uD655\uB960\uB85C \uBB34\uC791\uC704 \uC704\uCE58\uC5D0 \uAC15\uC81C\uBC30\uCE58\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 7c1cc824cd74fe04e8b9a1494c64218e, type: 3}
+  skillId: human_guard_shield_bash
+  skillName: "\uBC29\uD328 \uD0C0\uACA9"
+  description: "\uD53C\uD574 80%, \uAE30\uC808 100% \uD655\uB960"
+  icon: {fileID: 21300000, guid: a835cfa338e65484fbb1ff9b9f237179, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 0
   skillClass: 4
   rangeTag: 0
   passiveGimmick: 0
-  activeGimmick: 8
-  usableMinSlotIndex: 1
-  usableMaxSlotIndex: 3
+  activeGimmick: 0
+  usableMinSlotIndex: 0
+  usableMaxSlotIndex: 1
   targetMinSlotIndex: 0
-  targetMaxSlotIndex: 3
+  targetMaxSlotIndex: 1
   targetTeam: 0
-  targetScope: 1
+  targetScope: 0
   requiredSelfStatusToUse: 0
   blockedSelfStatusToUse: 0
   onlyUsableWhenAlone: 0
@@ -43,6 +42,7 @@ MonoBehaviour:
   allowCrit: 1
   allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -97,19 +97,32 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 20
+    powerPercent: 80
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 60
+    randomPowerPercentMax: 80
+    flatValue: 0
+    valueReference: 0
+    durationTurns: 0
+    displayIcon: {fileID: 0}
+  - kind: 5
+    statusType: 3
+    statModifierType: 0
+    successChancePercent: 50
+    affectedByResistance: 1
+    powerPercent: 100
     useRandomPowerPercentRange: 0
     randomPowerPercentMin: 100
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0
-    durationTurns: 0
+    durationTurns: 1
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 7
+  hitEffectType: 3
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}
