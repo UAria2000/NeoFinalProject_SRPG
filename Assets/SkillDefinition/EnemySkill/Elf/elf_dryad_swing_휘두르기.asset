@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillId: elf_dryad_swing
   skillName: "\uD718\uB450\uB974\uAE30"
-  description: "\uD53C\uD574 100%. \uCD9C\uD608 30% \uD655\uB960 \uBD80\uC5EC."
+  description: "\uAC00\uC2DC\uB098\uBB34 \uC8FC\uBA39\uC744 \uD718\uB458\uB7EC \uACF5\uACA9\uD569\uB2C8\uB2E4"
   icon: {fileID: 21300000, guid: dfa0630f313b8ed4dbc833d5a58a574d, type: 3}
   isBasicAttack: 1
   castType: 0
@@ -97,9 +97,9 @@ MonoBehaviour:
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
+    powerPercent: 0
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 80
     randomPowerPercentMax: 100
     flatValue: 0
     valueReference: 0

@@ -29,6 +29,11 @@ public class MainUIOverlayController : MonoBehaviour
 
     private readonly Dictionary<MainUIPanelType, MainUIPanelBase> panelLookup = new Dictionary<MainUIPanelType, MainUIPanelBase>();
     private MainUIPanelBase currentMainPanel;
+    private WorldMapHoverPressButtonUI marketButtonVisual;
+    private WorldMapHoverPressButtonUI storageButtonVisual;
+    private WorldMapHoverPressButtonUI barracksButtonVisual;
+    private WorldMapHoverPressButtonUI portraitButtonVisual;
+    private WorldMapHoverPressButtonUI settingsButtonVisual;
 
     private void Awake()
     {
@@ -64,12 +69,15 @@ public class MainUIOverlayController : MonoBehaviour
         BindButton(mainPanelDismissButton, CloseCurrentMainPanel);
         BindButton(settingsDimButton, CloseSettingsPanel);
 
+        CacheButtonVisuals();
+
         if (mainPanelDismissRoot != null)
             mainPanelDismissRoot.SetActive(false);
         if (settingsDimRoot != null)
             settingsDimRoot.SetActive(false);
 
         UpdateWorldMapInputLock();
+        UpdateButtonToggleStates();
     }
 
     public void OpenMainPanel(MainUIPanelType panelType)
@@ -102,6 +110,7 @@ public class MainUIOverlayController : MonoBehaviour
             rightInfoPanel.SetActive(false);
 
         UpdateWorldMapInputLock();
+        UpdateButtonToggleStates();
     }
 
     public void CloseCurrentMainPanel()
@@ -121,6 +130,7 @@ public class MainUIOverlayController : MonoBehaviour
         }
 
         UpdateWorldMapInputLock();
+        UpdateButtonToggleStates();
     }
 
     public void OpenSettingsPanel()
@@ -133,6 +143,7 @@ public class MainUIOverlayController : MonoBehaviour
             settingsDimRoot.SetActive(true);
 
         UpdateWorldMapInputLock();
+        UpdateButtonToggleStates();
     }
 
     public void CloseSettingsPanel()
@@ -144,6 +155,7 @@ public class MainUIOverlayController : MonoBehaviour
             settingsDimRoot.SetActive(false);
 
         UpdateWorldMapInputLock();
+        UpdateButtonToggleStates();
     }
 
     public void CloseTopLayer()
@@ -170,6 +182,39 @@ public class MainUIOverlayController : MonoBehaviour
 
         if (worldMapDragPan != null)
             worldMapDragPan.SetInputLocked(shouldLock);
+    }
+
+    private void CacheButtonVisuals()
+    {
+        marketButtonVisual = GetHoverPressVisual(marketButton);
+        storageButtonVisual = GetHoverPressVisual(storageButton);
+        barracksButtonVisual = GetHoverPressVisual(barracksButton);
+        portraitButtonVisual = GetHoverPressVisual(portraitButton);
+        settingsButtonVisual = GetHoverPressVisual(settingsButton);
+    }
+
+    private void UpdateButtonToggleStates()
+    {
+        MainUIPanelType openPanelType = currentMainPanel != null && currentMainPanel.IsOpen
+            ? currentMainPanel.PanelType
+            : MainUIPanelType.None;
+
+        SetButtonToggle(marketButtonVisual, openPanelType == MainUIPanelType.Market);
+        SetButtonToggle(storageButtonVisual, openPanelType == MainUIPanelType.Storage);
+        SetButtonToggle(barracksButtonVisual, openPanelType == MainUIPanelType.Barracks);
+        SetButtonToggle(portraitButtonVisual, openPanelType == MainUIPanelType.Portrait);
+        SetButtonToggle(settingsButtonVisual, IsSettingsOpen());
+    }
+
+    private static WorldMapHoverPressButtonUI GetHoverPressVisual(Button button)
+    {
+        return button != null ? button.GetComponent<WorldMapHoverPressButtonUI>() : null;
+    }
+
+    private static void SetButtonToggle(WorldMapHoverPressButtonUI visual, bool value)
+    {
+        if (visual != null)
+            visual.SetToggleOn(value);
     }
 
     private static void BindButton(Button button, UnityEngine.Events.UnityAction action)

@@ -14,9 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
   skillId: elf_sword_dancer_battle_stance
   skillName: "\uC804\uD22C \uC790\uC138"
-  description: "3\uD134\uAC04 DMG 20% \uC0C1\uC2B9. \uC804\uD22C \uC790\uC138 \uC911\uC5D0\uB294
-    \uC911\uBCF5 \uC0AC\uC6A9\uB418\uC9C0 \uC54A\uC73C\uBA70, \uAC80\uBB34 \uC0AC\uC6A9
-    \uC870\uAC74\uC778 \uC804\uD22C \uC790\uC138\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
+  description: "\uBC14\uB78C\uC5D0 \uBAB8\uC744 \uB9E1\uAE30\uACE0, \uC804\uD22C\uC5D0
+    \uC9D1\uC911\uD569\uB2C8\uB2E4"
   icon: {fileID: 21300000, guid: 5f10a4c83d87b364b81b4491f872c2a3, type: 3}
   isBasicAttack: 0
   castType: 0
@@ -44,6 +43,7 @@ MonoBehaviour:
   allowCrit: 0
   allowGraze: 0
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -116,6 +116,19 @@ MonoBehaviour:
     randomPowerPercentMin: 100
     randomPowerPercentMax: 100
     flatValue: 0
+    valueReference: 0
+    durationTurns: 3
+    displayIcon: {fileID: 0}
+  - kind: 3
+    statusType: 0
+    statModifierType: 2
+    successChancePercent: 100
+    affectedByResistance: 0
+    powerPercent: 100
+    useRandomPowerPercentRange: 0
+    randomPowerPercentMin: 100
+    randomPowerPercentMax: 100
+    flatValue: 20
     valueReference: 0
     durationTurns: 3
     displayIcon: {fileID: 0}

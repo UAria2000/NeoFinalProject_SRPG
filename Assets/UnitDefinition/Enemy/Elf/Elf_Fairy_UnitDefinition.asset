@@ -25,7 +25,7 @@ MonoBehaviour:
   spd: 102
   idt: 0
   hpGrowthPerLevel: {x: 2, y: 4}
-  dmgGrowthPerLevel: {x: 1, y: 3}
+  dmgGrowthPerLevel: {x: 1, y: 2}
   hit: 50
   ac: 36
   cri: 4
@@ -51,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 0
+  positionMovementLocked: 0
   fixedStartingSkills: []
   extraLearnableSkills: []
   randomEnemyEquipment: []

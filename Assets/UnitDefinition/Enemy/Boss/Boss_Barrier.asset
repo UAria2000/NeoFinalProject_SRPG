@@ -20,11 +20,11 @@ MonoBehaviour:
   showInLegion: 0
   legionSortPriority: 0
   legionCategoryLabel: 
-  maxHP: 200
+  maxHP: 120
   dmg: 0
   spd: 0
   idt: 0
-  hpGrowthPerLevel: {x: 20, y: 40}
+  hpGrowthPerLevel: {x: 10, y: 10}
   dmgGrowthPerLevel: {x: 0, y: 0}
   hit: 0
   ac: 0
