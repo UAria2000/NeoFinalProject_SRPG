@@ -20,11 +20,11 @@ MonoBehaviour:
   showInLegion: 0
   legionSortPriority: 0
   legionCategoryLabel: Boss
-  maxHP: 630
+  maxHP: 540
   dmg: 21
   spd: 55
   idt: 5
-  hpGrowthPerLevel: {x: 2, y: 4}
+  hpGrowthPerLevel: {x: 8, y: 12}
   dmgGrowthPerLevel: {x: 1, y: 3}
   hit: 58
   ac: 36
@@ -32,9 +32,9 @@ MonoBehaviour:
   crd: 150
   burnResist: 15
   bleedResist: 15
-  stunResist: 30
-  frostResist: 15
-  blindResist: 30
+  stunResist: 20
+  frostResist: 20
+  blindResist: 40
   basicAttack: {fileID: 11400000, guid: f709c4223c1875a4e9e92a49c4ae0656, type: 2}
   varianceRules:
     maxHpRange: {x: 0, y: 0}
@@ -51,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 1
+  positionMovementLocked: 0
   fixedStartingSkills:
   - {fileID: 11400000, guid: 3b9992275b51d5046bcfd88483fa8746, type: 2}
   - {fileID: 11400000, guid: 17f175cc336772f4caeaafbc010aac98, type: 2}

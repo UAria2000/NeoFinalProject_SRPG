@@ -15,19 +15,20 @@ MonoBehaviour:
   unitId: shadow_dancer
   unitName: "\uADF8\uB9BC\uC790 \uBB34\uD76C"
   rangeType: 1
+  defaultViewDefinition: {fileID: 0}
   isNftUnit: 0
   showInLegion: 1
   legionSortPriority: 0
   legionCategoryLabel: 
   maxHP: 96
-  dmg: 36
-  spd: 82
+  dmg: 32
+  spd: 74
   idt: 0
-  hpGrowthPerLevel: {x: 3, y: 5}
+  hpGrowthPerLevel: {x: 2, y: 4}
   dmgGrowthPerLevel: {x: 1, y: 3}
-  hit: 76
+  hit: 66
   ac: 62
-  cri: 20
+  cri: 15
   crd: 150
   burnResist: 0
   bleedResist: 0
@@ -50,6 +51,7 @@ MonoBehaviour:
     frostResistRange: {x: 0, y: 0}
     blindResistRange: {x: 0, y: 0}
   forcePositionMoveImmune: 0
+  positionMovementLocked: 0
   fixedStartingSkills: []
   extraLearnableSkills: []
   randomEnemyEquipment: []
