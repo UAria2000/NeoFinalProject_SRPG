@@ -10,27 +10,22 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: human_boss_high_priest_revive_judge
+  m_Name: "human_priest01_holy_light_\uC131\uC2A4\uB7EC\uC6B4 \uBE5B"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_boss_high_priest_revive_judge
-  skillName: "\uC2E0\uC131\uD55C \uC18C\uC0DD"
-  description: "\uD328\uC2DC\uBE0C: \uC2EC\uD310\uAD00 \uC0AC\uB9DD \uC2DC \uC804\uD22C
-    \uC911 1\uD68C, \uC2EC\uD310\uAD00\uC744 \uC6D0\uB798 \uC2AC\uB86F\uC5D0\uC11C
-    \uCD5C\uB300 \uCCB4\uB825 30%\uB85C \uC989\uC2DC \uC18C\uC0DD\uC2DC\uD0A4\uACE0
-    \uC790\uC2E0\uC740 \uCD5C\uB300 \uCCB4\uB825 25%\uB97C \uD68C\uBCF5\uD569\uB2C8\uB2E4.
-    \uC18C\uC0DD\uD55C \uC2EC\uD310\uAD00\uC740 \uB2E4\uC74C \uB77C\uC6B4\uB4DC\uBD80\uD130
-    \uD589\uB3D9\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 869f02c642456e64a8e01eef15b30527, type: 3}
-  isBasicAttack: 0
-  castType: 1
-  activeRole: 3
-  skillClass: 1
-  rangeTag: 2
-  passiveGimmick: 8
+  skillId: human_priest_holy_light
+  skillName: "\uC131\uC2A4\uB7EC\uC6B4 \uBE5B"
+  description: "\uD53C\uD574 100%, \uC2E4\uBA85 20% \uD655\uB960"
+  icon: {fileID: 21300000, guid: 0b77f74b47b2b0346be325dab13200f9, type: 3}
+  isBasicAttack: 1
+  castType: 0
+  activeRole: 0
+  skillClass: 2
+  rangeTag: 0
+  passiveGimmick: 0
   activeGimmick: 0
-  usableMinSlotIndex: 0
+  usableMinSlotIndex: 1
   usableMaxSlotIndex: 3
-  targetMinSlotIndex: 0
+  targetMinSlotIndex: 1
   targetMaxSlotIndex: 3
   targetTeam: 0
   targetScope: 0
@@ -86,7 +81,7 @@ MonoBehaviour:
   blackAuraShieldFlatBonus: 0
   turnStartSelfHealMaxHpPercent: 5
   teamStatusResistAuraPercent: 30
-  linkedBossUnitDefinition: {fileID: 11400000, guid: ccdba768332ce6148b95711d11bbba7f, type: 2}
+  linkedBossUnitDefinition: {fileID: 0}
   bossEnrageDmgPercent: 40
   bossEnrageHitPercent: 15
   bossEnrageIncomingDamageTakenPercent: 15
@@ -95,12 +90,38 @@ MonoBehaviour:
   bossReviverHealMaxHpPercent: 25
   dragonSoldierUnitDefinition: {fileID: 0}
   dragonSoldierProtectionIdtPercent: 99
-  effects: []
+  effects:
+  - kind: 0
+    statusType: 0
+    statModifierType: 0
+    successChancePercent: 100
+    affectedByResistance: 0
+    powerPercent: 100
+    useRandomPowerPercentRange: 0
+    randomPowerPercentMin: 100
+    randomPowerPercentMax: 100
+    flatValue: 0
+    valueReference: 0
+    durationTurns: 0
+    displayIcon: {fileID: 0}
+  - kind: 5
+    statusType: 9
+    statModifierType: 0
+    successChancePercent: 20
+    affectedByResistance: 1
+    powerPercent: 100
+    useRandomPowerPercentRange: 0
+    randomPowerPercentMin: 100
+    randomPowerPercentMax: 100
+    flatValue: 0
+    valueReference: 0
+    durationTurns: 1
+    displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 0
+  hitEffectType: 9
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

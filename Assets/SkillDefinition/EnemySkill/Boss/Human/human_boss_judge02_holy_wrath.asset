@@ -10,39 +10,40 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_paladin_guardian_shield_\uC218\uD638 \uBC29\uD328"
+  m_Name: human_boss_judge02_holy_wrath
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_paladin_guardian_shield
-  skillName: "\uC218\uD638 \uBC29\uD328"
-  description: "\uACF5\uACA9\uB825\uC758 100%\uB9CC\uD07C \uC544\uAD70 \uC804\uCCB4\uC5D0\uAC8C
-    \uBCF4\uD638\uB9C9\uC744 \uC0DD\uC131\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: b18c8ff166f3a814aa3495dd221a0fc9, type: 3}
+  skillId: human_boss_rage
+  skillName: "\uAC70\uB8E9\uD55C \uBD84\uB178"
+  description: "\uBE5B\uC5D0 \uAE30\uB3C4\uD558\uC5EC \uD0C0\uB77D\uD55C \uC790\uB4E4\uC5D0\uAC8C
+    \uC2EC\uD310\uAD00\uC758 \uBD84\uB178\uB97C \uD3ED\uBC1C\uC2DC\uD0B5\uB2C8\uB2E4"
+  icon: {fileID: 21300000, guid: 416626b0c3cb1964fb72bb5757626ec3, type: 3}
   isBasicAttack: 0
   castType: 0
-  activeRole: 1
-  skillClass: 2
+  activeRole: 0
+  skillClass: 4
   rangeTag: 0
   passiveGimmick: 0
   activeGimmick: 0
   usableMinSlotIndex: 0
-  usableMaxSlotIndex: 2
+  usableMaxSlotIndex: 1
   targetMinSlotIndex: 0
   targetMaxSlotIndex: 3
-  targetTeam: 1
+  targetTeam: 0
   targetScope: 1
   requiredSelfStatusToUse: 0
   blockedSelfStatusToUse: 0
   onlyUsableWhenAlone: 0
   requireOwnTeamLivingCountAtOrBelow: 0
   maxOwnTeamLivingCountToUse: 3
-  resolutionMode: 1
+  resolutionMode: 0
   primaryHitCount: 1
-  cooldownTurns: 2
+  cooldownTurns: 3
   initialCooldownTurns: 0
   accuracyCoefficientPercent: 100
-  allowCrit: 0
-  allowGraze: 0
+  allowCrit: 1
+  allowGraze: 1
   alsoApplyToSelfWhenTargetingAlly: 0
+  nonDamageEffectTarget: 0
   selfMoveDirection: 0
   selfMoveSteps: 0
   selfApplyStatusAfterUse: 0
@@ -92,24 +93,24 @@ MonoBehaviour:
   dragonSoldierUnitDefinition: {fileID: 0}
   dragonSoldierProtectionIdtPercent: 99
   effects:
-  - kind: 2
+  - kind: 0
     statusType: 0
     statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
-    powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
-    randomPowerPercentMax: 100
+    powerPercent: 75
+    useRandomPowerPercentRange: 1
+    randomPowerPercentMin: 70
+    randomPowerPercentMax: 85
     flatValue: 0
     valueReference: 0
     durationTurns: 0
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
-  attackMotionSprite: {fileID: 0}
+  attackMotionSprite: {fileID: -7192133628871937238, guid: c1f990d17f0ed384bacef1c77ec512ad, type: 3}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 10
+  hitEffectType: 9
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

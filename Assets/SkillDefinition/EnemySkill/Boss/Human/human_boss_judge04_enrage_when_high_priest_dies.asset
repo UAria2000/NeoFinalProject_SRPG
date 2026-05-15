@@ -10,23 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_alchemist_acid_potion_\uC0B0\uC131 \uBB3C\uC57D"
+  m_Name: human_boss_judge04_enrage_when_high_priest_dies
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_alchemist_acid_potion
-  skillName: "\uC0B0\uC131 \uBB3C\uC57D"
-  description: "\uD53C\uD574 100%, \uD654\uC0C1 80% \uD655\uB960"
-  icon: {fileID: 21300000, guid: 9d918ec79eff2c84f981f46f78aab5bf, type: 3}
-  isBasicAttack: 1
-  castType: 0
-  activeRole: 0
-  skillClass: 2
+  skillId: human_boss_judge_enrage_when_high_priest_dies
+  skillName: "\uC21C\uAD50\uC758 \uC2EC\uD310"
+  description: "\uD328\uC2DC\uBE0C: \uB300\uC0AC\uC81C \uC0AC\uB9DD \uC2DC \uC804\uD22C
+    \uC911 1\uD68C, DMG +40%, HIT +15%, \uBC1B\uB294 \uD53C\uD574 +15%, \uCD5C\uB300
+    \uCCB4\uB825 25% \uD68C\uBCF5."
+  icon: {fileID: 21300000, guid: 416626b0c3cb1964fb72bb5757626ec3, type: 3}
+  isBasicAttack: 0
+  castType: 1
+  activeRole: 3
+  skillClass: 1
   rangeTag: 0
-  passiveGimmick: 0
+  passiveGimmick: 7
   activeGimmick: 0
   usableMinSlotIndex: 0
-  usableMaxSlotIndex: 2
+  usableMaxSlotIndex: 3
   targetMinSlotIndex: 0
-  targetMaxSlotIndex: 2
+  targetMaxSlotIndex: 3
   targetTeam: 0
   targetScope: 0
   requiredSelfStatusToUse: 0
@@ -81,7 +83,7 @@ MonoBehaviour:
   blackAuraShieldFlatBonus: 0
   turnStartSelfHealMaxHpPercent: 5
   teamStatusResistAuraPercent: 30
-  linkedBossUnitDefinition: {fileID: 0}
+  linkedBossUnitDefinition: {fileID: 11400000, guid: 0de3def49d4e33b47a081a3f3e2aa671, type: 2}
   bossEnrageDmgPercent: 40
   bossEnrageHitPercent: 15
   bossEnrageIncomingDamageTakenPercent: 15
@@ -90,37 +92,12 @@ MonoBehaviour:
   bossReviverHealMaxHpPercent: 25
   dragonSoldierUnitDefinition: {fileID: 0}
   dragonSoldierProtectionIdtPercent: 99
-  effects:
-  - kind: 0
-    statusType: 0
-    statModifierType: 0
-    successChancePercent: 100
-    affectedByResistance: 0
-    powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
-    randomPowerPercentMax: 100
-    flatValue: 0
-    valueReference: 0
-    durationTurns: 0
-    displayIcon: {fileID: 0}
-  - kind: 5
-    statusType: 1
-    statModifierType: 0
-    successChancePercent: 80
-    affectedByResistance: 1
-    powerPercent: 100
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 100
-    randomPowerPercentMax: 100
-    flatValue: 0
-    valueReference: 0
-    durationTurns: 1
-    displayIcon: {fileID: 0}
+  effects: []
   disableAfterUseInBattle: 0
+  attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 8
+  hitEffectType: 0
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

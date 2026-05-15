@@ -10,25 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: human_boss_rage
+  m_Name: human_boss_high_priest04_revive_judge
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_boss_rage
-  skillName: "\uAC70\uB8E9\uD55C \uBD84\uB178"
-  description: "\uC801 \uC804\uCCB4 75% \uAD11\uC5ED \uD53C\uD574"
-  icon: {fileID: 21300000, guid: 416626b0c3cb1964fb72bb5757626ec3, type: 3}
+  skillId: human_boss_high_priest_revive_judge
+  skillName: "\uC2E0\uC131\uD55C \uC18C\uC0DD"
+  description: "\uD328\uC2DC\uBE0C: \uC2EC\uD310\uAD00 \uC0AC\uB9DD \uC2DC \uC804\uD22C
+    \uC911 1\uD68C, \uC2EC\uD310\uAD00\uC744 \uC6D0\uB798 \uC2AC\uB86F\uC5D0\uC11C
+    \uCD5C\uB300 \uCCB4\uB825 30%\uB85C \uC989\uC2DC \uC18C\uC0DD\uC2DC\uD0A4\uACE0
+    \uC790\uC2E0\uC740 \uCD5C\uB300 \uCCB4\uB825 25%\uB97C \uD68C\uBCF5\uD569\uB2C8\uB2E4.
+    \uC18C\uC0DD\uD55C \uC2EC\uD310\uAD00\uC740 \uB2E4\uC74C \uB77C\uC6B4\uB4DC\uBD80\uD130
+    \uD589\uB3D9\uD569\uB2C8\uB2E4."
+  icon: {fileID: 21300000, guid: 869f02c642456e64a8e01eef15b30527, type: 3}
   isBasicAttack: 0
-  castType: 0
-  activeRole: 0
-  skillClass: 4
-  rangeTag: 0
-  passiveGimmick: 0
+  castType: 1
+  activeRole: 3
+  skillClass: 1
+  rangeTag: 2
+  passiveGimmick: 8
   activeGimmick: 0
   usableMinSlotIndex: 0
-  usableMaxSlotIndex: 1
+  usableMaxSlotIndex: 3
   targetMinSlotIndex: 0
   targetMaxSlotIndex: 3
   targetTeam: 0
-  targetScope: 1
+  targetScope: 0
   requiredSelfStatusToUse: 0
   blockedSelfStatusToUse: 0
   onlyUsableWhenAlone: 0
@@ -36,7 +41,7 @@ MonoBehaviour:
   maxOwnTeamLivingCountToUse: 3
   resolutionMode: 0
   primaryHitCount: 1
-  cooldownTurns: 3
+  cooldownTurns: 0
   initialCooldownTurns: 0
   accuracyCoefficientPercent: 100
   allowCrit: 1
@@ -81,7 +86,7 @@ MonoBehaviour:
   blackAuraShieldFlatBonus: 0
   turnStartSelfHealMaxHpPercent: 5
   teamStatusResistAuraPercent: 30
-  linkedBossUnitDefinition: {fileID: 0}
+  linkedBossUnitDefinition: {fileID: 11400000, guid: ccdba768332ce6148b95711d11bbba7f, type: 2}
   bossEnrageDmgPercent: 40
   bossEnrageHitPercent: 15
   bossEnrageIncomingDamageTakenPercent: 15
@@ -90,25 +95,12 @@ MonoBehaviour:
   bossReviverHealMaxHpPercent: 25
   dragonSoldierUnitDefinition: {fileID: 0}
   dragonSoldierProtectionIdtPercent: 99
-  effects:
-  - kind: 0
-    statusType: 0
-    statModifierType: 0
-    successChancePercent: 100
-    affectedByResistance: 0
-    powerPercent: 75
-    useRandomPowerPercentRange: 0
-    randomPowerPercentMin: 75
-    randomPowerPercentMax: 75
-    flatValue: 0
-    valueReference: 0
-    durationTurns: 0
-    displayIcon: {fileID: 0}
+  effects: []
   disableAfterUseInBattle: 0
-  attackMotionSprite: {fileID: -7192133628871937238, guid: c1f990d17f0ed384bacef1c77ec512ad, type: 3}
+  attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 9
+  hitEffectType: 0
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}

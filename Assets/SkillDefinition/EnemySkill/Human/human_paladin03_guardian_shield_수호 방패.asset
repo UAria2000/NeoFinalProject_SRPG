@@ -10,12 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b0ec0aa42fa160a46a6330d7ff30c770, type: 3}
-  m_Name: "human_priest_scripture_\uC131\uC11C \uB0AD\uB3C5"
+  m_Name: "human_paladin03_guardian_shield_\uC218\uD638 \uBC29\uD328"
   m_EditorClassIdentifier: Assembly-CSharp::SkillDefinition
-  skillId: human_priest_scripture
-  skillName: "\uC131\uC11C \uB0AD\uB3C5"
-  description: "\uC544\uAD70 1\uBA85\uC5D0\uAC8C 2\uD134\uAC04 IDT 20%\uB97C \uBD80\uC5EC\uD569\uB2C8\uB2E4."
-  icon: {fileID: 21300000, guid: 8f89ce6d65a639747b6d206cc4118170, type: 3}
+  skillId: human_paladin_guardian_shield
+  skillName: "\uC218\uD638 \uBC29\uD328"
+  description: "\uACF5\uACA9\uB825\uC758 100%\uB9CC\uD07C \uC544\uAD70 \uC804\uCCB4\uC5D0\uAC8C
+    \uBCF4\uD638\uB9C9\uC744 \uC0DD\uC131\uD569\uB2C8\uB2E4."
+  icon: {fileID: 21300000, guid: b18c8ff166f3a814aa3495dd221a0fc9, type: 3}
   isBasicAttack: 0
   castType: 0
   activeRole: 1
@@ -24,11 +25,11 @@ MonoBehaviour:
   passiveGimmick: 0
   activeGimmick: 0
   usableMinSlotIndex: 0
-  usableMaxSlotIndex: 3
+  usableMaxSlotIndex: 2
   targetMinSlotIndex: 0
   targetMaxSlotIndex: 3
   targetTeam: 1
-  targetScope: 0
+  targetScope: 1
   requiredSelfStatusToUse: 0
   blockedSelfStatusToUse: 0
   onlyUsableWhenAlone: 0
@@ -91,24 +92,24 @@ MonoBehaviour:
   dragonSoldierUnitDefinition: {fileID: 0}
   dragonSoldierProtectionIdtPercent: 99
   effects:
-  - kind: 3
+  - kind: 2
     statusType: 0
-    statModifierType: 5
+    statModifierType: 0
     successChancePercent: 100
     affectedByResistance: 0
     powerPercent: 100
     useRandomPowerPercentRange: 0
     randomPowerPercentMin: 100
     randomPowerPercentMax: 100
-    flatValue: 20
+    flatValue: 0
     valueReference: 0
-    durationTurns: 2
+    durationTurns: 0
     displayIcon: {fileID: 0}
   disableAfterUseInBattle: 0
   attackMotionSprite: {fileID: 0}
   castEffectPrefab: {fileID: 0}
   hitEffectPrefab: {fileID: 0}
-  hitEffectType: 5
+  hitEffectType: 10
   hitEffectAnchorType: 0
   hitEffectDurationOverride: 0
   useSfx: {fileID: 0}
