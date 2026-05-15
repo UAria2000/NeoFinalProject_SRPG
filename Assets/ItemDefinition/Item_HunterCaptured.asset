@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: item_hunter_captured
   itemName: "\uBD99\uC7A1\uD78C \uC0AC\uB0E5\uAFBC"
   description: "\uBD99\uC7A1\uD78C \uC0AC\uB0E5\uAFBC"
-  icon: {fileID: 3373936792836523315, guid: 4724f7a24310f7848ab836aafb70c44d, type: 3}
+  icon: {fileID: 21300000, guid: 4724f7a24310f7848ab836aafb70c44d, type: 3}
   targetTeam: 1
   targetScope: 0
   itemTier: 1
