@@ -1,3 +1,4 @@
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -77,13 +78,14 @@ public class StorageItemTooltipUI : MonoBehaviour
             categoryText.text = GetCategoryLabel(item);
 
         if (descriptionText != null)
-            descriptionText.text = item.description;
+            descriptionText.text = BuildDescription(item);
 
         if (equippedStateText != null)
             equippedStateText.text = isAssigned ? "장착/세팅 중" : string.Empty;
 
         visible = true;
         SetTooltipActive(true);
+        RefreshTextLayouts();
 
         transform.SetAsLastSibling();
         if (tooltipRect != null)
@@ -125,7 +127,37 @@ public class StorageItemTooltipUI : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = GetComponent<CanvasGroup>();
 
+        ConfigureTextDefaults();
+
         initialized = true;
+    }
+
+    private void ConfigureTextDefaults()
+    {
+        ConfigureSingleLineText(itemNameText);
+        ConfigureSingleLineText(categoryText);
+        ConfigureMultiLineText(descriptionText);
+        ConfigureSingleLineText(equippedStateText);
+    }
+
+    private void ConfigureSingleLineText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        text.richText = true;
+        text.enableWordWrapping = false;
+        text.overflowMode = TextOverflowModes.Overflow;
+    }
+
+    private void ConfigureMultiLineText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        text.richText = true;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Overflow;
     }
 
     private void SetTooltipActive(bool active)
@@ -276,6 +308,24 @@ public class StorageItemTooltipUI : MonoBehaviour
         return size;
     }
 
+    private void RefreshTextLayouts()
+    {
+        RefreshText(itemNameText);
+        RefreshText(categoryText);
+        RefreshText(descriptionText);
+        RefreshText(equippedStateText);
+    }
+
+    private void RefreshText(TMP_Text text)
+    {
+        if (text == null)
+            return;
+
+        text.SetAllDirty();
+        if (text.gameObject.activeInHierarchy)
+            text.ForceMeshUpdate();
+    }
+
     private string GetCategoryLabel(ItemDefinition item)
     {
         if (item == null)
@@ -292,5 +342,106 @@ public class StorageItemTooltipUI : MonoBehaviour
             default:
                 return string.Empty;
         }
+    }
+
+    private string BuildDescription(ItemDefinition item)
+    {
+        if (item == null)
+            return string.Empty;
+
+        StringBuilder sb = new StringBuilder();
+        if (!string.IsNullOrWhiteSpace(item.description))
+            sb.Append(item.description);
+
+        if (item.IsEquipmentItem())
+            AppendEquipmentLines(item, sb);
+        else if (item.IsConsumableItem())
+            AppendConsumableLines(item, sb);
+
+        return sb.ToString();
+    }
+
+    private void AppendEquipmentLines(ItemDefinition item, StringBuilder sb)
+    {
+        if (item == null || sb == null)
+            return;
+
+        int before = sb.Length;
+        AppendLineIfNonZero(sb, "최대 HP", item.equipmentMaxHpBonus);
+        AppendLineIfNonZero(sb, "공격", item.equipmentDmgBonus);
+        AppendLineIfNonZero(sb, "속도", item.equipmentSpdBonus);
+        AppendLineIfNonZero(sb, "명중", item.equipmentHitBonus);
+        AppendLineIfNonZero(sb, "회피", item.equipmentAcBonus);
+        AppendLineIfNonZero(sb, "치명", item.equipmentCriBonus, "%");
+
+        if (item.equipmentStartShieldPercentOfMaxHP > 0f)
+        {
+            EnsureSectionSpacing(sb, before);
+            sb.Append("전투 시작 보호막 +");
+            sb.Append(Mathf.RoundToInt(item.equipmentStartShieldPercentOfMaxHP));
+            sb.Append("%\n");
+        }
+
+        if (item.equipmentAllResistBonus != 0 || item.equipmentBurnResistBonus != 0 || item.equipmentBleedResistBonus != 0 ||
+            item.equipmentStunResistBonus != 0 || item.equipmentFrostResistBonus != 0 || item.equipmentBlindResistBonus != 0)
+        {
+            EnsureSectionSpacing(sb, before);
+            AppendLineIfNonZero(sb, "전체 저항", item.equipmentAllResistBonus);
+            AppendLineIfNonZero(sb, "화상 저항", item.equipmentBurnResistBonus);
+            AppendLineIfNonZero(sb, "출혈 저항", item.equipmentBleedResistBonus);
+            AppendLineIfNonZero(sb, "기절 저항", item.equipmentStunResistBonus);
+            AppendLineIfNonZero(sb, "동상 저항", item.equipmentFrostResistBonus);
+            AppendLineIfNonZero(sb, "실명 저항", item.equipmentBlindResistBonus);
+        }
+    }
+
+    private void AppendConsumableLines(ItemDefinition item, StringBuilder sb)
+    {
+        if (item == null || sb == null)
+            return;
+
+        if (sb.Length > 0)
+        {
+            string current = sb.ToString();
+            if (!current.EndsWith("\n"))
+                sb.Append("\n");
+            sb.Append("\n");
+        }
+
+        // UI 폭이 좁은 툴팁에서 슬래시로 이어 붙이면 한 줄이 패널 밖으로 새어나간다.
+        // 소비 아이템의 자동 설명은 항목별 줄바꿈으로 고정한다.
+        sb.Append(item.usableInBattle ? "전투 중 사용 가능" : "전투 중 사용 불가");
+
+        if (item.consumeOnUse)
+            sb.Append("\n사용 시 소모");
+
+        if (item.consumeTurnOnUse)
+            sb.Append("\n턴 소모");
+    }
+
+    private void AppendLineIfNonZero(StringBuilder sb, string label, int value, string suffix = "")
+    {
+        if (sb == null || value == 0)
+            return;
+
+        if (sb.Length > 0 && !sb.ToString().EndsWith("\n"))
+            sb.Append("\n");
+
+        sb.Append(label);
+        sb.Append(value > 0 ? " +" : " ");
+        sb.Append(value);
+        sb.Append(suffix);
+        sb.Append("\n");
+    }
+
+    private void EnsureSectionSpacing(StringBuilder sb, int sectionStartLength)
+    {
+        if (sb == null)
+            return;
+
+        if (sb.Length == sectionStartLength && sb.Length > 0)
+            sb.Append("\n\n");
+        else if (sb.Length > 0 && !sb.ToString().EndsWith("\n"))
+            sb.Append("\n");
     }
 }

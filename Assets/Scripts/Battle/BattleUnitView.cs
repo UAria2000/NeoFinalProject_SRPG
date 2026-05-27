@@ -11,6 +11,8 @@ public class BattleUnitView : MonoBehaviour
     [SerializeField] private Image hitMotionImage;
     [SerializeField] private TMP_Text labelText;
     [SerializeField] private Image hpFillImage;
+    [Tooltip("전투 중 HP 바 위/근처에 표시할 현재 HP/최대 HP 텍스트입니다. 비워두면 HpText/HPText/HpValueText 이름으로 자동 탐색합니다.")]
+    [SerializeField] private TMP_Text hpValueText;
     [SerializeField] private BattleStatusIconBarUI statusIconBar;
 
     [Header("Markers")]
@@ -129,6 +131,7 @@ public class BattleUnitView : MonoBehaviour
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
+        EnsureHpValueText();
     }
 
     public void Initialize(BattleUnit unit, string label)
@@ -233,6 +236,7 @@ public class BattleUnitView : MonoBehaviour
             hpFillImage.fillAmount = Mathf.Clamp01(ratio);
         }
 
+        RefreshHpValueText();
         RefreshStatusIcons();
     }
 
@@ -240,6 +244,7 @@ public class BattleUnitView : MonoBehaviour
     {
         if (hpFillImage == null || Unit == null)
         {
+            RefreshHpValueText();
             RefreshStatusIcons();
             yield break;
         }
@@ -256,7 +261,65 @@ public class BattleUnitView : MonoBehaviour
         }
 
         hpFillImage.fillAmount = target;
+        RefreshHpValueText();
         RefreshStatusIcons();
+    }
+
+
+    private void EnsureHpValueText()
+    {
+        if (hpValueText != null)
+            return;
+
+        hpValueText = FindTextDeep("HpText");
+        if (hpValueText == null)
+            hpValueText = FindTextDeep("HPText");
+        if (hpValueText == null)
+            hpValueText = FindTextDeep("HpValueText");
+        if (hpValueText == null)
+            hpValueText = FindTextDeep("HPValueText");
+    }
+
+    private void RefreshHpValueText()
+    {
+        EnsureHpValueText();
+        if (hpValueText == null)
+            return;
+
+        if (Unit == null)
+        {
+            hpValueText.text = string.Empty;
+            hpValueText.gameObject.SetActive(false);
+            return;
+        }
+
+        hpValueText.gameObject.SetActive(true);
+        hpValueText.text = string.Format("{0}/{1}", Mathf.Max(0, Unit.CurrentHP), Mathf.Max(1, Unit.MaxHP));
+    }
+
+    private TMP_Text FindTextDeep(string childName)
+    {
+        Transform child = FindDeepChild(transform, childName);
+        return child != null ? child.GetComponent<TMP_Text>() : null;
+    }
+
+    private static Transform FindDeepChild(Transform parent, string childName)
+    {
+        if (parent == null || string.IsNullOrWhiteSpace(childName))
+            return null;
+
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child.name == childName)
+                return child;
+
+            Transform result = FindDeepChild(child, childName);
+            if (result != null)
+                return result;
+        }
+
+        return null;
     }
 
     public void RefreshStatusIcons()
@@ -295,6 +358,7 @@ public class BattleUnitView : MonoBehaviour
     {
         SetOptionalActive(labelText, visible);
         SetOptionalActive(hpFillImage, visible);
+        SetOptionalActive(hpValueText, visible);
         if (hpFillImage != null && hpFillImage.transform.parent != null && hpFillImage.transform.parent != transform)
             SetOptionalActive(hpFillImage.transform.parent.gameObject, visible);
         SetOptionalActive(statusIconBar, visible);

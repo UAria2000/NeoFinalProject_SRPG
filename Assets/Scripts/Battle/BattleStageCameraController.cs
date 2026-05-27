@@ -259,6 +259,29 @@ public class BattleStageCameraController : MonoBehaviour
         SetAutoFocusTargetNormalizedPan(normalized, actionFocusSmoothTime > 0f ? actionFocusSmoothTime : smoothTime);
     }
 
+
+    public void FocusRightEdgeInstant()
+    {
+        if (!focusEnabled)
+            return;
+
+        LockEdgeScrollForAutoFocus(0f);
+        SetNormalizedPanInstant(1f);
+    }
+
+    public void FocusRightEdgeSmooth()
+    {
+        FocusRightEdgeSmooth(actionFocusSmoothTime > 0f ? actionFocusSmoothTime : smoothTime);
+    }
+
+    public void FocusRightEdgeSmooth(float requestedSmoothTime)
+    {
+        if (!focusEnabled)
+            return;
+
+        SetAutoFocusTargetNormalizedPan(1f, requestedSmoothTime);
+    }
+
     public void ResetToCenterInstant()
     {
         SetNormalizedPanInstant(0.5f);

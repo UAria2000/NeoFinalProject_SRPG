@@ -137,8 +137,15 @@ public static class BattleCalculator
                 maxPercent = Mathf.Max(maxPercent, shieldedPower);
             }
 
-            data.damageMin = Mathf.Max(0, Mathf.FloorToInt(minBase * (minPercent * 0.01f)));
-            data.damageMax = Mathf.Max(0, Mathf.FloorToInt(maxBase * (maxPercent * 0.01f)));
+            int previewMin = Mathf.Max(0, Mathf.FloorToInt(minBase * (minPercent * 0.01f)));
+            int previewMax = Mathf.Max(0, Mathf.FloorToInt(maxBase * (maxPercent * 0.01f)));
+
+            // 실제 공격 피해에서 적용되는 받는 피해 증감/방어 관련 보정을 미리보기에도 반영한다.
+            previewMin = target.ApplyIncomingAttackDamageReduction(previewMin);
+            previewMax = target.ApplyIncomingAttackDamageReduction(previewMax);
+
+            data.damageMin = Mathf.Min(previewMin, previewMax);
+            data.damageMax = Mathf.Max(previewMin, previewMax);
 
             AppendStatusChances(data, target, skill.effects, data.hitChancePercent * 0.01f);
         }

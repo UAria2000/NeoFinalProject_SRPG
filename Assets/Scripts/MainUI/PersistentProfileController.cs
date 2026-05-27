@@ -70,7 +70,6 @@ public class PersistentProfileController : MonoBehaviour
 
                     PersistentRosterUnitData rosterUnit = PersistentRosterUnitData.CreateFromPartyMember(
                         member,
-                        false,
                         persistentProfile.ConsumeObtainedOrder());
 
                     persistentProfile.rosterUnits.Add(rosterUnit);
@@ -988,7 +987,6 @@ public class PersistentProfileController : MonoBehaviour
             {
                 rosterUnit = PersistentRosterUnitData.CreateFromPartyMember(
                     member,
-                    false,
                     persistentProfile.ConsumeObtainedOrder());
                 persistentProfile.rosterUnits.Add(rosterUnit);
             }

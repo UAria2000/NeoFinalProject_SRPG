@@ -1,5 +1,7 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 
@@ -31,6 +33,8 @@ public readonly struct BattleActionWheelButtonViewData
     public readonly bool showUnusableDim;
     public readonly int manaCost;
     public readonly bool showManaCost;
+    public readonly string tooltipTitle;
+    public readonly string tooltipBody;
 
     public BattleActionWheelButtonViewData(
         string label,
@@ -45,7 +49,9 @@ public readonly struct BattleActionWheelButtonViewData
         string disabledReason = null,
         bool showUnusableDim = false,
         int manaCost = 0,
-        bool showManaCost = false)
+        bool showManaCost = false,
+        string tooltipTitle = null,
+        string tooltipBody = null)
     {
         this.label = label;
         this.icon = icon;
@@ -60,6 +66,8 @@ public readonly struct BattleActionWheelButtonViewData
         this.showUnusableDim = showUnusableDim;
         this.manaCost = Mathf.Max(0, manaCost);
         this.showManaCost = showManaCost;
+        this.tooltipTitle = tooltipTitle;
+        this.tooltipBody = tooltipBody;
     }
 
     public static BattleActionWheelButtonViewData Empty()
@@ -98,7 +106,7 @@ public readonly struct BattleActionWheelButtonViewData
 /// ├─ CooldownText     선택
 /// └─ UnusableDim      선택
 /// </summary>
-public class BattleActionWheelButtonUI : MonoBehaviour
+public class BattleActionWheelButtonUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerMoveHandler
 {
     [Header("References")]
     [SerializeField] private Button button;
@@ -138,6 +146,11 @@ public class BattleActionWheelButtonUI : MonoBehaviour
 
     public Button Button => button;
     public RectTransform RectTransform => transform as RectTransform;
+
+    private BattleActionTooltipUI tooltipUI;
+    private string tooltipTitle;
+    private string tooltipBody;
+    private bool pointerInside;
 
     private void Reset()
     {
@@ -191,7 +204,11 @@ public class BattleActionWheelButtonUI : MonoBehaviour
 
         SetVisible(data.visible);
         if (!data.visible)
+        {
+            SetTooltipContent(null, null);
+            HideTooltip();
             return;
+        }
 
         bool canClick = data.interactable && !data.isEmpty && data.onClick != null;
         if (button != null)
@@ -205,12 +222,68 @@ public class BattleActionWheelButtonUI : MonoBehaviour
         ApplyStateRoots(data, canClick);
         ApplyContent(data);
         ApplyDisabledVisuals(data);
+        SetTooltipContent(data.tooltipTitle, data.tooltipBody);
     }
 
     public void ClearListeners()
     {
         if (button != null)
             button.onClick.RemoveAllListeners();
+    }
+
+
+    public void SetTooltipUI(BattleActionTooltipUI tooltip)
+    {
+        tooltipUI = tooltip;
+    }
+
+    public void SetTooltipContent(string title, string body)
+    {
+        tooltipTitle = title;
+        tooltipBody = body;
+
+        if (pointerInside && string.IsNullOrWhiteSpace(tooltipTitle) && string.IsNullOrWhiteSpace(tooltipBody))
+            HideTooltip();
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        pointerInside = true;
+        ShowTooltip(eventData != null ? eventData.position : (Vector2)Input.mousePosition);
+    }
+
+    public void OnPointerMove(PointerEventData eventData)
+    {
+        if (!pointerInside)
+            return;
+
+        ShowTooltip(eventData != null ? eventData.position : (Vector2)Input.mousePosition);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        pointerInside = false;
+        HideTooltip();
+    }
+
+    private void ShowTooltip(Vector2 pointerScreenPosition)
+    {
+        if (tooltipUI == null)
+            return;
+
+        if (string.IsNullOrWhiteSpace(tooltipTitle) && string.IsNullOrWhiteSpace(tooltipBody))
+        {
+            tooltipUI.Hide();
+            return;
+        }
+
+        tooltipUI.Show(tooltipTitle, tooltipBody, pointerScreenPosition);
+    }
+
+    private void HideTooltip()
+    {
+        if (tooltipUI != null)
+            tooltipUI.Hide();
     }
 
     private void ApplyFrame(BattleActionWheelButtonViewData data)

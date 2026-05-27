@@ -32,8 +32,6 @@ public class EnemyInfoPanel : MonoBehaviour
     [SerializeField] private WorldGenerationSettings worldGenerationSettings;
 
     [Header("Badges")]
-    [SerializeField] private GameObject nftBadgeRoot;
-    [SerializeField] private GameObject exchangeableBadge;
     [SerializeField] private GameObject meleeIcon;
     [SerializeField] private GameObject midIcon;
     [SerializeField] private GameObject rangedIcon;
@@ -410,11 +408,6 @@ public class EnemyInfoPanel : MonoBehaviour
 
     private void RefreshBadges(BattleUnit enemy)
     {
-        bool showNft = enemy != null && enemy.IsNftUnit;
-        if (nftBadgeRoot != null)
-            nftBadgeRoot.SetActive(showNft);
-        if (exchangeableBadge != null)
-            exchangeableBadge.SetActive(showNft);
     }
 
     private void RefreshClassBadge(BattleUnit enemy)

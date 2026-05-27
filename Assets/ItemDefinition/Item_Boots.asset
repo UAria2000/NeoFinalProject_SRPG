@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: item_boots
   itemName: "\uBD80\uCE20"
-  description: "\uC18D\uB3C4 +10"
+  description: "\uBE60\uB974\uB2E4"
   icon: {fileID: 21300000, guid: 6a20db8fab998a64598801399486af4c, type: 3}
   targetTeam: 1
   targetScope: 0

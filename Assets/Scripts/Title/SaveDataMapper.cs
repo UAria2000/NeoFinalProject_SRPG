@@ -151,6 +151,9 @@ public static class SaveDataMapper
                     if (stack == null || stack.item == null || string.IsNullOrWhiteSpace(stack.item.itemId))
                         continue;
 
+                    if (!stack.item.IsInventoryItem())
+                        continue;
+
                     if (!worldItemAmounts.ContainsKey(stack.item.itemId))
                         worldItemAmounts[stack.item.itemId] = 0;
 
@@ -335,10 +338,8 @@ public static class SaveDataMapper
         runtime.obtainedOrder = data.obtainedOrder;
         runtime.unitDefinition = unitDef;
         runtime.unitViewDefinition = resolver.FindUnitViewDefinition(data.unitViewDefinitionName);
-        runtime.isExchangeable = data.isExchangeable;
         runtime.isFavorite = data.isFavorite;
         runtime.isConvertedFromPrisoner = data.isConvertedFromPrisoner;
-        runtime.isNft = data.isNft || (unitDef != null && unitDef.isNftUnit);
         runtime.unitRankOverride = Mathf.Clamp(data.unitRankOverride, 0, 9);
         runtime.currentLevel = Mathf.Max(1, data.level);
         runtime.originalLevel = Mathf.Max(1, data.originalLevel);

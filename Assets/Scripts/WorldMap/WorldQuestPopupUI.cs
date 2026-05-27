@@ -391,6 +391,12 @@ public class WorldQuestPopupUI : MonoBehaviour
                     amount = Mathf.Max(1, reward.amount);
                 }
 
+                if (item != null && !item.IsInventoryItem())
+                {
+                    item = null;
+                    amount = 0;
+                }
+
                 if (item != null)
                 {
                     if (completedMode)

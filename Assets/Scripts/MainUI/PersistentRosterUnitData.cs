@@ -14,14 +14,11 @@ public class PersistentRosterUnitData
     [Header("Base References")]
     public UnitDefinition unitDefinition;
     public UnitViewDefinition unitViewDefinition;
-    public bool isExchangeable;
     public bool isFavorite;
     [Tooltip("포획 포로 아이템에서 즉시 전환되어 생성된 유닛인지 여부. 연결 유닛이 레기온 표시 비활성 상태여도 이 값이 true면 군단 창에 표시할 수 있다.")]
     public bool isConvertedFromPrisoner;
 
     [Header("Legion Instance")]
-    [Tooltip("true면 UnitDefinition의 NFT 기본값과 무관하게 NFT/교환 가능 유닛으로 표시된다.")]
-    public bool isNft;
     [Tooltip("구버전 저장 데이터 호환용. 현재 방패 랭크는 promotionRank와 동일하며 이 값은 사용하지 않는다.")]
     [Range(0, 9)] public int unitRankOverride = 0;
 
@@ -50,11 +47,10 @@ public class PersistentRosterUnitData
     [Tooltip("-1이면 초기화되지 않은 상태로 간주.")]
     public int persistentCurrentHP = -1;
 
-    public static PersistentRosterUnitData CreateFromPartyMember(PartyMemberData member, bool exchangeable, long obtainedOrder)
+    public static PersistentRosterUnitData CreateFromPartyMember(PartyMemberData member, long obtainedOrder)
     {
         PersistentRosterUnitData data = new PersistentRosterUnitData();
         data.OverwriteFromPartyMember(member);
-        data.isExchangeable = exchangeable;
         data.obtainedOrder = obtainedOrder;
         data.EnsureDefaults();
         return data;
@@ -71,8 +67,6 @@ public class PersistentRosterUnitData
 
         instanceDisplayNameOverride = member.instanceDisplayNameOverride;
         fixedEpitaph = member.fixedEpitaph;
-        isExchangeable = member.isExchangeable;
-        isNft = member.isNft;
         unitDefinition = member.unitDefinition;
         unitViewDefinition = member.unitViewDefinition;
         currentLevel = Mathf.Max(1, member.currentLevel);
@@ -100,8 +94,6 @@ public class PersistentRosterUnitData
         runtime.instanceId = instanceId;
         runtime.instanceDisplayNameOverride = instanceDisplayNameOverride;
         runtime.fixedEpitaph = fixedEpitaph;
-        runtime.isExchangeable = isExchangeable;
-        runtime.isNft = isNft;
         runtime.currentLevel = Mathf.Max(1, currentLevel);
         runtime.originalLevel = Mathf.Max(1, originalLevel);
         runtime.currentExp = Mathf.Max(0, currentExp);
@@ -130,11 +122,6 @@ public class PersistentRosterUnitData
         return LegionFormula.ClampLegionRank(promotionRank);
     }
 
-    public bool IsNftUnit()
-    {
-        return isNft || isExchangeable || (unitDefinition != null && unitDefinition.isNftUnit);
-    }
-
     public bool CanDefinitionBeDecomposed()
     {
         return unitDefinition == null || unitDefinition.canBeDecomposed;
@@ -152,9 +139,6 @@ public class PersistentRosterUnitData
         levelGrowthDmg = Mathf.Max(0, levelGrowthDmg);
         promotionRank = LegionFormula.ClampLegionRank(promotionRank);
         unitRankOverride = Mathf.Clamp(unitRankOverride, 0, 9);
-
-        if (unitDefinition != null && unitDefinition.isNftUnit)
-            isNft = true;
 
         if (statVariance == null)
             statVariance = new UnitInstanceStatVariance();

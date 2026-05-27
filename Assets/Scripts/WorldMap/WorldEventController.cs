@@ -18,7 +18,7 @@ public class WorldEventController : MonoBehaviour
     [SerializeField] private string treasureSuffix = "\n\n보물을 발견했습니다.";
 
     [Header("Treasure Event")]
-    [SerializeField] private string treasureConfirmText = "확인";
+    [SerializeField] private string treasureConfirmText = "일괄 받기";
     [SerializeField] private string treasureRewardHeaderText = "획득 예정 보상";
     [SerializeField] private Color treasureRewardHeaderColor = new Color(0.2f, 1f, 0.25f, 1f);
     [SerializeField] private string treasureEmptyText = "보물 후보 아이템이 없습니다. Treasure Candidate Items를 설정해 주세요.";
@@ -250,8 +250,7 @@ public class WorldEventController : MonoBehaviour
     {
         popupOpen = false;
 
-        // 보물 보상은 WorldEventPopupUI의 슬롯 상호작용에서 지급된다.
-        // 슬롯을 연결하지 않은 구형 UI에서는 WorldEventPopupUI가 확인 시 자동 지급한다.
+        // 보물 보상은 WorldEventPopupUI의 확인/일괄 받기 처리에서 지급된다.
         // 타일 점령/해결은 TryOpenTreasureEvent()에서 이미 확정한다.
 
         if (tile != null)
@@ -396,7 +395,7 @@ public class WorldEventController : MonoBehaviour
         for (int i = 0; i < treasureCandidateItems.Count; i++)
         {
             ItemDefinition item = treasureCandidateItems[i];
-            if (item == null)
+            if (item == null || !item.IsInventoryItem())
                 continue;
 
             result.Add(item);

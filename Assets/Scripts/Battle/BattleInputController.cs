@@ -42,6 +42,7 @@ public class BattleInputController : MonoBehaviour
         battleManager.SetInputMode(BattleInputMode.WaitingForSkillTarget);
 
         battleManager.ShowTargetMarkers(validTargets);
+        FocusEnemySideForTargetSelectionIfNeeded(validTargets);
         uiController.HideSkillTooltip();
         uiController.HideTargetPreview();
         uiController.HideFleeTooltip();
@@ -93,6 +94,7 @@ public class BattleInputController : MonoBehaviour
         battleManager.SelectedSkillSlotIndex = -1;
         battleManager.SetInputMode(BattleInputMode.WaitingForCaptureTarget);
         battleManager.ShowTargetMarkers(validTargets);
+        FocusEnemySideForTargetSelectionIfNeeded(validTargets);
         uiController.HideTargetPreview();
         uiController.HideSkillTooltip();
         uiController.HideFleeTooltip();
@@ -197,6 +199,7 @@ public class BattleInputController : MonoBehaviour
         battleManager.SelectedSkillSlotIndex = -1;
         battleManager.SetInputMode(BattleInputMode.WaitingForItemTarget);
         battleManager.ShowTargetMarkers(validTargets);
+        FocusEnemySideForTargetSelectionIfNeeded(validTargets);
         uiController.HideTargetPreview();
         uiController.HideSkillTooltip();
         uiController.HideFleeTooltip();
@@ -210,6 +213,9 @@ public class BattleInputController : MonoBehaviour
         if (battleManager.CurrentState != TurnState.PlayerInput)
             return;
 
+        bool wasTargetSelection = IsAnyTargetSelectionMode(battleManager.InputMode);
+        BattleUnit actorToRefocus = battleManager.CurrentActingUnit;
+
         battleManager.SelectedSkill = null;
         battleManager.SelectedInventoryIndex = -1;
         battleManager.SelectedSkillSlotIndex = -1;
@@ -220,6 +226,9 @@ public class BattleInputController : MonoBehaviour
         uiController.HideTargetPreview();
         uiController.HideSkillTooltip();
         uiController.HideFleeTooltip();
+
+        if (wasTargetSelection)
+            FocusActorAfterTargetSelectionCancel(actorToRefocus);
 
         ClearUISelection();
         battleManager.RefreshAllUI();
@@ -458,6 +467,59 @@ public class BattleInputController : MonoBehaviour
         }
 
         battleManager.RefreshAllUI();
+    }
+
+    private void FocusEnemySideForTargetSelectionIfNeeded(IReadOnlyList<BattleUnit> validTargets)
+    {
+        if (validTargets == null || validTargets.Count <= 0)
+            return;
+
+        bool hasEnemyTarget = false;
+        for (int i = 0; i < validTargets.Count; i++)
+        {
+            BattleUnit target = validTargets[i];
+            if (target != null && target.Team == TeamType.Enemy)
+            {
+                hasEnemyTarget = true;
+                break;
+            }
+        }
+
+        if (!hasEnemyTarget)
+            return;
+
+        BattleStageCameraController stageCamera = battleManager != null && battleManager.PresentationController != null
+            ? battleManager.PresentationController.StageCameraController
+            : null;
+
+        stageCamera?.FocusRightEdgeSmooth();
+    }
+
+    private void FocusActorAfterTargetSelectionCancel(BattleUnit actor)
+    {
+        if (actor == null || actor.IsDead)
+            return;
+
+        BattleStageCameraController stageCamera = battleManager != null && battleManager.PresentationController != null
+            ? battleManager.PresentationController.StageCameraController
+            : null;
+
+        stageCamera?.FocusUnitSmooth(actor);
+    }
+
+    private bool IsAnyTargetSelectionMode(BattleInputMode mode)
+    {
+        switch (mode)
+        {
+            case BattleInputMode.WaitingForSkillTarget:
+            case BattleInputMode.WaitingForMoveTarget:
+            case BattleInputMode.WaitingForItemTarget:
+            case BattleInputMode.WaitingForCaptureTarget:
+            case BattleInputMode.WaitingForManaPreventDeathTarget:
+                return true;
+            default:
+                return false;
+        }
     }
 
     private bool CanAcceptPlayerInput()

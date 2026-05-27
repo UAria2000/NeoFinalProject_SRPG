@@ -12,6 +12,9 @@ public class TargetPreviewHoverUI : HoverPopupUIBase
     [SerializeField] private GameObject hitChanceRow;
     [SerializeField] private TMP_Text hitChanceLabelText;
     [SerializeField] private TMP_Text hitChanceValueText;
+    [SerializeField] private GameObject damageRangeRow;
+    [SerializeField] private TMP_Text damageRangeLabelText;
+    [SerializeField] private TMP_Text damageRangeValueText;
     [SerializeField] private GameObject statusChanceRow;
     [SerializeField] private TMP_Text statusChanceLabelText;
     [SerializeField] private Image statusChanceIconImage;
@@ -27,8 +30,9 @@ public class TargetPreviewHoverUI : HoverPopupUIBase
     [SerializeField] private StatusChanceEntryUI statusEntryPrefab;
 
     [Header("Options")]
-    [SerializeField] private bool showDamageRange = false;
+    [SerializeField] private bool showDamageRange = true;
     [SerializeField] private string hitChanceLabel = "예상 명중률";
+    [SerializeField] private string damageRangeLabel = "예상 피해";
     [SerializeField] private string statusChanceLabel = "상태이상 적중률";
 
     private readonly List<StatusChanceEntryUI> spawnedEntries = new List<StatusChanceEntryUI>();
@@ -81,12 +85,27 @@ public class TargetPreviewHoverUI : HoverPopupUIBase
 
     private void RefreshDamageAndSuccess(TargetPreviewData data)
     {
+        bool showDamage = showDamageRange && data != null && data.showDamageRange;
+        string damageValue = showDamage ? FormatDamageRange(data.damageMin, data.damageMax) : string.Empty;
+
+        if (damageRangeRow != null)
+            damageRangeRow.SetActive(showDamage);
+
+        if (damageRangeLabelText != null)
+            damageRangeLabelText.text = damageRangeLabel;
+
+        if (damageRangeValueText != null)
+        {
+            damageRangeValueText.gameObject.SetActive(showDamage);
+            if (showDamage)
+                damageRangeValueText.text = damageValue;
+        }
+
         if (damageRangeText != null)
         {
-            bool show = showDamageRange && data != null && data.showDamageRange;
-            damageRangeText.gameObject.SetActive(show);
-            if (show)
-                damageRangeText.text = $"피해 {data.damageMin}~{data.damageMax}";
+            damageRangeText.gameObject.SetActive(showDamage);
+            if (showDamage)
+                damageRangeText.text = $"{damageRangeLabel}   {damageValue}";
         }
 
         if (successText != null)
@@ -150,6 +169,13 @@ public class TargetPreviewHoverUI : HoverPopupUIBase
             parts.Add(FormatPercent(statuses[i].successPercent));
 
         return string.Join(" / ", parts);
+    }
+
+    private static string FormatDamageRange(int min, int max)
+    {
+        min = Mathf.Max(0, min);
+        max = Mathf.Max(min, max);
+        return min == max ? min.ToString() : string.Format("{0}~{1}", min, max);
     }
 
     private static string FormatPercent(int value)

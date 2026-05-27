@@ -175,14 +175,27 @@ public class BattlePassiveController : MonoBehaviour
         for (int i = 0; i < deadUnits.Count; i++)
         {
             BattleUnit unit = deadUnits[i];
-            if (unit == null)
+            if (unit == null || !unit.IsDead)
                 continue;
 
-            if (unit.Definition == definition && unit.IsDead)
+            if (IsSameUnitDefinition(unit.Definition, definition))
                 return unit;
         }
 
         return null;
+    }
+
+    private static bool IsSameUnitDefinition(UnitDefinition a, UnitDefinition b)
+    {
+        if (a == null || b == null)
+            return false;
+
+        if (a == b)
+            return true;
+
+        return !string.IsNullOrWhiteSpace(a.unitId)
+            && !string.IsNullOrWhiteSpace(b.unitId)
+            && a.unitId == b.unitId;
     }
 
     private void ApplyHumanJudgeEnrage(BattleUnit judge, SkillDefinition passiveSkill)

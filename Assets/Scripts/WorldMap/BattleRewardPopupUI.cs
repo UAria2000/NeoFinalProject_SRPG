@@ -117,18 +117,22 @@ public class BattleRewardPopupUI : MonoBehaviour
 
         sb.AppendLine();
         sb.AppendLine("전리품:");
-        if (summary.droppedItems == null || summary.droppedItems.Count == 0)
-        {
-            sb.AppendLine("- 없음");
-        }
-        else
+        bool hasInventoryLoot = false;
+        if (summary.droppedItems != null)
         {
             for (int i = 0; i < summary.droppedItems.Count; i++)
             {
                 ItemDefinition item = summary.droppedItems[i];
-                sb.AppendLine($"- {(item != null ? item.itemName : "Unknown")}");
+                if (item == null || !item.IsInventoryItem())
+                    continue;
+
+                hasInventoryLoot = true;
+                sb.AppendLine($"- {(!string.IsNullOrWhiteSpace(item.itemName) ? item.itemName : item.name)}");
             }
         }
+
+        if (!hasInventoryLoot)
+            sb.AppendLine("- 없음");
 
         sb.AppendLine();
         sb.AppendLine("포획한 포로:");

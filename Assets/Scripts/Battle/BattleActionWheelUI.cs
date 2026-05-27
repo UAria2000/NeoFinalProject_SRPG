@@ -72,6 +72,8 @@ public class BattleActionWheelUI : MonoBehaviour
     [SerializeField] private Camera uiCamera;
     [SerializeField] private Image manaGaugeFill;
     [SerializeField] private BattleActionWheelManaButtonUI manaButtonUI;
+    [Tooltip("공격/마나 depth 버튼 hover 시 표시할 간단 툴팁 UI입니다. 비워두면 씬에서 자동 탐색합니다.")]
+    [SerializeField] private BattleActionTooltipUI actionTooltipUI;
     [Tooltip("바텀 파티 서머리에서 지정한 공유 소모품을 읽어오기 위한 월드 런 매니저. 비워두면 자동 탐색합니다.")]
     [SerializeField] private WorldRunManager worldRunManager;
 
@@ -216,6 +218,11 @@ public class BattleActionWheelUI : MonoBehaviour
         if (manaButtonUI == null)
             manaButtonUI = GetComponentInChildren<BattleActionWheelManaButtonUI>(true);
 
+        if (actionTooltipUI == null)
+            actionTooltipUI = UnityEngine.Object.FindFirstObjectByType<BattleActionTooltipUI>(FindObjectsInactive.Include);
+
+        BindActionTooltipToButtons();
+
         parentCanvas = GetComponentInParent<Canvas>();
         wheelParentRect = wheelRoot != null ? wheelRoot.parent as RectTransform : null;
 
@@ -238,6 +245,19 @@ public class BattleActionWheelUI : MonoBehaviour
 
         wasWaitingForActionLastRefresh = false;
         lastRefreshActor = null;
+    }
+
+
+    private void BindActionTooltipToButtons()
+    {
+        if (actionSlots != null)
+        {
+            for (int i = 0; i < actionSlots.Count; i++)
+            {
+                if (actionSlots[i] != null && actionSlots[i].buttonUI != null)
+                    actionSlots[i].buttonUI.SetTooltipUI(actionTooltipUI);
+            }
+        }
     }
 
     private void Reset()
@@ -655,7 +675,11 @@ public class BattleActionWheelUI : MonoBehaviour
                 cooldownRemaining,
                 cooldownTotal,
                 null,
-                false);
+                false,
+                0,
+                false,
+                label,
+                BuildSkillButtonTooltipBody(skill, null));
         }
 
         string reason = GetSkillUnusableReason(skill);
@@ -672,7 +696,63 @@ public class BattleActionWheelUI : MonoBehaviour
             0,
             cooldownTotal,
             reason,
-            !usable);
+            !usable,
+            0,
+            false,
+            label,
+            BuildSkillButtonTooltipBody(skill, reason));
+    }
+
+
+    private string BuildSkillButtonTooltipBody(SkillDefinition skill, string unavailableReason)
+    {
+        if (skill == null)
+            return string.Empty;
+
+        List<string> lines = new List<string>();
+        string effect = BattleSkillInfoFormatter.GetUnifiedEffectValueText(skill);
+        if (!string.IsNullOrWhiteSpace(effect) && effect != "-")
+            lines.Add("효과: " + effect);
+
+        lines.Add(BattleSkillInfoFormatter.GetSuccessText(skill));
+        lines.Add(BattleSkillInfoFormatter.GetCooldownText(skill));
+
+        if (!string.IsNullOrWhiteSpace(unavailableReason))
+            lines.Add("사용 불가: " + unavailableReason);
+
+        return string.Join("\n", lines);
+    }
+
+    private string BuildManaActionTooltipBody(BattleManaActionType actionType, int cost, string unavailableReason)
+    {
+        List<string> lines = new List<string>();
+
+        switch (actionType)
+        {
+            case BattleManaActionType.Capture:
+                lines.Add("적 대상을 세뇌/포획합니다.");
+                break;
+            case BattleManaActionType.Flee:
+                lines.Add("전투에서 퇴각을 시도합니다.");
+                break;
+            case BattleManaActionType.PreventDeath:
+                lines.Add("아군 하나가 다음 자기 턴까지 치명상을 버티게 합니다.");
+                break;
+            case BattleManaActionType.TeamBuff:
+                lines.Add("아군 전체에 전투 보조 효과를 부여합니다.");
+                break;
+            default:
+                lines.Add("마나 행동입니다.");
+                break;
+        }
+
+        if (cost > 0)
+            lines.Add("마나 비용: " + cost);
+
+        if (!string.IsNullOrWhiteSpace(unavailableReason))
+            lines.Add("사용 불가: " + unavailableReason);
+
+        return string.Join("\n", lines);
     }
 
     private string GetSkillLabel(int slotIndex, SkillDefinition skill)
@@ -836,7 +916,9 @@ public class BattleActionWheelUI : MonoBehaviour
             reason,
             !usable,
             cost,
-            true);
+            true,
+            label,
+            BuildManaActionTooltipBody(actionType, cost, reason));
     }
 
     private BattleActionWheelButtonViewData MakeButton(string label, Sprite icon, bool interactable, UnityAction onClick)
@@ -852,11 +934,16 @@ public class BattleActionWheelUI : MonoBehaviour
             0,
             0,
             interactable ? null : unusableLabel,
-            !interactable);
+            !interactable,
+            0,
+            false,
+            null,
+            null);
     }
 
     private BattleActionWheelButtonViewData MakeDisabledButton(string label, Sprite icon, string reason)
     {
+        string body = string.IsNullOrWhiteSpace(reason) ? string.Empty : "사용 불가: " + reason;
         return new BattleActionWheelButtonViewData(
             label,
             icon,
@@ -868,7 +955,11 @@ public class BattleActionWheelUI : MonoBehaviour
             0,
             0,
             reason,
-            true);
+            true,
+            0,
+            false,
+            label,
+            body);
     }
 
     private BattleActionWheelButtonViewData MakeEmpty(string label = "")
@@ -893,6 +984,8 @@ public class BattleActionWheelUI : MonoBehaviour
             BattleActionWheelActionSlotBinding slot = actionSlots[i];
             if (slot == null || slot.buttonUI == null)
                 continue;
+
+            slot.buttonUI.SetTooltipUI(actionTooltipUI);
 
             BattleActionWheelButtonViewData data;
             if (actions != null && actions.TryGetValue(slot.actionSlotIndex, out data))
@@ -984,7 +1077,7 @@ public class BattleActionWheelUI : MonoBehaviour
         for (int i = 0; i < currentInventory.Count; i++)
         {
             InventoryStackData candidate = currentInventory[i];
-            if (candidate == null || candidate.item == null || candidate.amount <= 0)
+            if (candidate == null || candidate.item == null || candidate.amount <= 0 || !candidate.item.IsConsumableItem())
                 continue;
 
             if (candidate.item == item)
@@ -1006,12 +1099,35 @@ public class BattleActionWheelUI : MonoBehaviour
         if (currentInventory == null || currentInventory.Count <= 0)
             return false;
 
-        int idx = Mathf.Clamp(fallbackConsumableInventoryIndex, 0, currentInventory.Count - 1);
-        InventoryStackData candidate = currentInventory[idx];
-        if (candidate == null || candidate.item == null || candidate.amount <= 0)
+        int preferred = Mathf.Clamp(fallbackConsumableInventoryIndex, 0, currentInventory.Count - 1);
+        if (TryGetConsumableStackAt(preferred, out stack))
+        {
+            inventoryIndex = preferred;
+            return true;
+        }
+
+        for (int i = 0; i < currentInventory.Count; i++)
+        {
+            if (!TryGetConsumableStackAt(i, out stack))
+                continue;
+
+            inventoryIndex = i;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool TryGetConsumableStackAt(int index, out InventoryStackData stack)
+    {
+        stack = null;
+        if (currentInventory == null || index < 0 || index >= currentInventory.Count)
             return false;
 
-        inventoryIndex = idx;
+        InventoryStackData candidate = currentInventory[index];
+        if (candidate == null || candidate.item == null || candidate.amount <= 0 || !candidate.item.IsConsumableItem())
+            return false;
+
         stack = candidate;
         return true;
     }

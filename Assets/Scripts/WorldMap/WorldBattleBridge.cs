@@ -438,8 +438,6 @@ public class WorldBattleBridge : MonoBehaviour
                 unitViewDefinition = member.unitViewDefinition,
                 displayName = member.GetDisplayName(),
                 isDead = isDead,
-                isExchangeable = member.isExchangeable,
-                isNft = member.isNft || member.isExchangeable || (member.unitDefinition != null && member.unitDefinition.isNftUnit),
                 promotionRank = member.promotionRank,
                 levelBefore = level,
                 levelAfter = level,
@@ -480,8 +478,6 @@ public class WorldBattleBridge : MonoBehaviour
             snapshot.expToNextAfter = LegionFormula.GetExpToNextLevel(snapshot.levelAfter);
             snapshot.originalLevel = Mathf.Max(1, after.originalLevel);
             snapshot.promotionRank = after.promotionRank;
-            snapshot.isExchangeable = after.isExchangeable;
-            snapshot.isNft = after.isNft || after.isExchangeable || (after.unitDefinition != null && after.unitDefinition.isNftUnit);
         }
     }
 

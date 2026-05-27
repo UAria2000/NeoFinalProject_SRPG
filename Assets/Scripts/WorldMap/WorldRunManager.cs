@@ -816,9 +816,7 @@ public class WorldRunManager : MonoBehaviour
                 fixedEpitaph = string.Empty,
                 unitDefinition = convertedUnit,
                 unitViewDefinition = convertedView,
-                isExchangeable = reward.isExchangeable,
                 isConvertedFromPrisoner = true,
-                isNft = reward.isExchangeable || convertedUnit.isNftUnit,
                 currentLevel = 1,
                 originalLevel = Mathf.Max(1, reward.capturedLevel),
                 currentExp = 0,
@@ -1370,13 +1368,12 @@ public class WorldRunManager : MonoBehaviour
                     reward.prisonerItem,
                     Mathf.Max(1, reward.capturedLevel),
                     reward.fallbackUnit,
-                    reward.fallbackView,
-                    reward.isExchangeable);
+                    reward.fallbackView);
                 addedAny = true;
             }
             else if (reward.fallbackUnit != null)
             {
-                state.AddPrisoner(reward.fallbackUnit, Mathf.Max(1, reward.capturedLevel), reward.fallbackView, reward.isExchangeable);
+                state.AddPrisoner(reward.fallbackUnit, Mathf.Max(1, reward.capturedLevel), reward.fallbackView);
                 addedAny = true;
             }
         }
@@ -1408,11 +1405,17 @@ public class WorldRunManager : MonoBehaviour
         if (item == null || amount <= 0)
             return false;
 
+        if (!IsInventoryEligibleItem(item))
+            return false;
+
         WorldRunTransientState state = GetOrCreateWorldRunState();
         if (state == null)
             return false;
 
-        state.AddItem(item, Mathf.Max(1, amount));
+        bool added = state.AddItem(item, Mathf.Max(1, amount));
+        if (!added)
+            return false;
+
         RaiseStorageChanged();
         RequestAutoSaveAll();
         return true;
@@ -1454,8 +1457,19 @@ public class WorldRunManager : MonoBehaviour
         if (state == null || items == null)
             return;
 
+        bool addedAny = false;
         for (int i = 0; i < items.Count; i++)
-            state.AddItem(items[i], 1);
+        {
+            ItemDefinition item = items[i];
+            if (!IsInventoryEligibleItem(item))
+                continue;
+
+            if (state.AddItem(item, 1))
+                addedAny = true;
+        }
+
+        if (!addedAny)
+            return;
 
         RaiseStorageChanged();
         RequestAutoSaveAll();
@@ -2120,7 +2134,9 @@ public class WorldRunManager : MonoBehaviour
         if (!canAssign)
             return false;
 
-        state.AddItem(item, Mathf.Max(1, amount));
+        if (!state.AddItem(item, Mathf.Max(1, amount)))
+            return false;
+
         state.sharedConsumableItem = item;
 
         RaiseStorageChanged();
@@ -2199,9 +2215,7 @@ public class WorldRunManager : MonoBehaviour
             fixedEpitaph = string.Empty,
             unitDefinition = prisoner.sourceUnit,
             unitViewDefinition = prisoner.sourceUnitViewDefinition,
-            isExchangeable = prisoner.isExchangeable,
             isConvertedFromPrisoner = true,
-            isNft = prisoner.isExchangeable || (prisoner.sourceUnit != null && prisoner.sourceUnit.isNftUnit),
             currentLevel = 1,
             originalLevel = Mathf.Max(1, prisoner.capturedLevel),
             currentExp = 0,
@@ -2288,6 +2302,31 @@ public class WorldRunManager : MonoBehaviour
         return false;
     }
 
+    public int GetAssignedEquipmentCount(ItemDefinition item)
+    {
+        if (item == null)
+            return 0;
+
+        WorldRunTransientState state = GetOrCreateWorldRunState();
+        if (state == null || state.partyEquipmentAssignments == null)
+            return 0;
+
+        int count = 0;
+        for (int i = 0; i < state.partyEquipmentAssignments.Count; i++)
+        {
+            PartyEquipmentAssignmentData data = state.partyEquipmentAssignments[i];
+            if (data == null)
+                continue;
+
+            if (data.slot0Item == item)
+                count++;
+            if (data.slot1Item == item)
+                count++;
+        }
+
+        return count;
+    }
+
     public ItemDefinition GetAssignedEquipmentItem(PartyMemberData member, int slotIndex)
     {
         PartyEquipmentAssignmentData data = GetEquipmentAssignment(member, false);
@@ -2369,7 +2408,8 @@ public class WorldRunManager : MonoBehaviour
 
         // 보상 슬롯에서 직접 장착하는 경우에는 먼저 새 보상 아이템을 월드 인벤토리에 등록한다.
         // 기존 같은 종류 장비를 전부 해제하지 않는다. 그래야 같은 장비 여러 개를 정상적으로 유지할 수 있다.
-        state.AddItem(item, Mathf.Max(1, amount));
+        if (!state.AddItem(item, Mathf.Max(1, amount)))
+            return false;
 
         if (slotIndex == 0)
             data.slot0Item = item;
@@ -3141,11 +3181,7 @@ public class WorldRunManager : MonoBehaviour
                 if (item == null)
                     continue;
 
-                state.inventory.Add(new InventoryStackData
-                {
-                    item = item,
-                    amount = Mathf.Max(1, saved.amount)
-                });
+                state.AddItem(item, Mathf.Max(1, saved.amount));
             }
         }
 
@@ -3188,7 +3224,6 @@ public class WorldRunManager : MonoBehaviour
                     sourcePrisonerItem = prisonerItem,
                     prisonerNameOverride = saved.prisonerNameOverride,
                     capturedLevel = Mathf.Max(1, saved.capturedLevel),
-                    isExchangeable = saved.isExchangeable,
                     corruptionConditionType = (PrisonerCorruptionConditionType)saved.corruptionConditionType,
                     targetValue = Mathf.Max(1, saved.targetValue),
                     currentValue = Mathf.Max(0, saved.currentValue),
@@ -3223,7 +3258,6 @@ public class WorldRunManager : MonoBehaviour
                     sourcePrisonerItem = item,
                     prisonerNameOverride = saved.prisonerNameOverride,
                     capturedLevel = Mathf.Max(1, saved.capturedLevel),
-                    isExchangeable = saved.isExchangeable,
                     corruptionConditionType = (PrisonerCorruptionConditionType)saved.corruptionConditionType,
                     targetValue = Mathf.Max(1, saved.targetValue),
                     currentValue = Mathf.Max(0, saved.currentValue),
@@ -3273,6 +3307,19 @@ public class WorldRunManager : MonoBehaviour
         RaiseStorageChanged();
         RaiseManaChanged();
     }
+    public bool IsInventoryEligibleItem(ItemDefinition item)
+    {
+        return item != null && item.IsInventoryItem();
+    }
+
+    public bool IsInventoryFullForItem(ItemDefinition item, int amount = 1)
+    {
+        // 현재 슬롯 UI는 30칸 x 2페이지를 고정으로 쓰지만,
+        // 런 인벤토리는 일단 소비/장비만 받도록 제한하는 것이 우선이다.
+        // 실제 용량 제한이 필요하면 StoragePanelUI의 MaxItemCapacity와 별도 정책을 연결한다.
+        return false;
+    }
+
     private bool HasInventoryItem(ItemDefinition item)
     {
         return GetInventoryItemAmount(item) > 0;

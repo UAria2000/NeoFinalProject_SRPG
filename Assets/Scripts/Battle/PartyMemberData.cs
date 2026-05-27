@@ -16,8 +16,6 @@ public class PartyMemberData
     public string instanceId;
     public string instanceDisplayNameOverride;
     [TextArea(2, 5)] public string fixedEpitaph;
-    public bool isExchangeable;
-    public bool isNft;
 
     [Header("Level")]
     public int currentLevel = 1;
@@ -60,8 +58,6 @@ public class PartyMemberData
         clone.instanceId = instanceId;
         clone.instanceDisplayNameOverride = instanceDisplayNameOverride;
         clone.fixedEpitaph = fixedEpitaph;
-        clone.isExchangeable = isExchangeable;
-        clone.isNft = isNft;
         clone.currentLevel = Mathf.Max(1, currentLevel);
         clone.originalLevel = Mathf.Max(1, originalLevel);
         clone.currentExp = Mathf.Max(0, currentExp);

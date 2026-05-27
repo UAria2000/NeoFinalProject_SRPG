@@ -9,10 +9,8 @@ public class RosterUnitSaveData
     public string unitDefinitionId;
     public string unitViewDefinitionName;
     public bool isMainCharacter;
-    public bool isExchangeable;
     public bool isFavorite;
     public bool isConvertedFromPrisoner;
-    public bool isNft;
     public int unitRankOverride;
     public bool canDismantle = true;
 
@@ -46,10 +44,8 @@ public class RosterUnitSaveData
             unitDefinitionId = unit.unitDefinition != null ? unit.unitDefinition.unitId : string.Empty,
             unitViewDefinitionName = unit.unitViewDefinition != null ? unit.unitViewDefinition.name : string.Empty,
             isMainCharacter = unit.unitDefinition != null && unit.unitDefinition.isMainPlayerCharacter,
-            isExchangeable = unit.isExchangeable,
             isFavorite = unit.isFavorite,
             isConvertedFromPrisoner = unit.isConvertedFromPrisoner,
-            isNft = unit.IsNftUnit(),
             unitRankOverride = Mathf.Clamp(unit.unitRankOverride, 0, 9),
             canDismantle = unit.CanDefinitionBeDecomposed() && !(unit.unitDefinition != null && unit.unitDefinition.isMainPlayerCharacter),
             instanceDisplayNameOverride = unit.instanceDisplayNameOverride,

@@ -13,8 +13,6 @@ public class UnitDefinition : ScriptableObject
     public UnitViewDefinition defaultViewDefinition;
 
     [Header("Legion Metadata")]
-    [Tooltip("NFT/교환 가능 필터와 배지에 사용할 기본값. 인스턴스별 isExchangeable/isNft와 함께 true로 취급된다.")]
-    public bool isNftUnit = false;
     [Tooltip("레기온 화면에 표시할지 여부. false면 로스터에 있어도 레기온 목록에서 숨긴다.")]
     public bool showInLegion = true;
     [Tooltip("동일 조건 정렬 시 보조 우선순위. 큰 값이 먼저 온다.")]
@@ -89,8 +87,6 @@ public class UnitDefinition : ScriptableObject
     [Header("Capture")]
     [Tooltip("체크 시 이 유닛 종은 포획 대상이 될 수 있다.")]
     public bool canBeCaptured = false;
-    [Tooltip("포획 가능한 적으로 등장할 때 NFT/교환 가능 배지를 가질 확률입니다.")]
-    [Range(0f, 100f)] public float capturableEnemyNftChancePercent = 0f;
     [Tooltip("포획 성공 시 아군 인벤토리에 추가할 아이템. 보통 해당 종의 포트레잇 아이템을 연결한다.")]
     public ItemDefinition captureRewardItem;
 }

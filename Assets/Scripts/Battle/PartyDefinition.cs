@@ -26,8 +26,18 @@ public class PartyDefinition : ScriptableObject
         for (int i = 0; i < inventory.Count; i++)
         {
             InventoryStackData stack = inventory[i];
-            if (stack != null)
+            if (stack == null || stack.item == null || stack.amount <= 0 || !stack.item.IsInventoryItem())
+                continue;
+
+            if (stack.item.IsEquipmentItem())
+            {
+                for (int copy = 0; copy < Mathf.Max(1, stack.amount); copy++)
+                    runtimeInventory.Add(new InventoryStackData { item = stack.item, amount = 1 });
+            }
+            else
+            {
                 runtimeInventory.Add(stack.CloneRuntime());
+            }
         }
 
         return runtimeInventory;

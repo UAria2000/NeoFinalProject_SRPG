@@ -12,7 +12,6 @@ public class StoragePrisonerCardUI : MonoBehaviour
     [SerializeField] private Slider progressSlider;
     [SerializeField] private Button actionButton;
     [SerializeField] private TMP_Text actionButtonText;
-    [SerializeField] private GameObject exchangeableBadge;
     [SerializeField] private GameObject normalBadge;
 
     private StoragePanelUI owner;
@@ -55,8 +54,6 @@ public class StoragePrisonerCardUI : MonoBehaviour
                 actionButton.gameObject.SetActive(false);
             if (actionButtonText != null)
                 actionButtonText.text = string.Empty;
-            if (exchangeableBadge != null)
-                exchangeableBadge.SetActive(false);
             if (normalBadge != null)
                 normalBadge.SetActive(false);
             return;
@@ -77,11 +74,8 @@ public class StoragePrisonerCardUI : MonoBehaviour
         if (progressSlider != null)
             progressSlider.value = data.RequiresSoulPayment ? 0f : data.GetProgress01();
 
-        if (exchangeableBadge != null)
-            exchangeableBadge.SetActive(data.isExchangeable);
-
         if (normalBadge != null)
-            normalBadge.SetActive(!data.isExchangeable);
+            normalBadge.SetActive(true);
 
         if (actionButton != null)
         {

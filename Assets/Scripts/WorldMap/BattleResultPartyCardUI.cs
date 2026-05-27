@@ -15,8 +15,6 @@ public class BattleResultPartyCardUI : MonoBehaviour
 
     [Header("Identity")]
     [SerializeField] private TMP_Text nameText;
-    [SerializeField] private GameObject nftBadgeRoot;
-    [SerializeField] private Image nftBadgeImage;
 
     [Header("Class Badge")]
     [Tooltip("단일 Image 방식으로 클래스 배지를 표시할 때 사용합니다. 비워도 됩니다.")]
@@ -87,12 +85,6 @@ public class BattleResultPartyCardUI : MonoBehaviour
 
         if (nameText != null)
             nameText.text = string.IsNullOrWhiteSpace(data.displayName) ? "-" : data.displayName;
-
-        bool showNft = data.isNft || data.isExchangeable;
-        if (nftBadgeRoot != null)
-            nftBadgeRoot.SetActive(showNft);
-        if (nftBadgeImage != null)
-            nftBadgeImage.enabled = showNft && nftBadgeImage.sprite != null;
 
         ApplyClassBadge(data.unitDefinition != null ? data.unitDefinition.rangeType : CharacterRangeType.Melee);
         ApplyRank(data.promotionRank);

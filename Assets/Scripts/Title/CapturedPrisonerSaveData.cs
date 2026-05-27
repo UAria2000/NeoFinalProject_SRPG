@@ -10,7 +10,6 @@ public class CapturedPrisonerSaveData
     public string sourcePrisonerItemId;
     public string prisonerNameOverride;
     public int capturedLevel = 1;
-    public bool isExchangeable;
     public int corruptionConditionType;
     public int targetValue = 1;
     public int currentValue = 0;
@@ -29,7 +28,6 @@ public class CapturedPrisonerSaveData
             sourcePrisonerItemId = runtime.sourcePrisonerItem != null ? runtime.sourcePrisonerItem.itemId : string.Empty,
             prisonerNameOverride = runtime.prisonerNameOverride,
             capturedLevel = runtime.capturedLevel,
-            isExchangeable = runtime.isExchangeable,
             corruptionConditionType = (int)runtime.corruptionConditionType,
             targetValue = runtime.targetValue,
             currentValue = runtime.currentValue,

@@ -56,7 +56,6 @@ public class LegionDetailPanelUI : MonoBehaviour
     [SerializeField] private Sprite[] rankSprites; // 1~9
 
     [Header("Badges")]
-    [SerializeField] private GameObject exchangeableBadge;
     [SerializeField] private GameObject favoriteOnRoot;
     [SerializeField] private GameObject favoriteOffRoot;
     [SerializeField] private GameObject meleeIcon;
@@ -524,9 +523,6 @@ public class LegionDetailPanelUI : MonoBehaviour
     {
         if (boundUnit == null)
             return;
-
-        if (exchangeableBadge != null)
-            exchangeableBadge.SetActive(boundUnit.IsNftUnit());
         if (favoriteOnRoot != null)
             favoriteOnRoot.SetActive(boundUnit.isFavorite);
         if (favoriteOffRoot != null)

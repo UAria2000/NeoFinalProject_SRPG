@@ -101,6 +101,28 @@ public class ItemDefinition : ScriptableObject
         return convertedAllyUnitViewDefinition != null ? convertedAllyUnitViewDefinition : fallbackView;
     }
 
+    public bool IsInventoryItem()
+    {
+        return mainUICategory == MainUIItemCategory.Equipment ||
+               mainUICategory == MainUIItemCategory.Consumable;
+    }
+
+    public bool IsEquipmentItem()
+    {
+        return mainUICategory == MainUIItemCategory.Equipment;
+    }
+
+    public bool IsConsumableItem()
+    {
+        return mainUICategory == MainUIItemCategory.Consumable;
+    }
+
+    public bool IsStackableInInventory()
+    {
+        // 장비는 같은 정의라도 향후 난수 옵션/개별 인스턴스 확장을 고려해 UI상 개별 슬롯으로 보여주는 것을 기본으로 한다.
+        return mainUICategory == MainUIItemCategory.Consumable;
+    }
+
     [Header("Effects")]
     public List<BattleEffectBlock> effects = new List<BattleEffectBlock>();
 }

@@ -108,8 +108,14 @@ public class BattleTurnOrderStripUI : MonoBehaviour
 
     private bool IsCurrentUnit(BattleUnit unit, int currentCursor, IReadOnlyList<BattleUnit> order)
     {
-        if (battleManager != null && battleManager.CurrentActingUnit == unit)
-            return true;
+        if (unit == null || unit.IsDead)
+            return false;
+
+        // CurrentActingUnit과 cursor가 잠깐 어긋나는 프레임이 생기면
+        // 이전 유닛과 다음 유닛이 동시에 현재 턴으로 표시될 수 있다.
+        // 실제 진행 중인 유닛이 있으면 그 유닛만 현재 턴으로 취급한다.
+        if (battleManager != null && battleManager.CurrentActingUnit != null)
+            return battleManager.CurrentActingUnit == unit;
 
         if (order == null || currentCursor < 0 || currentCursor >= order.Count)
             return false;

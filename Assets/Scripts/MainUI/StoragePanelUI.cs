@@ -23,7 +23,6 @@ public enum PrisonerFilterMode
     All,
     InProgress,
     Ready,
-    Exchangeable,
 }
 
 public class StoragePanelUI : MainUIPanelBase
@@ -39,6 +38,13 @@ public class StoragePanelUI : MainUIPanelBase
     [Header("References")]
     [SerializeField] private StorageItemTooltipUI tooltipUI;
     [SerializeField] private BottomPartySummaryPanelUI bottomPartySummaryPanelUI;
+
+    [Header("Inventory Policy")]
+    [Tooltip("차기 구조에서는 인벤토리에 소비 아이템/장비 아이템만 표시합니다.")]
+    [SerializeField] private bool inventoryOnlyEquipmentAndConsumables = true;
+    [Tooltip("구 포로 카드 영역을 계속 표시해야 하는 임시 디버그 상황에서만 켭니다. 기본값은 꺼짐입니다.")]
+    [SerializeField] private bool showLegacyPrisonerSection = false;
+    [SerializeField] private GameObject legacyPrisonerSectionRoot;
 
     [Header("Prisoners - Auto Build")]
     [SerializeField] private RectTransform prisonerCardsRoot;
@@ -71,6 +77,7 @@ public class StoragePanelUI : MainUIPanelBase
     {
         base.Awake();
 
+        RefreshLegacyPrisonerSectionVisibility();
         EnsureRuntimePrisonerCards();
         EnsureRuntimeItemSlots();
 
@@ -87,6 +94,7 @@ public class StoragePanelUI : MainUIPanelBase
 
     protected override void OnPanelOpened()
     {
+        RefreshLegacyPrisonerSectionVisibility();
         EnsureRuntimePrisonerCards();
         EnsureRuntimeItemSlots();
 
@@ -114,7 +122,7 @@ public class StoragePanelUI : MainUIPanelBase
     public void SetItemFilterAll() => SetItemFilter(StorageItemFilterMode.All);
     public void SetItemFilterEquipment() => SetItemFilter(StorageItemFilterMode.Equipment);
     public void SetItemFilterConsumable() => SetItemFilter(StorageItemFilterMode.Consumable);
-    public void SetItemFilterOther() => SetItemFilter(StorageItemFilterMode.Other);
+    public void SetItemFilterOther() => SetItemFilter(StorageItemFilterMode.Other); // 구버전 버튼 호환용. 새 정책에서는 기타 아이템이 표시되지 않는다.
 
     public void SetItemSortRecent() => SetItemSort(StorageItemSortMode.Recent);
     public void SetItemSortName() => SetItemSort(StorageItemSortMode.Name);
@@ -122,11 +130,16 @@ public class StoragePanelUI : MainUIPanelBase
     public void SetPrisonerFilterAll() => SetPrisonerFilter(PrisonerFilterMode.All);
     public void SetPrisonerFilterInProgress() => SetPrisonerFilter(PrisonerFilterMode.InProgress);
     public void SetPrisonerFilterReady() => SetPrisonerFilter(PrisonerFilterMode.Ready);
-    public void SetPrisonerFilterExchangeable() => SetPrisonerFilter(PrisonerFilterMode.Exchangeable);
 
     public void RefreshAll()
     {
-        RefreshPrisoners();
+        RefreshLegacyPrisonerSectionVisibility();
+
+        if (showLegacyPrisonerSection)
+            RefreshPrisoners();
+        else
+            ClearLegacyPrisonerCards();
+
         RefreshItems();
 
         if (bottomPartySummaryPanelUI != null)
@@ -138,8 +151,7 @@ public class StoragePanelUI : MainUIPanelBase
         if (tooltipUI == null || slot == null || stack == null || stack.item == null)
             return;
 
-        bool assigned = worldRunManager != null && worldRunManager.IsAnyLoadoutItemAssigned(stack.item);
-        tooltipUI.Show(stack.item, assigned, slot.ColumnIndexInRow);
+        tooltipUI.Show(stack.item, slot.IsAssignedOrEquipped, slot.ColumnIndexInRow);
     }
 
     public void HideTooltip()
@@ -288,21 +300,91 @@ public class StoragePanelUI : MainUIPanelBase
         itemPageIndex = Mathf.Clamp(itemPageIndex, 0, FixedItemPages - 1);
         int start = itemPageIndex * ItemsPerPage;
 
+        Dictionary<ItemDefinition, int> assignedEquipmentRemaining = BuildAssignedEquipmentCountMap(filtered);
+
         for (int i = 0; i < runtimeItemSlots.Count; i++)
         {
             InventoryStackData stack = (start + i) < filtered.Count ? filtered[start + i] : null;
             int column = i % 10;
 
-            bool assigned = stack != null &&
-                            stack.item != null &&
-                            worldRunManager != null &&
-                            worldRunManager.IsAnyLoadoutItemAssigned(stack.item);
+            bool assigned = IsDisplayStackAssigned(stack, assignedEquipmentRemaining);
 
             runtimeItemSlots[i].gameObject.SetActive(true);
             runtimeItemSlots[i].Bind(this, stack, column, assigned);
         }
 
         RefreshItemPageUI();
+    }
+
+    private void RefreshLegacyPrisonerSectionVisibility()
+    {
+        GameObject root = legacyPrisonerSectionRoot;
+        if (root == null && prisonerCardsRoot != null)
+            root = prisonerCardsRoot.gameObject;
+
+        if (root != null)
+            root.SetActive(showLegacyPrisonerSection);
+
+        if (prisonerPrevButton != null)
+            prisonerPrevButton.gameObject.SetActive(showLegacyPrisonerSection && prisonerPageIndex > 0);
+
+        if (prisonerNextButton != null)
+            prisonerNextButton.gameObject.SetActive(showLegacyPrisonerSection && prisonerPageIndex < FixedPrisonerPages - 1);
+
+        if (prisonerPageText != null)
+            prisonerPageText.gameObject.SetActive(showLegacyPrisonerSection);
+    }
+
+    private void ClearLegacyPrisonerCards()
+    {
+        for (int i = 0; i < runtimePrisonerCards.Count; i++)
+        {
+            if (runtimePrisonerCards[i] != null)
+                runtimePrisonerCards[i].gameObject.SetActive(false);
+        }
+
+        RefreshLegacyPrisonerSectionVisibility();
+    }
+
+    private Dictionary<ItemDefinition, int> BuildAssignedEquipmentCountMap(List<InventoryStackData> visibleStacks)
+    {
+        Dictionary<ItemDefinition, int> result = new Dictionary<ItemDefinition, int>();
+        if (visibleStacks == null || worldRunManager == null)
+            return result;
+
+        for (int i = 0; i < visibleStacks.Count; i++)
+        {
+            InventoryStackData stack = visibleStacks[i];
+            if (stack == null || stack.item == null || !stack.item.IsEquipmentItem())
+                continue;
+
+            if (result.ContainsKey(stack.item))
+                continue;
+
+            int assignedCount = worldRunManager.GetAssignedEquipmentCount(stack.item);
+            if (assignedCount > 0)
+                result[stack.item] = assignedCount;
+        }
+
+        return result;
+    }
+
+    private bool IsDisplayStackAssigned(InventoryStackData stack, Dictionary<ItemDefinition, int> assignedEquipmentRemaining)
+    {
+        if (stack == null || stack.item == null || worldRunManager == null)
+            return false;
+
+        if (stack.item.IsConsumableItem())
+            return worldRunManager.IsSharedConsumableAssigned(stack.item);
+
+        if (!stack.item.IsEquipmentItem() || assignedEquipmentRemaining == null)
+            return false;
+
+        if (!assignedEquipmentRemaining.TryGetValue(stack.item, out int remaining) || remaining <= 0)
+            return false;
+
+        assignedEquipmentRemaining[stack.item] = remaining - 1;
+        return true;
     }
 
     private void RefreshPrisonerPageUI()
@@ -358,8 +440,6 @@ public class StoragePanelUI : MainUIPanelBase
                 include = !prisoner.IsReadyToCorrupt;
             else if (prisonerFilterMode == PrisonerFilterMode.Ready)
                 include = prisoner.IsReadyToCorrupt;
-            else if (prisonerFilterMode == PrisonerFilterMode.Exchangeable)
-                include = prisoner.isExchangeable;
 
             if (include)
                 result.Add(prisoner);
@@ -382,10 +462,23 @@ public class StoragePanelUI : MainUIPanelBase
             if (stack == null || stack.item == null || stack.amount <= 0)
                 continue;
 
+            if (inventoryOnlyEquipmentAndConsumables && !stack.item.IsInventoryItem())
+                continue;
+
             if (!PassesItemFilter(stack.item))
                 continue;
 
-            result.Add(stack);
+            int amount = Mathf.Max(1, stack.amount);
+            if (stack.item.IsEquipmentItem())
+            {
+                // 장비는 향후 난수 옵션/개별 인스턴스 확장을 고려해 한 칸에 하나씩 표시한다.
+                for (int copy = 0; copy < amount; copy++)
+                    result.Add(new InventoryStackData { item = stack.item, amount = 1 });
+            }
+            else
+            {
+                result.Add(stack);
+            }
         }
 
         if (itemSortMode == StorageItemSortMode.Name)
@@ -399,16 +492,19 @@ public class StoragePanelUI : MainUIPanelBase
         if (item == null)
             return false;
 
+        if (inventoryOnlyEquipmentAndConsumables && !item.IsInventoryItem())
+            return false;
+
         switch (itemFilterMode)
         {
             case StorageItemFilterMode.Equipment:
-                return item.mainUICategory == MainUIItemCategory.Equipment;
+                return item.IsEquipmentItem();
             case StorageItemFilterMode.Consumable:
-                return item.mainUICategory == MainUIItemCategory.Consumable;
+                return item.IsConsumableItem();
             case StorageItemFilterMode.Other:
-                return item.mainUICategory == MainUIItemCategory.Other;
+                return !inventoryOnlyEquipmentAndConsumables && item.mainUICategory == MainUIItemCategory.Other;
             default:
-                return true;
+                return !inventoryOnlyEquipmentAndConsumables || item.IsInventoryItem();
         }
     }
 

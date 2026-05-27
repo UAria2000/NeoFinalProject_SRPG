@@ -639,7 +639,6 @@ public class BattleManager : MonoBehaviour
                 fallbackUnit = fallbackUnit,
                 fallbackView = unit.ViewDefinition,
                 capturedLevel = Mathf.Max(1, unit.CurrentLevel),
-                isExchangeable = unit.IsNftUnit,
                 learnedSkills = unit.MemberData != null && unit.MemberData.learnedSkills != null
                     ? new List<SkillDefinition>(unit.MemberData.learnedSkills)
                     : new List<SkillDefinition>()
@@ -654,7 +653,6 @@ public class BattleManager : MonoBehaviour
                 fallbackUnit = fallbackUnit,
                 fallbackView = unit.ViewDefinition,
                 capturedLevel = Mathf.Max(1, unit.CurrentLevel),
-                isExchangeable = unit.IsNftUnit,
                 learnedSkills = unit.MemberData != null && unit.MemberData.learnedSkills != null
                     ? new List<SkillDefinition>(unit.MemberData.learnedSkills)
                     : new List<SkillDefinition>()
@@ -698,10 +696,10 @@ public class BattleManager : MonoBehaviour
         for (int i = 0; i < currentBattleRewardSummary.droppedItems.Count; i++)
         {
             ItemDefinition item = currentBattleRewardSummary.droppedItems[i];
-            if (item == null)
+            if (item == null || !item.IsInventoryItem())
                 continue;
 
-            InventoryStackData existing = inventory.Find(stack => stack != null && stack.item == item);
+            InventoryStackData existing = inventory.Find(stack => stack != null && stack.item == item && item.IsStackableInInventory());
             if (existing != null)
                 existing.amount += 1;
             else

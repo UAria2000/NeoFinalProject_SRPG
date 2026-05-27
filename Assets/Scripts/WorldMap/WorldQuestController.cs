@@ -1024,7 +1024,7 @@ public class WorldQuestController : MonoBehaviour
 
     private bool TryGrantItemReward(ItemDefinition item, int amount)
     {
-        if (runManager == null || item == null || amount <= 0)
+        if (runManager == null || item == null || amount <= 0 || !item.IsInventoryItem())
             return false;
 
         string[] methodNames =

@@ -19,12 +19,14 @@ public class StorageItemSlotUI : MonoBehaviour,
 
     public InventoryStackData StackData { get; private set; }
     public int ColumnIndexInRow { get; private set; }
+    public bool IsAssignedOrEquipped { get; private set; }
 
     public void Bind(StoragePanelUI panelOwner, InventoryStackData stack, int columnIndexInRow, bool isAssigned)
     {
         owner = panelOwner;
         StackData = stack;
         ColumnIndexInRow = Mathf.Clamp(columnIndexInRow, 0, 9);
+        IsAssignedOrEquipped = isAssigned;
 
         bool hasData = stack != null && stack.item != null && stack.amount > 0;
 

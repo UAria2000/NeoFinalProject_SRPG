@@ -129,8 +129,6 @@ public class BattleUnit
     }
 
     public CharacterRangeType RangeType { get { return Definition != null ? Definition.rangeType : CharacterRangeType.Melee; } }
-    public bool IsExchangeable { get { return memberData != null && memberData.isExchangeable; } }
-    public bool IsNftUnit { get { return (memberData != null && (memberData.isNft || memberData.isExchangeable)) || (Definition != null && Definition.isNftUnit); } }
 
     public int BaseMaxHP { get { return Definition != null ? Definition.maxHP : 0; } }
     public int BaseDMG { get { return Definition != null ? Definition.dmg : 0; } }

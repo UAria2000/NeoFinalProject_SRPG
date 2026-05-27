@@ -9,7 +9,6 @@ public class MainUIOverlayController : MonoBehaviour
     [SerializeField] private WorldMapDragPan worldMapDragPan;
 
     [Header("Buttons")]
-    [SerializeField] private Button marketButton;
     [SerializeField] private Button storageButton;
     [SerializeField] private Button barracksButton;
     [SerializeField] private Button portraitButton;
@@ -29,7 +28,6 @@ public class MainUIOverlayController : MonoBehaviour
 
     private readonly Dictionary<MainUIPanelType, MainUIPanelBase> panelLookup = new Dictionary<MainUIPanelType, MainUIPanelBase>();
     private MainUIPanelBase currentMainPanel;
-    private WorldMapHoverPressButtonUI marketButtonVisual;
     private WorldMapHoverPressButtonUI storageButtonVisual;
     private WorldMapHoverPressButtonUI barracksButtonVisual;
     private WorldMapHoverPressButtonUI portraitButtonVisual;
@@ -61,7 +59,6 @@ public class MainUIOverlayController : MonoBehaviour
             settingsPanel.ClosePanel();
         }
 
-        BindButton(marketButton, () => OpenMainPanel(MainUIPanelType.Market));
         BindButton(storageButton, () => OpenMainPanel(MainUIPanelType.Storage));
         BindButton(barracksButton, () => OpenMainPanel(MainUIPanelType.Barracks));
         BindButton(portraitButton, () => OpenMainPanel(MainUIPanelType.Portrait));
@@ -186,7 +183,6 @@ public class MainUIOverlayController : MonoBehaviour
 
     private void CacheButtonVisuals()
     {
-        marketButtonVisual = GetHoverPressVisual(marketButton);
         storageButtonVisual = GetHoverPressVisual(storageButton);
         barracksButtonVisual = GetHoverPressVisual(barracksButton);
         portraitButtonVisual = GetHoverPressVisual(portraitButton);
@@ -199,7 +195,6 @@ public class MainUIOverlayController : MonoBehaviour
             ? currentMainPanel.PanelType
             : MainUIPanelType.None;
 
-        SetButtonToggle(marketButtonVisual, openPanelType == MainUIPanelType.Market);
         SetButtonToggle(storageButtonVisual, openPanelType == MainUIPanelType.Storage);
         SetButtonToggle(barracksButtonVisual, openPanelType == MainUIPanelType.Barracks);
         SetButtonToggle(portraitButtonVisual, openPanelType == MainUIPanelType.Portrait);

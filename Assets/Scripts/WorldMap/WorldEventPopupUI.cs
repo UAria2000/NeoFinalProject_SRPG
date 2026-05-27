@@ -34,6 +34,12 @@ public class WorldEventPopupUI : MonoBehaviour
     [SerializeField] private StorageItemTooltipUI itemTooltipUI;
     [SerializeField] private BottomPartySummaryPanelUI bottomPartySummaryPanelUI;
 
+    [Header("Treasure Claim Behaviour")]
+    [Tooltip("켜면 보물 팝업의 확인 버튼이 남은 보상 아이템을 모두 창고/인벤토리에 넣고 닫습니다. 끄면 기존처럼 슬롯이 없을 때만 자동 지급합니다.")]
+    [SerializeField] private bool claimAllTreasureOnConfirm = true;
+    [Tooltip("닫기 버튼/딤 클릭은 보상을 받지 않고 닫는 동작으로 유지합니다. 보상 슬롯을 쓰는 경우 확인 버튼은 일괄 받기, 닫기는 포기/닫기 역할입니다.")]
+    [SerializeField] private bool closeButtonDiscardsUnclaimedTreasure = true;
+
     private Action confirmAction;
     private Action closeAction;
 
@@ -239,8 +245,11 @@ public class WorldEventPopupUI : MonoBehaviour
 
     private void HandleConfirmClicked()
     {
-        if (rewardMode == PopupRewardMode.Treasure && autoGrantTreasureWhenNoRewardSlots && activeTreasure != null && rewardRunManager != null)
-            rewardRunManager.GrantTreasureRewards(activeTreasure);
+        if (rewardMode == PopupRewardMode.Treasure && activeTreasure != null && rewardRunManager != null)
+        {
+            if (claimAllTreasureOnConfirm || autoGrantTreasureWhenNoRewardSlots)
+                GrantAllRemainingTreasureRewardsToStorage();
+        }
 
         Action action = confirmAction;
         CloseSilently();
@@ -249,10 +258,56 @@ public class WorldEventPopupUI : MonoBehaviour
 
     private void HandleCloseClicked()
     {
-        // 보물 슬롯에 남아 있는 미수령 아이템은 창을 닫는 순간 폐기된다.
+        // 닫기 버튼/딤 클릭은 보상 수령 없이 닫는 동작으로 유지한다.
+        // 확인 버튼은 GrantAllRemainingTreasureRewardsToStorage()를 통해 남은 보상을 일괄 수령한다.
+        if (rewardMode == PopupRewardMode.Treasure && !closeButtonDiscardsUnclaimedTreasure)
+            GrantAllRemainingTreasureRewardsToStorage();
+
         Action action = closeAction;
         CloseSilently();
         action?.Invoke();
+    }
+
+    private bool GrantAllRemainingTreasureRewardsToStorage()
+    {
+        if (rewardMode != PopupRewardMode.Treasure || activeTreasure == null || rewardRunManager == null)
+            return false;
+
+        bool grantedAny = false;
+
+        if (!activeTreasure.soulGranted && activeTreasure.soulAmount > 0)
+        {
+            rewardRunManager.AddWorldSoul(activeTreasure.soulAmount);
+            activeTreasure.soulGranted = true;
+            grantedAny = true;
+        }
+
+        if (activeTreasure.rewards != null)
+        {
+            for (int i = 0; i < activeTreasure.rewards.Count; i++)
+            {
+                WorldTreasureRewardItemEntry reward = activeTreasure.rewards[i];
+                if (reward == null || reward.item == null || reward.amount <= 0)
+                    continue;
+
+                if (!reward.item.IsInventoryItem())
+                {
+                    reward.item = null;
+                    reward.amount = 0;
+                    continue;
+                }
+
+                if (rewardRunManager.AddStorageItem(reward.item, Mathf.Max(1, reward.amount)))
+                {
+                    reward.item = null;
+                    reward.amount = 0;
+                    grantedAny = true;
+                }
+            }
+        }
+
+        RefreshTreasureRewardSlots();
+        return grantedAny;
     }
 
     private bool TryGetTreasureReward(int rewardIndex, out WorldTreasureRewardItemEntry reward)
@@ -266,7 +321,7 @@ public class WorldEventPopupUI : MonoBehaviour
             return false;
 
         reward = activeTreasure.rewards[rewardIndex];
-        return reward != null && reward.item != null && reward.amount > 0;
+        return reward != null && reward.item != null && reward.item.IsInventoryItem() && reward.amount > 0;
     }
 
     private bool ConsumeTreasureRewardAt(int rewardIndex)
@@ -304,8 +359,11 @@ public class WorldEventPopupUI : MonoBehaviour
                 WorldTreasureRewardItemEntry reward = activeTreasure.rewards[i];
                 if (reward != null)
                 {
-                    item = reward.item;
-                    amount = reward.amount;
+                    if (reward.item != null && reward.item.IsInventoryItem())
+                    {
+                        item = reward.item;
+                        amount = reward.amount;
+                    }
                 }
             }
 

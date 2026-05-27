@@ -228,6 +228,11 @@ public class BattleActionController : MonoBehaviour
         }
 
         ItemDefinition item = stack.item;
+        if (item == null || !item.IsConsumableItem())
+        {
+            battleManager.OnActionExecutionFinished(false);
+            yield break;
+        }
 
         if (!battleManager.CanUseConsumableThisTurn(actor))
         {

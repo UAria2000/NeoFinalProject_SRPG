@@ -186,6 +186,7 @@ public class RandomEnemyEncounterBootstrapper : MonoBehaviour
 
             PartyMemberData member = source.CloneRuntime();
             member.startSlotIndex = Mathf.Clamp(source.startSlotIndex, 0, 3);
+            member.learnedSkills = MergeRequiredStartingSkills(member.learnedSkills, member.unitDefinition);
             int level = RollLevel(null);
             member.currentLevel = level;
             member.originalLevel = level;
@@ -194,8 +195,6 @@ public class RandomEnemyEncounterBootstrapper : MonoBehaviour
             member.levelGrowthDmg = 0;
             RollLevelGrowthTotals(member, member.unitDefinition, level);
             member.instanceId = BuildInstanceId(member.unitDefinition, member.startSlotIndex);
-            member.isExchangeable = RollCapturableEnemyNft(member.unitDefinition);
-            member.isNft = member.isExchangeable;
 
             if (member.equippedItems == null || member.equippedItems.Count == 0)
                 member.equippedItems = RollEnemyEquipment(member.unitDefinition);
@@ -210,6 +209,28 @@ public class RandomEnemyEncounterBootstrapper : MonoBehaviour
         }
 
         return party;
+    }
+
+    private List<SkillDefinition> MergeRequiredStartingSkills(List<SkillDefinition> sourceSkills, UnitDefinition unitDefinition)
+    {
+        List<SkillDefinition> merged = CopySkills(sourceSkills);
+
+        if (unitDefinition == null || unitDefinition.fixedStartingSkills == null || unitDefinition.fixedStartingSkills.Count == 0)
+            return merged;
+
+        if (merged == null)
+            merged = new List<SkillDefinition>();
+
+        for (int i = 0; i < unitDefinition.fixedStartingSkills.Count; i++)
+        {
+            SkillDefinition skill = unitDefinition.fixedStartingSkills[i];
+            if (skill == null || merged.Contains(skill))
+                continue;
+
+            merged.Add(skill);
+        }
+
+        return merged;
     }
 
     private PartyDefinition CreateRuntimePartyAsset(string assetName, string partyName)
@@ -286,8 +307,6 @@ public class RandomEnemyEncounterBootstrapper : MonoBehaviour
         member.learnedSkills = CopySkills(entry.learnedSkills);
         if ((member.learnedSkills == null || member.learnedSkills.Count == 0) && entry.unitDefinition != null)
             member.learnedSkills = CopySkills(entry.unitDefinition.fixedStartingSkills);
-        member.isExchangeable = RollCapturableEnemyNft(entry.unitDefinition);
-        member.isNft = member.isExchangeable;
         member.equippedItems = RollEnemyEquipment(entry.unitDefinition);
         return member;
     }
@@ -398,14 +417,6 @@ public class RandomEnemyEncounterBootstrapper : MonoBehaviour
         int min = Mathf.Min(range.x, range.y);
         int max = Mathf.Max(range.x, range.y);
         return UnityEngine.Random.Range(min, max + 1);
-    }
-
-    private bool RollCapturableEnemyNft(UnitDefinition definition)
-    {
-        if (definition == null || !definition.canBeCaptured)
-            return false;
-
-        return UnityEngine.Random.Range(0f, 100f) < Mathf.Clamp(definition.capturableEnemyNftChancePercent, 0f, 100f);
     }
 
     private List<ItemDefinition> RollEnemyEquipment(UnitDefinition definition)

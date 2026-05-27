@@ -28,8 +28,6 @@ public class CurrentUnitInfoPanel : MonoBehaviour
     [SerializeField] private Color allyNameColor = new Color(0.7647f, 0.2392f, 0.2902f, 1f); // #C33D4A
 
     [Header("Badges")]
-    [SerializeField] private GameObject nftBadgeRoot;
-    [SerializeField] private GameObject exchangeableBadge;
     [SerializeField] private GameObject meleeIcon;
     [SerializeField] private GameObject midIcon;
     [SerializeField] private GameObject rangedIcon;
@@ -322,11 +320,6 @@ public class CurrentUnitInfoPanel : MonoBehaviour
 
     private void RefreshBadges(BattleUnit unit)
     {
-        bool showNft = unit != null && unit.IsNftUnit;
-        if (nftBadgeRoot != null)
-            nftBadgeRoot.SetActive(showNft);
-        if (exchangeableBadge != null)
-            exchangeableBadge.SetActive(showNft);
     }
 
     private void RefreshClassBadge(BattleUnit unit)

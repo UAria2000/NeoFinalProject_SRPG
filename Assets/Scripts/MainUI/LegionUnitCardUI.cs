@@ -33,7 +33,6 @@ public class LegionUnitCardUI : MonoBehaviour, IPointerClickHandler, IBeginDragH
     [SerializeField] private Sprite[] rankSprites; // 1~9
 
     [Header("Badges")]
-    [SerializeField] private GameObject exchangeableBadge;
     [SerializeField] private GameObject inPartyRoot;
 
     [Header("Favorite")]
@@ -334,8 +333,6 @@ public class LegionUnitCardUI : MonoBehaviour, IPointerClickHandler, IBeginDragH
 
     private void RefreshBadges()
     {
-        if (exchangeableBadge != null)
-            exchangeableBadge.SetActive(boundUnit != null && boundUnit.IsNftUnit());
     }
 
     private void RefreshRange()

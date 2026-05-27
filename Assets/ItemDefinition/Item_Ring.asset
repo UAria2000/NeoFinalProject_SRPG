@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: item_ring
   itemName: "\uBC18\uC9C0"
-  description: "\uBA85\uC911 +10"
+  description: "\uCE68\uCC29\uD574\uC9C4\uB2E4"
   icon: {fileID: 21300000, guid: ed2fef138fa24e04cb3287edc8498e3b, type: 3}
   targetTeam: 1
   targetScope: 0

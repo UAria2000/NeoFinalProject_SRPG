@@ -184,8 +184,6 @@ public class EnemyUnitDefinitionGeneratorWindow : EditorWindow
         unit.unitId = spec.unitId;
         unit.unitName = spec.displayName;
         unit.rangeType = spec.rangeType;
-
-        unit.isNftUnit = false;
         unit.showInLegion = false;
         unit.legionSortPriority = 0;
         unit.legionCategoryLabel = spec.categoryLabel;
@@ -220,7 +218,6 @@ public class EnemyUnitDefinitionGeneratorWindow : EditorWindow
         unit.forcePositionMoveImmune = spec.forcePositionMoveImmune;
         unit.baseSoulReward = spec.baseSoulReward;
         unit.canBeCaptured = spec.canBeCaptured;
-        unit.capturableEnemyNftChancePercent = 0f;
         unit.captureRewardItem = null;
         unit.canBeDecomposed = false;
         unit.decomposeShardReward = 1;
@@ -349,8 +346,6 @@ public class EnemyUnitDefinitionGeneratorWindow : EditorWindow
             member.instanceId = slot.unitId + "_boss_slot_" + member.startSlotIndex;
             member.instanceDisplayNameOverride = string.Empty;
             member.fixedEpitaph = string.Empty;
-            member.isExchangeable = false;
-            member.isNft = false;
             member.currentLevel = Mathf.Max(1, slot.level);
             member.originalLevel = Mathf.Max(1, slot.level);
             member.currentExp = 0;

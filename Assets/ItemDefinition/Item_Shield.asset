@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: item_shiled
   itemName: "\uBC29\uD328"
-  description: "\uBCF4\uD638\uB9C9 +10%"
+  description: "\uD2BC\uD2BC\uD558\uB2E4"
   icon: {fileID: 21300000, guid: bb4cb3354010dcb4d91b888d9c745e32, type: 3}
   targetTeam: 1
   targetScope: 0

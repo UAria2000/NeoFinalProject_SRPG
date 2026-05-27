@@ -78,6 +78,7 @@ public class BattleFlowController : MonoBehaviour
         battleManager.SetLastShownAllyUnit(battleManager.GetDefaultShownAllyUnit());
         battleManager.SelectedAllyInfoUnit = null;
         battleManager.SelectedEnemyInfoUnit = null;
+        battleManager.SetCurrentActingUnit(null);
         battleManager.SetBattleStarted(true);
         battleManager.SetBattleEndEventSent(false);
 
@@ -305,6 +306,8 @@ public class BattleFlowController : MonoBehaviour
                     battleManager.CurrentTurnSkippedByStatus)
                 {
                     EvaluateEndOfTurnGimmicks(unit);
+                    if (battleManager.CurrentActingUnit == unit)
+                        battleManager.SetCurrentActingUnit(null);
                     turnManager.ResortRemainingTurnsByCurrentSpeed();
                     battleManager.ReplaceUpcomingTurnOrderFromRemainingQueue(turnManager.GetOrderedUnitsSnapshot());
 
@@ -350,6 +353,8 @@ public class BattleFlowController : MonoBehaviour
                     break;
 
                 EvaluateEndOfTurnGimmicks(unit);
+                if (battleManager.CurrentActingUnit == unit)
+                    battleManager.SetCurrentActingUnit(null);
                 turnManager.ResortRemainingTurnsByCurrentSpeed();
                 battleManager.ReplaceUpcomingTurnOrderFromRemainingQueue(turnManager.GetOrderedUnitsSnapshot());
 
@@ -363,6 +368,7 @@ public class BattleFlowController : MonoBehaviour
             }
         }
 
+        battleManager.SetCurrentActingUnit(null);
         battleManager.SetTurnState(TurnState.BattleEnded);
         if (battleManager.BattleResult == BattleResultType.Victory)
             logController.AppendBattleLog(logController.BuildVictoryLog());

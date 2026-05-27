@@ -43,32 +43,55 @@ public class WorldRunTransientState
         ClearSettlementRecords();
     }
 
-    public void AddItem(ItemDefinition item, int amount = 1)
+    public bool AddItem(ItemDefinition item, int amount = 1)
     {
         if (item == null || amount <= 0)
-            return;
+            return false;
 
-        InventoryStackData existing = inventory.Find(x => x != null && x.item == item);
-        if (existing != null)
-            existing.amount += amount;
+        if (!item.IsInventoryItem())
+        {
+            Debug.LogWarning($"[WorldRunTransientState] Inventory accepts only equipment/consumables. Ignored: {item.name}");
+            return false;
+        }
+
+        if (inventory == null)
+            inventory = new List<InventoryStackData>();
+
+        int clampedAmount = Math.Max(1, amount);
+
+        if (item.IsStackableInInventory())
+        {
+            InventoryStackData existing = inventory.Find(x => x != null && x.item == item);
+            if (existing != null)
+                existing.amount += clampedAmount;
+            else
+                inventory.Add(new InventoryStackData { item = item, amount = clampedAmount });
+        }
         else
-            inventory.Add(new InventoryStackData { item = item, amount = amount });
+        {
+            // 장비는 현재 저장 데이터 호환을 위해 amount 집계도 허용하지만,
+            // UI에서는 개별 슬롯으로 펼쳐 보여준다. 신규 추가는 같은 정의 장비라도 별도 스택으로 보관한다.
+            for (int i = 0; i < clampedAmount; i++)
+                inventory.Add(new InventoryStackData { item = item, amount = 1 });
+        }
+
+        return true;
     }
 
-    public void AddPrisoner(UnitDefinition unit, int capturedLevel = 1, UnitViewDefinition viewDefinition = null, bool isExchangeable = false)
+    public void AddPrisoner(UnitDefinition unit, int capturedLevel = 1, UnitViewDefinition viewDefinition = null)
     {
         if (unit == null)
             return;
 
-        prisoners.Add(PrisonerRuntimeData.CreateFromCapturedUnit(unit, capturedLevel, nextPrisonerSequence++, viewDefinition, isExchangeable));
+        prisoners.Add(PrisonerRuntimeData.CreateFromCapturedUnit(unit, capturedLevel, nextPrisonerSequence++, viewDefinition));
     }
 
-    public void AddPrisonerFromItem(ItemDefinition prisonerItem, int capturedLevel = 1, UnitDefinition fallbackUnit = null, UnitViewDefinition fallbackView = null, bool isExchangeable = false)
+    public void AddPrisonerFromItem(ItemDefinition prisonerItem, int capturedLevel = 1, UnitDefinition fallbackUnit = null, UnitViewDefinition fallbackView = null)
     {
         if (prisonerItem == null && fallbackUnit == null)
             return;
 
-        prisoners.Add(PrisonerRuntimeData.CreateFromPrisonerItem(prisonerItem, capturedLevel, nextPrisonerSequence++, fallbackUnit, fallbackView, isExchangeable));
+        prisoners.Add(PrisonerRuntimeData.CreateFromPrisonerItem(prisonerItem, capturedLevel, nextPrisonerSequence++, fallbackUnit, fallbackView));
     }
 
     public void AddSoulEarnedInWorld(int amount)
@@ -108,8 +131,7 @@ public class WorldRunTransientState
                 Math.Max(1, reward.capturedLevel),
                 sequence,
                 reward.fallbackUnit,
-                reward.fallbackView,
-                reward.isExchangeable);
+                reward.fallbackView);
         }
         else if (reward.fallbackUnit != null)
         {
@@ -117,8 +139,7 @@ public class WorldRunTransientState
                 reward.fallbackUnit,
                 Math.Max(1, reward.capturedLevel),
                 sequence,
-                reward.fallbackView,
-                reward.isExchangeable);
+                reward.fallbackView);
         }
 
         if (record != null)

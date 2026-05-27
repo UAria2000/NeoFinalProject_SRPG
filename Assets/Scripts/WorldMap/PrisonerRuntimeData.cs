@@ -18,7 +18,6 @@ public class PrisonerRuntimeData
     public ItemDefinition sourcePrisonerItem;
     public string prisonerNameOverride;
     public int capturedLevel = 1;
-    public bool isExchangeable;
     public PrisonerCorruptionConditionType corruptionConditionType;
     [Min(1)] public int targetValue = 1;
     [Min(0)] public int currentValue = 0;
@@ -109,7 +108,7 @@ public class PrisonerRuntimeData
         currentValue = targetValue;
     }
 
-    public static PrisonerRuntimeData CreateFromPrisonerItem(ItemDefinition prisonerItem, int capturedLevel, long sequence, UnitDefinition fallbackUnit = null, UnitViewDefinition fallbackView = null, bool isExchangeable = false)
+    public static PrisonerRuntimeData CreateFromPrisonerItem(ItemDefinition prisonerItem, int capturedLevel, long sequence, UnitDefinition fallbackUnit = null, UnitViewDefinition fallbackView = null)
     {
         UnitDefinition sourceUnit = prisonerItem != null
             ? prisonerItem.GetConvertedAllyUnitDefinition(fallbackUnit)
@@ -120,14 +119,14 @@ public class PrisonerRuntimeData
             : fallbackView;
 
 
-        PrisonerRuntimeData data = CreateFromCapturedUnit(sourceUnit, capturedLevel, sequence, sourceView, isExchangeable);
+        PrisonerRuntimeData data = CreateFromCapturedUnit(sourceUnit, capturedLevel, sequence, sourceView);
         data.sourcePrisonerItem = prisonerItem;
         if (prisonerItem != null && !string.IsNullOrWhiteSpace(prisonerItem.itemName))
             data.prisonerNameOverride = prisonerItem.itemName;
         return data;
     }
 
-    public static PrisonerRuntimeData CreateFromCapturedUnit(UnitDefinition unit, int capturedLevel, long sequence, UnitViewDefinition viewDefinition = null, bool isExchangeable = false)
+    public static PrisonerRuntimeData CreateFromCapturedUnit(UnitDefinition unit, int capturedLevel, long sequence, UnitViewDefinition viewDefinition = null)
     {
         var data = new PrisonerRuntimeData();
         data.prisonerInstanceId = Guid.NewGuid().ToString("N");
@@ -135,7 +134,6 @@ public class PrisonerRuntimeData
         data.sourceUnitViewDefinition = viewDefinition;
         data.capturedLevel = Mathf.Max(1, capturedLevel);
         data.captureSequence = sequence;
-        data.isExchangeable = isExchangeable || (unit != null && unit.isNftUnit);
 
         data.corruptionConditionType = (PrisonerCorruptionConditionType)UnityEngine.Random.Range(0, 4);
         switch (data.corruptionConditionType)

@@ -11,8 +11,6 @@ public class BattleResultPartyMemberSnapshot
 
     public string displayName;
     public bool isDead;
-    public bool isExchangeable;
-    public bool isNft;
 
     public int promotionRank;
     public int levelBefore;
