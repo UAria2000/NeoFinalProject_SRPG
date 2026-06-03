@@ -12,6 +12,7 @@ public class WorldRunTransientState
     public int currentMana;
     public int maxMana;
     public long nextPrisonerSequence = 1;
+    public int runOccupiedNonStartTileCount;
     public List<PartyEquipmentAssignmentData> partyEquipmentAssignments = new List<PartyEquipmentAssignmentData>();
 
     [Header("Settlement Records")]
@@ -39,6 +40,7 @@ public class WorldRunTransientState
         maxMana = System.Math.Max(0, initialMaxMana);
         currentMana = maxMana;
         nextPrisonerSequence = 1;
+        runOccupiedNonStartTileCount = 0;
         partyEquipmentAssignments.Clear();
         ClearSettlementRecords();
     }

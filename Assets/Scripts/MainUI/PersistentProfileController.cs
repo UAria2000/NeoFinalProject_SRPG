@@ -500,6 +500,106 @@ public class PersistentProfileController : MonoBehaviour
         return null;
     }
 
+
+    public int GetPurpleEssence()
+    {
+        EnsureInitialized();
+        if (persistentProfile == null || persistentProfile.accountCurrencies == null)
+            return 0;
+        return persistentProfile.accountCurrencies.GetPurpleEssence();
+    }
+
+    public void AddPurpleEssence(int amount)
+    {
+        EnsureInitialized();
+        if (persistentProfile == null)
+            return;
+        if (persistentProfile.accountCurrencies == null)
+            persistentProfile.accountCurrencies = new PersistentAccountCurrencyState();
+
+        persistentProfile.accountCurrencies.AddPurpleEssence(Mathf.Max(0, amount));
+        RaiseProfileChanged();
+    }
+
+    public void ResetRunCurrenciesAndRosterForRogueliteRunEnd(PartyDefinition fallbackPartyTemplate)
+    {
+        EnsureInitialized();
+        if (persistentProfile == null)
+            return;
+
+        if (persistentProfile.accountCurrencies == null)
+            persistentProfile.accountCurrencies = new PersistentAccountCurrencyState();
+
+        // 소울은 WorldRunManager가 보유한다. 공용 파편은 로그라이트 런 재화로 취급하여 런 종료 시 초기화한다.
+        persistentProfile.accountCurrencies.SetCommonShardCount(0);
+        persistentProfile.graveyardUnits.Clear();
+
+        PersistentRosterUnitData mainToKeep = null;
+
+        // 1차 구현에서는 주인공 선택 시스템이 아직 없으므로, 런 종료 후 파티 템플릿의 기존 메인 캐릭터를 새 런 기준으로 복구한다.
+        if (fallbackPartyTemplate != null && fallbackPartyTemplate.members != null)
+        {
+            for (int i = 0; i < fallbackPartyTemplate.members.Count; i++)
+            {
+                PartyMemberData member = fallbackPartyTemplate.members[i];
+                if (member == null || member.unitDefinition == null)
+                    continue;
+
+                if (member.unitDefinition.isMainPlayerCharacter)
+                {
+                    if (string.IsNullOrWhiteSpace(member.instanceId))
+                        member.instanceId = Guid.NewGuid().ToString("N");
+                    mainToKeep = PersistentRosterUnitData.CreateFromPartyMember(member, persistentProfile.ConsumeObtainedOrder());
+                    break;
+                }
+            }
+        }
+
+        if (mainToKeep == null && persistentProfile.rosterUnits != null)
+        {
+            for (int i = 0; i < persistentProfile.rosterUnits.Count; i++)
+            {
+                PersistentRosterUnitData unit = persistentProfile.rosterUnits[i];
+                if (unit != null && IsMainCharacter(unit))
+                {
+                    mainToKeep = unit;
+                    break;
+                }
+            }
+        }
+
+        if (mainToKeep != null)
+        {
+            mainToKeep.EnsureDefaults();
+            mainToKeep.isConvertedFromPrisoner = false;
+            mainToKeep.persistentCurrentHP = -1;
+            mainToKeep.currentExp = 0;
+            mainToKeep.levelGrowthMaxHp = 0;
+            mainToKeep.levelGrowthDmg = 0;
+            mainToKeep.currentLevel = 1;
+            mainToKeep.originalLevel = 1;
+            mainToKeep.promotionRank = 1;
+            mainToKeep.unitRankOverride = 1;
+        }
+
+        persistentProfile.rosterUnits.Clear();
+        if (mainToKeep != null)
+            persistentProfile.rosterUnits.Add(mainToKeep);
+
+        if (worldRunManager != null)
+        {
+            BattlePartyRuntimeState runtime = worldRunManager.GetOrCreatePlayerPartyRuntimeState();
+            if (runtime != null)
+            {
+                runtime.members.Clear();
+                if (mainToKeep != null)
+                    runtime.members.Add(mainToKeep.CreateRuntimePartyMember(0, promotionBonusPercentPerRank));
+            }
+        }
+
+        RaiseProfileChanged();
+    }
+
     public int BeginNextWorldAttempt()
     {
         EnsureInitialized();

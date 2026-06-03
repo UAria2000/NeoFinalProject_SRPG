@@ -11,6 +11,7 @@ public class ActiveWorldRunSaveData
     public string difficultyId;
     public int mapRadius;
     public int worldNumber;
+    public int currentChapter = 1;
     public int worldStartMainCharacterLevel;
     public bool isTutorialWorld;
     public int tutorialShownStepMask;
@@ -32,6 +33,7 @@ public class ActiveWorldRunSaveData
     public int currentMana;
     public int maxMana;
     public int worldEarnedSoulAlreadyGranted;
+    public int runOccupiedNonStartTileCount;
 
     public int settlementBattleCount;
     public int settlementVictoryCount;

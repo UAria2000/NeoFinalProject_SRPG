@@ -9,4 +9,5 @@ public class AccountCurrencySaveData
     public int meleeShard;
     public int midShard;
     public int rangedShard;
+    public int purpleEssence;
 }

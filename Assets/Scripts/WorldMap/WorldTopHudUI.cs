@@ -87,9 +87,14 @@ public class WorldTopHudUI : MonoBehaviour
 
         if (worldTitleText != null)
         {
-            string sizeText = GetCurrentSizeLabel();
             string difficultyText = GetCurrentDifficultyLabel();
-            worldTitleText.text = $"월드맵 {sizeText} - {difficultyText}";
+            if (worldRunManager != null && !worldRunManager.IsTutorialWorld)
+                worldTitleText.text = $"{worldRunManager.CurrentChapterIndex}/{worldRunManager.TotalRunChapters}장 - {difficultyText}";
+            else
+            {
+                string sizeText = GetCurrentSizeLabel();
+                worldTitleText.text = $"월드맵 {sizeText} - {difficultyText}";
+            }
         }
 
         if (soulText != null)

@@ -26,6 +26,10 @@ public class PersistentAccountCurrencyState
     [Tooltip("전 유닛 공통 승급/분해 파편. 기존 클래스별/스킬별 샤드는 더 이상 사용하지 않는다.")]
     public int unitShardCurrency = 0;
 
+    [Header("Persistent Roguelite Currency")]
+    [Tooltip("런 종료 후 유지되는 보라색 정수입니다. 이름은 차후 확정 예정입니다.")]
+    public int purpleEssenceCurrency = 0;
+
     public int GetCommonShardCount()
     {
         EnsureDefaults();
@@ -92,9 +96,29 @@ public class PersistentAccountCurrencyState
         // 클래스별/스킬별 샤드는 폐기. 저장 데이터 이관도 하지 않는다.
     }
 
+    public int GetPurpleEssence()
+    {
+        EnsureDefaults();
+        return Mathf.Max(0, purpleEssenceCurrency);
+    }
+
+    public void AddPurpleEssence(int amount)
+    {
+        if (amount == 0)
+            return;
+
+        purpleEssenceCurrency = Mathf.Max(0, purpleEssenceCurrency + amount);
+    }
+
+    public void SetPurpleEssence(int amount)
+    {
+        purpleEssenceCurrency = Mathf.Max(0, amount);
+    }
+
     public void EnsureDefaults()
     {
         cashCurrency = Mathf.Max(0, cashCurrency);
         unitShardCurrency = Mathf.Max(0, unitShardCurrency);
+        purpleEssenceCurrency = Mathf.Max(0, purpleEssenceCurrency);
     }
 }

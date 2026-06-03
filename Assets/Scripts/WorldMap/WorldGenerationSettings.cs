@@ -12,6 +12,31 @@ public class WorldGenerationSettings : ScriptableObject
     [Min(1)] public int enemyPortraitMinCount = 1;
     [Range(1, 6)] public int enemyPortraitMaxCount = 6;
 
+
+    [Header("Roguelite Chapters")]
+    [Tooltip("로그라이트 1런의 장 수입니다. 현재 기획상 3장 고정입니다.")]
+    [Min(1)] public int fixedChapterCount = 3;
+    [Tooltip("시작 타일을 제외한 장별 점령 가능 타일 수입니다. 현재 기획상 30개입니다.")]
+    [Min(1)] public int chapterNonStartTileCount = 30;
+    [Tooltip("장 클리어에 필요한 시작 타일 제외 점령 타일 수입니다. 기본 21/30입니다.")]
+    [Min(0)] public int requiredOccupiedTilesForChapterClear = 21;
+    [Tooltip("각 장에서 중복 없이 뽑을 최대 팩션 수입니다. 현재 기획상 최대 3개입니다.")]
+    [Min(1)] public int maxFactionsPerChapter = 3;
+    [Tooltip("각 팩션이 최소로 보유할 타일 수입니다.")]
+    [Min(0)] public int minTilesPerChapterFaction = 5;
+    [Tooltip("장 클리어 시 군단 전체에 지급할 EXP입니다. 인덱스 0=1장, 1=2장, 2=3장입니다.")]
+    public List<int> chapterClearExpRewards = new List<int> { 100, 200, 300 };
+
+    [Header("Roguelite Purple Essence Reward")]
+    [Min(0)] public int purpleEssencePerOccupiedTile = 1;
+    [Min(0)] public int purpleEssencePerCorruptedUnit = 5;
+    [Min(0)] public int purpleEssenceDifficultyBonusEasyPercent = 0;
+    [Min(0)] public int purpleEssenceDifficultyBonusNormalPercent = 25;
+    [Min(0)] public int purpleEssenceDifficultyBonusHardPercent = 50;
+
+    [Header("Mana Spring Event")]
+    [Range(0f, 1f)] public float manaSpringRestorePercentOfMax = 0.3f;
+
     [Header("Factions")]
     public List<FactionType> enemyFactions = new List<FactionType> { FactionType.FactionA, FactionType.FactionB };
     [Tooltip("월드 생성 시 팩션별 타일 수를 완전 균등이 아니라 무작위 가중치로 배분합니다.")]
@@ -420,6 +445,44 @@ public class WorldGenerationSettings : ScriptableObject
         return null;
     }
 
+    public int GetFixedChapterCount()
+    {
+        return Mathf.Max(1, fixedChapterCount);
+    }
+
+    public int GetChapterNonStartTileCount()
+    {
+        return Mathf.Max(1, chapterNonStartTileCount);
+    }
+
+    public int GetChapterTotalTileCount()
+    {
+        return 1 + GetChapterNonStartTileCount();
+    }
+
+    public int GetRequiredOccupiedTilesForChapterClear()
+    {
+        return Mathf.Clamp(requiredOccupiedTilesForChapterClear, 0, GetChapterNonStartTileCount());
+    }
+
+    public int GetChapterClearExpReward(int chapterIndex)
+    {
+        int index = Mathf.Clamp(chapterIndex - 1, 0, Mathf.Max(0, chapterClearExpRewards != null ? chapterClearExpRewards.Count - 1 : 0));
+        if (chapterClearExpRewards == null || chapterClearExpRewards.Count == 0)
+            return 0;
+        return Mathf.Max(0, chapterClearExpRewards[index]);
+    }
+
+    public int GetPurpleEssenceDifficultyBonusPercent()
+    {
+        switch (difficulty)
+        {
+            case WorldDifficulty.Easy: return Mathf.Max(0, purpleEssenceDifficultyBonusEasyPercent);
+            case WorldDifficulty.Hard: return Mathf.Max(0, purpleEssenceDifficultyBonusHardPercent);
+            default: return Mathf.Max(0, purpleEssenceDifficultyBonusNormalPercent);
+        }
+    }
+
     public int GetConquestRequiredPercent()
     {
         switch (radius)
@@ -481,9 +544,8 @@ public class WorldGenerationSettings : ScriptableObject
 
         int sizePercent = GetManaSizePercent();
         int difficultyPercent = GetManaDifficultyPercent();
-        int previousPercent = GetManaPreviousResultPercent(previousResult);
-
-        int totalPercent = 100 + (sizePercent - 100) + (difficultyPercent - 100) + (previousPercent - 100);
+        // 로그라이트 구조에서는 이전 월드 성공/실패 기록으로 새 런의 최대 마나를 제한하지 않는다.
+        int totalPercent = 100 + (sizePercent - 100) + (difficultyPercent - 100);
         totalPercent = Mathf.Max(0, totalPercent);
         return Mathf.Max(0, Mathf.RoundToInt(baseValue * (totalPercent * 0.01f)));
     }

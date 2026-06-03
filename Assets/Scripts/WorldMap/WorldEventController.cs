@@ -77,6 +77,13 @@ public class WorldEventController : MonoBehaviour
     [Tooltip("끄면 휴식 팝업 본문에 파티원별 HP 변동 목록을 표시하지 않습니다.")]
     [SerializeField] private bool showRestPartyPreviewInBody = false;
 
+    [Header("Mana Spring Event")]
+    [SerializeField] private string manaSpringConfirmText = "마나 회복";
+    [SerializeField] private string manaSpringEffectHeaderText = "마나샘 효과";
+    [SerializeField] private Color manaSpringEffectHeaderColor = new Color(0.45f, 0.5f, 1f, 1f);
+    [TextArea(2, 4)]
+    [SerializeField] private string manaSpringDescriptionSuffix = "\n\n푸른 마력이 고인 샘입니다. 군세의 마나를 회복합니다.";
+
     private WorldRunManager runManager;
     private WorldGenerationSettings settings;
     private bool popupOpen;
@@ -121,6 +128,9 @@ public class WorldEventController : MonoBehaviour
 
         if (tile.eventType == WorldTileEventType.Treasure)
             return TryOpenTreasureEvent(tile);
+
+        if (tile.eventType == WorldTileEventType.ManaSpring)
+            return TryOpenManaSpringEvent(tile);
 
         return TryOpenSimpleEvent(tile);
     }
@@ -196,6 +206,28 @@ public class WorldEventController : MonoBehaviour
             body,
             string.IsNullOrWhiteSpace(restConfirmText) ? defaultConfirmText : restConfirmText,
             () => ConfirmRestEvent(tile),
+            () => { popupOpen = false; runManager?.TryOpenQueuedWorldSettlementIfReady(); });
+
+        return true;
+    }
+
+    private bool TryOpenManaSpringEvent(WorldTileData tile)
+    {
+        if (eventPopupUI == null)
+        {
+            Debug.LogWarning("[WorldEventController] WorldEventPopupUI reference is missing.");
+            return false;
+        }
+
+        popupOpen = true;
+        string title = settings != null ? settings.GetEventDisplayName(tile.eventType) : "마나샘";
+        string body = BuildManaSpringEventBody(tile);
+
+        eventPopupUI.Open(
+            title,
+            body,
+            string.IsNullOrWhiteSpace(manaSpringConfirmText) ? defaultConfirmText : manaSpringConfirmText,
+            () => ConfirmManaSpringEvent(tile),
             () => { popupOpen = false; runManager?.TryOpenQueuedWorldSettlementIfReady(); });
 
         return true;
@@ -547,6 +579,75 @@ public class WorldEventController : MonoBehaviour
         }
     }
 
+    private void ConfirmManaSpringEvent(WorldTileData tile)
+    {
+        popupOpen = false;
+
+        int restored = 0;
+        if (runManager != null && settings != null)
+        {
+            restored = Mathf.RoundToInt(runManager.MaxMana * Mathf.Clamp01(settings.manaSpringRestorePercentOfMax));
+            runManager.AddMana(Mathf.Max(0, restored));
+        }
+
+        bool isReusable = tile != null && tile.IsReusableEvent;
+        bool disableIcon = !isReusable;
+        bool markResolved = !isReusable;
+
+        if (runManager != null)
+            runManager.ResolveMapEvent(tile, true, markResolved, disableIcon);
+
+        runManager?.TryOpenQueuedWorldSettlementIfReady();
+    }
+
+    private string BuildManaSpringEventBody(WorldTileData tile)
+    {
+        StringBuilder sb = new StringBuilder();
+        if (settings != null)
+            sb.Append(runManager != null ? runManager.GetTileEventDescription(tile) : settings.GetOrCreateTileDescription(tile));
+
+        if (!string.IsNullOrWhiteSpace(manaSpringDescriptionSuffix))
+            sb.Append(manaSpringDescriptionSuffix);
+
+        int restore = runManager != null && settings != null
+            ? Mathf.RoundToInt(runManager.MaxMana * Mathf.Clamp01(settings.manaSpringRestorePercentOfMax))
+            : 0;
+
+        sb.Append("\n\n");
+        sb.Append(ColorizeText(string.IsNullOrWhiteSpace(manaSpringEffectHeaderText) ? "마나샘 효과" : manaSpringEffectHeaderText, manaSpringEffectHeaderColor));
+        sb.Append(": ");
+        sb.Append($"최대 마나의 {Mathf.RoundToInt((settings != null ? settings.manaSpringRestorePercentOfMax : 0.3f) * 100f)}% 회복");
+        if (restore > 0)
+            sb.Append($" (+{restore})");
+
+        return sb.ToString();
+    }
+
+    public void OpenChapterTransitionPopup(string title, string body, System.Action onConfirm)
+    {
+        if (eventPopupUI == null)
+        {
+            onConfirm?.Invoke();
+            return;
+        }
+
+        popupOpen = true;
+        eventPopupUI.Open(
+            string.IsNullOrWhiteSpace(title) ? "다음 장" : title,
+            string.IsNullOrWhiteSpace(body) ? "다음 장으로 이동합니다." : body,
+            defaultConfirmText,
+            () =>
+            {
+                popupOpen = false;
+                onConfirm?.Invoke();
+            },
+            () =>
+            {
+                popupOpen = false;
+                onConfirm?.Invoke();
+            });
+    }
+
     private bool TryOpenSimpleEvent(WorldTileData tile)
     {
         if (eventPopupUI == null)
@@ -641,6 +742,10 @@ public class WorldEventController : MonoBehaviour
 
             case WorldTileEventType.Graveyard:
                 sb.Append(graveyardSuffix);
+                break;
+
+            case WorldTileEventType.ManaSpring:
+                sb.Append(manaSpringDescriptionSuffix);
                 break;
         }
 

@@ -105,21 +105,18 @@ public class WorldDominationPanelUI : MonoBehaviour
             out int nonStartTiles,
             out int conqueredTiles);
 
-        int requiredPercent = generationSettings.GetConquestRequiredPercent();
-        int currentPercent = nonStartTiles > 0
-            ? Mathf.FloorToInt((conqueredTiles / (float)nonStartTiles) * 100f)
-            : 0;
-
-        bool conquestCompleted = currentPercent >= requiredPercent;
+        int requiredOccupied = runManager.GetRequiredOccupiedTilesForChapterClear();
+        bool conquestCompleted = conqueredTiles >= requiredOccupied;
 
         if (runManager.IsTutorialWorld)
         {
             // Tutorial domination condition is intentionally simpler than normal worlds.
             // It has no boss requirement: only conquer every non-start tile.
-            string tutorialText = $"전체 지역의 100% 점령 달성 ({conqueredTiles}/{nonStartTiles})";
-            BindRow(0, true, conquestCompleted, tutorialText);
+            bool tutorialCompleted = nonStartTiles <= 0 || conqueredTiles >= nonStartTiles;
+            string tutorialText = $"전체 지역 점령 달성 ({conqueredTiles}/{nonStartTiles})";
+            BindRow(0, true, tutorialCompleted, tutorialText);
             HideRowsFrom(1);
-            SetConquestButtonVisible(conquestCompleted);
+            SetConquestButtonVisible(tutorialCompleted);
             return;
         }
 
@@ -132,7 +129,7 @@ public class WorldDominationPanelUI : MonoBehaviour
             rowIndex++;
         }
 
-        BindRow(rowIndex, true, conquestCompleted, $"전체 지역의 {requiredPercent}% 점령 달성 ({conqueredTiles}/{nonStartTiles})");
+        BindRow(rowIndex, true, conquestCompleted, $"타일 점령 {requiredOccupied}개 이상 ({conqueredTiles}/{nonStartTiles})");
         rowIndex++;
 
         HideRowsFrom(rowIndex);

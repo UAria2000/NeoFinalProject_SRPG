@@ -33,6 +33,12 @@ public class WorldSettlementSummary
     public int expBonusPercent;
     public int totalSettlementExpAward;
 
+    public int occupiedTileCountForEssence;
+    public int corruptedUnitCountForEssence;
+    public int purpleEssenceBaseAward;
+    public int purpleEssenceDifficultyBonusPercent;
+    public int purpleEssenceAward;
+
     public int sizeBonusPercent;
     public int difficultyBonusPercent;
     public int victoryBonusPercent;
@@ -53,5 +59,5 @@ public class WorldSettlementSummary
     public readonly List<ItemDefinition> inventoryItems = new List<ItemDefinition>();
     public readonly List<PrisonerRuntimeData> capturedPrisonerRecords = new List<PrisonerRuntimeData>();
 
-    public string ResultLabel => $"{Mathf.Max(1, worldNumber)}번째 세계 {(wasVictory ? "정복" : "정복 실패")}";
+    public string ResultLabel => $"{(wasVictory ? "런 클리어" : "런 실패")}";
 }

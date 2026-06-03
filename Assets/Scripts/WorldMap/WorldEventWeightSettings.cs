@@ -9,6 +9,7 @@ public class WorldEventWeightSettings : ScriptableObject
     [Min(0)] public int merchantWeight = 10;
     [Min(0)] public int questWeight = 10;
     [Min(0)] public int eliteWeight = 10;
+    [Min(0)] public int manaSpringWeight = 8;
 
     public int GetWeight(WorldTileEventType eventType)
     {
@@ -20,6 +21,7 @@ public class WorldEventWeightSettings : ScriptableObject
             case WorldTileEventType.Merchant: return merchantWeight;
             case WorldTileEventType.Quest: return questWeight;
             case WorldTileEventType.EliteBattle: return eliteWeight;
+            case WorldTileEventType.ManaSpring: return manaSpringWeight;
             default: return 0;
         }
     }

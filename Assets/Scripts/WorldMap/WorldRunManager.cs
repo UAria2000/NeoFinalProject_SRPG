@@ -18,6 +18,12 @@ public class WorldRunManager : MonoBehaviour
     [Header("Startup")]
     [SerializeField] private bool generateOnStart = true;
 
+    [Header("Roguelite Chapters")]
+    [SerializeField, Min(1)] private int totalRunChapters = 3;
+    [SerializeField] private string chapterTransitionTitleFormat = "{0}장 클리어";
+    [TextArea(2, 4)]
+    [SerializeField] private string chapterTransitionBodyFormat = "{0}장을 클리어했습니다.\n군단 전체가 경험치를 획득하고 {1}장으로 이동합니다.";
+
     [Header("Tutorial World")]
     [SerializeField] private TutorialWorldController tutorialWorldController;
 
@@ -109,8 +115,15 @@ public class WorldRunManager : MonoBehaviour
 
     private int worldStartMainCharacterLevel = 0;
     private int currentWorldNumber = 1;
+    private int currentChapterIndex = 1;
+    private bool chapterTransitionQueued;
+    private bool openingChapterTransition;
+    private bool finalChapterClearRewardGranted;
     public int WorldStartMainCharacterLevel => Mathf.Max(1, worldStartMainCharacterLevel > 0 ? worldStartMainCharacterLevel : ResolveCurrentMainCharacterLevel());
     public int CurrentWorldNumber => Mathf.Max(1, currentWorldNumber);
+    public int CurrentChapterIndex => Mathf.Clamp(currentChapterIndex, 1, TotalRunChapters);
+    public int TotalRunChapters => generationSettings != null ? generationSettings.GetFixedChapterCount() : Mathf.Max(1, totalRunChapters);
+    public bool IsFinalChapter => CurrentChapterIndex >= TotalRunChapters;
 
     private bool isTutorialWorld;
     private int tutorialShownStepMask;
@@ -252,11 +265,19 @@ public class WorldRunManager : MonoBehaviour
         isTutorialWorld = false;
         tutorialShownStepMask = 0;
         activeTutorialBattleTileId = -1;
+        currentChapterIndex = 1;
+        chapterTransitionQueued = false;
+        openingChapterTransition = false;
+        finalChapterClearRewardGranted = false;
         BeginNewWorldAttemptNumber();
         RestoreRosterUnitsForNewWorld();
         ResetWorldRunStateForNewWorld();
         CaptureWorldStartEnemyScalingLevel();
+        GenerateChapterMap(resetQuests: true);
+    }
 
+    private void GenerateChapterMap(bool resetQuests)
+    {
         HexWorldGenerator generator = new HexWorldGenerator(generationSettings);
         MapData = generator.Generate();
         if (MapData == null)
@@ -267,7 +288,11 @@ public class WorldRunManager : MonoBehaviour
 
         CurrentTile = MapData.GetStartTile();
         SelectedTile = null;
+        previousTileBeforeArrival = null;
         revealController.RevealAround(CurrentTile);
+
+        if (resetQuests && questController != null)
+            questController.LoadFromSave(null);
 
         if (selectedTileInfoPanel != null)
         {
@@ -284,6 +309,9 @@ public class WorldRunManager : MonoBehaviour
 
         if (questController == null)
             questController = UnityEngine.Object.FindFirstObjectByType<WorldQuestController>();
+
+        if (resetQuests && questController != null)
+            questController.LoadFromSave(null);
 
         if (worldMapUI != null)
             worldMapUI.Initialize(this, MapData, generationSettings);
@@ -1573,8 +1601,62 @@ public class WorldRunManager : MonoBehaviour
             summary.totalSettlementExpAward = 0;
         }
 
+        // 로그라이트 정산에서는 소울/아이템 환산 보상과 결산 EXP를 지급하지 않는다.
+        // 실제 보상은 타일 이벤트에서, 장 클리어 EXP는 장 전환/최종 정산 직전에 별도로 지급한다.
+        summary.soulAwardToGrant = 0;
+        summary.totalSettlementExpAward = 0;
+        ApplyPurpleEssencePreview(summary, wasVictory);
         CaptureLordExpPreview(summary, summary.totalSettlementExpAward);
         return summary;
+    }
+
+    private void ApplyPurpleEssencePreview(WorldSettlementSummary summary, bool wasVictory)
+    {
+        if (summary == null)
+            return;
+
+        int occupied = CountTotalOccupiedNonStartTilesForRun();
+        int corrupted = CountCorruptedRosterUnitsForRun();
+        int tileValue = generationSettings != null ? Mathf.Max(0, generationSettings.purpleEssencePerOccupiedTile) : 1;
+        int corruptedValue = generationSettings != null ? Mathf.Max(0, generationSettings.purpleEssencePerCorruptedUnit) : 5;
+        int baseAward = occupied * tileValue + corrupted * corruptedValue;
+        int difficultyBonus = generationSettings != null ? generationSettings.GetPurpleEssenceDifficultyBonusPercent() : 0;
+
+        summary.occupiedTileCountForEssence = occupied;
+        summary.corruptedUnitCountForEssence = corrupted;
+        summary.purpleEssenceBaseAward = Mathf.Max(0, baseAward);
+        summary.purpleEssenceDifficultyBonusPercent = Mathf.Max(0, difficultyBonus);
+        summary.purpleEssenceAward = ApplySettlementMultiplier(summary.purpleEssenceBaseAward, summary.purpleEssenceDifficultyBonusPercent);
+    }
+
+    private int CountTotalOccupiedNonStartTilesForRun()
+    {
+        WorldRunTransientState state = GetOrCreateWorldRunState();
+        int previous = state != null ? Mathf.Max(0, state.runOccupiedNonStartTileCount) : 0;
+        int current = CountConqueredPlayerTiles();
+        return Mathf.Max(0, previous + current);
+    }
+
+    private int CountCorruptedRosterUnitsForRun()
+    {
+        if (persistentProfileController == null)
+            persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (persistentProfileController == null)
+            return 0;
+
+        IReadOnlyList<PersistentRosterUnitData> roster = persistentProfileController.GetRosterUnits();
+        if (roster == null)
+            return 0;
+
+        int count = 0;
+        for (int i = 0; i < roster.Count; i++)
+        {
+            PersistentRosterUnitData unit = roster[i];
+            if (unit != null && unit.isConvertedFromPrisoner)
+                count++;
+        }
+        return count;
     }
 
     private int ApplySettlementMultiplier(int baseValue, int bonusPercent)
@@ -1671,14 +1753,23 @@ public class WorldRunManager : MonoBehaviour
         if (summary == null)
             return;
 
-        int conversionOnly = Mathf.Max(0, summary.soulAwardToGrant);
-        persistentSoul += conversionOnly;
+        if (persistentProfileController == null)
+            persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
+
+        if (persistentProfileController != null && summary.purpleEssenceAward > 0)
+            persistentProfileController.AddPurpleEssence(summary.purpleEssenceAward);
+
+        // 로그라이트 런 종료: 소울은 런 중 재화이므로 정산 후 초기화한다.
+        persistentSoul = 0;
 
         if (summary.totalSettlementExpAward > 0)
             AddExperienceToAllRosterUnits(summary.totalSettlementExpAward);
 
         RemoveDeadPartyMembersFromActiveParty();
-        RestoreRosterUnitsForNewWorld();
+        if (persistentProfileController != null)
+            persistentProfileController.ResetRunCurrenciesAndRosterForRogueliteRunEnd(playerPartyTemplate);
+        else
+            RestoreRosterUnitsForNewWorld();
 
         if (persistentProfileController == null)
             persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
@@ -1793,33 +1884,64 @@ public class WorldRunManager : MonoBehaviour
         return true;
     }
 
+    public int GetChapterOccupiedNonStartTileCount()
+    {
+        return CountConqueredPlayerTiles();
+    }
+
+    public int GetChapterNonStartTileCount()
+    {
+        if (MapData == null || MapData.tiles == null)
+            return generationSettings != null ? generationSettings.GetChapterNonStartTileCount() : 0;
+
+        int count = 0;
+        for (int i = 0; i < MapData.tiles.Count; i++)
+        {
+            WorldTileData tile = MapData.tiles[i];
+            if (tile != null && !tile.isPlayerStart)
+                count++;
+        }
+        return count;
+    }
+
+    public int GetRequiredOccupiedTilesForChapterClear()
+    {
+        return generationSettings != null ? generationSettings.GetRequiredOccupiedTilesForChapterClear() : 21;
+    }
+
+    public bool AreAllBossTilesConquered()
+    {
+        if (MapData == null || MapData.tiles == null)
+            return false;
+
+        int bossCount = 0;
+        for (int i = 0; i < MapData.tiles.Count; i++)
+        {
+            WorldTileData tile = MapData.tiles[i];
+            if (tile == null || tile.eventType != WorldTileEventType.Boss)
+                continue;
+
+            bossCount++;
+            if (tile.currentOwner != FactionType.Player)
+                return false;
+        }
+
+        return bossCount > 0;
+    }
+
     public bool IsWorldConquestAvailable()
     {
         if (MapData == null || generationSettings == null)
             return false;
 
-        int nonStartTiles = 0;
-        int conquered = 0;
-        bool allBossesConquered = true;
-        for (int i = 0; i < MapData.tiles.Count; i++)
-        {
-            WorldTileData tile = MapData.tiles[i];
-            if (tile == null || tile.isPlayerStart)
-                continue;
+        int conquered = GetChapterOccupiedNonStartTileCount();
 
-            nonStartTiles++;
-            if (tile.currentOwner == FactionType.Player)
-                conquered++;
+        if (isTutorialWorld)
+            return conquered >= GetChapterNonStartTileCount();
 
-            if (tile.eventType == WorldTileEventType.Boss && tile.currentOwner != FactionType.Player)
-                allBossesConquered = false;
-        }
-
-        if (!allBossesConquered || nonStartTiles <= 0)
-            return false;
-
-        float percent = conquered / (float)nonStartTiles * 100f;
-        return percent >= generationSettings.GetConquestRequiredPercent();
+        bool allBossesConquered = AreAllBossTilesConquered();
+        int required = GetRequiredOccupiedTilesForChapterClear();
+        return allBossesConquered && conquered >= required;
     }
 
     public void HandleWorldConquestButtonPressed()
@@ -1840,29 +1962,95 @@ public class WorldRunManager : MonoBehaviour
 
     private void QueueWorldSettlementIfAvailable()
     {
-        if (MapData == null || openingWorldSettlement)
+        if (MapData == null || openingWorldSettlement || openingChapterTransition)
             return;
 
-        if (IsWorldConquestAvailable())
+        if (!IsWorldConquestAvailable())
+            return;
+
+        if (isTutorialWorld || IsFinalChapter)
             worldSettlementQueued = true;
+        else
+            chapterTransitionQueued = true;
     }
 
     public void TryOpenQueuedWorldSettlementIfReady()
     {
-        if (!worldSettlementQueued || openingWorldSettlement)
-            return;
         if (eventController == null || IsBusy)
+            return;
+
+        if (chapterTransitionQueued && !openingChapterTransition)
+        {
+            chapterTransitionQueued = false;
+            openingChapterTransition = true;
+            OpenChapterTransitionPopup();
+            return;
+        }
+
+        if (!worldSettlementQueued || openingWorldSettlement)
             return;
 
         worldSettlementQueued = false;
         openingWorldSettlement = true;
+        GrantFinalChapterClearExpIfNeeded();
         eventController.OpenWorldSettlementFromMap();
+    }
+
+    private void GrantCurrentChapterClearExpIfNeeded()
+    {
+        if (generationSettings == null)
+            return;
+
+        int exp = generationSettings.GetChapterClearExpReward(CurrentChapterIndex);
+        if (exp > 0)
+            AddExperienceToAllRosterUnits(exp);
+    }
+
+    private void GrantFinalChapterClearExpIfNeeded()
+    {
+        if (finalChapterClearRewardGranted)
+            return;
+
+        finalChapterClearRewardGranted = true;
+        GrantCurrentChapterClearExpIfNeeded();
+    }
+
+    private void OpenChapterTransitionPopup()
+    {
+        int current = CurrentChapterIndex;
+        int next = Mathf.Min(TotalRunChapters, current + 1);
+        string title = string.Format(string.IsNullOrWhiteSpace(chapterTransitionTitleFormat) ? "{0}장 클리어" : chapterTransitionTitleFormat, current);
+        string body = string.Format(
+            string.IsNullOrWhiteSpace(chapterTransitionBodyFormat) ? "{0}장을 클리어했습니다.\n{1}장으로 이동합니다." : chapterTransitionBodyFormat,
+            current,
+            next);
+
+        eventController.OpenChapterTransitionPopup(title, body, AdvanceToNextChapter);
+    }
+
+    private void AdvanceToNextChapter()
+    {
+        openingChapterTransition = false;
+        chapterTransitionQueued = false;
+
+        WorldRunTransientState state = GetOrCreateWorldRunState();
+        if (state != null)
+            state.runOccupiedNonStartTileCount += CountConqueredPlayerTiles();
+
+        GrantCurrentChapterClearExpIfNeeded();
+
+        currentChapterIndex = Mathf.Clamp(currentChapterIndex + 1, 1, TotalRunChapters);
+        finalChapterClearRewardGranted = false;
+        questController?.LoadFromSave(null);
+        GenerateChapterMap(resetQuests: true);
     }
 
     public void NotifyWorldSettlementPopupClosed()
     {
         openingWorldSettlement = false;
         worldSettlementQueued = false;
+        openingChapterTransition = false;
+        chapterTransitionQueued = false;
     }
 
     public void StartManagedTutorialCoroutine(IEnumerator routine)
@@ -2011,22 +2199,8 @@ public class WorldRunManager : MonoBehaviour
         if (generationSettings == null)
             return 0;
 
-        WorldSettlementResultState previousResult = WorldSettlementResultState.None;
-        if (persistentProfileController == null)
-            persistentProfileController = UnityEngine.Object.FindFirstObjectByType<PersistentProfileController>();
-
-        if (tutorialWorldController == null)
-            tutorialWorldController = UnityEngine.Object.FindFirstObjectByType<TutorialWorldController>(FindObjectsInactive.Include);
-        tutorialWorldController?.Initialize(this);
-
-        if (persistentProfileController != null)
-        {
-            persistentProfileController.EnsureInitialized();
-            if (persistentProfileController.Profile != null)
-                previousResult = persistentProfileController.Profile.lastWorldSettlementResult;
-        }
-
-        return generationSettings.CalculateMaxMana(previousResult);
+        // 로그라이트 구조에서는 이전 월드 성공/실패 기록으로 새 런의 마나 최대치를 제한하지 않는다.
+        return generationSettings.CalculateMaxMana(WorldSettlementResultState.None);
     }
 
     public IReadOnlyList<InventoryStackData> GetStorageInventory()
@@ -2683,6 +2857,7 @@ public class WorldRunManager : MonoBehaviour
             EnsureTutorialWorldControllerInitialized();
         worldStartMainCharacterLevel = Mathf.Max(0, saveData.worldStartMainCharacterLevel);
         currentWorldNumber = Mathf.Max(1, saveData.worldNumber);
+        currentChapterIndex = Mathf.Clamp(saveData.currentChapter <= 0 ? 1 : saveData.currentChapter, 1, TotalRunChapters);
 
         ResetWorldRunStateForNewWorld();
 
@@ -3150,6 +3325,7 @@ public class WorldRunManager : MonoBehaviour
         state.sharedConsumableItem = null;
         state.partyEquipmentAssignments.Clear();
         state.worldEarnedSoulAlreadyGranted = Mathf.Max(0, saveData.worldEarnedSoulAlreadyGranted);
+        state.runOccupiedNonStartTileCount = Mathf.Max(0, saveData.runOccupiedNonStartTileCount);
         state.nextPrisonerSequence = 1;
         state.settlementBattleCount = Mathf.Max(0, saveData.settlementBattleCount);
         state.settlementVictoryCount = Mathf.Max(0, saveData.settlementVictoryCount);

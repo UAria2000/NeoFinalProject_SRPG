@@ -43,6 +43,7 @@ public static class SaveDataMapper
             save.currencies.midShard = 0;
             save.currencies.rangedShard = 0;
             save.currencies.cash = profile.accountCurrencies.cashCurrency;
+            save.currencies.purpleEssence = profile.accountCurrencies.GetPurpleEssence();
         }
 
         if (worldRunManager != null)
@@ -111,6 +112,7 @@ public static class SaveDataMapper
         save.hasActiveWorld = true;
         save.mapRadius = worldRunManager.MapData.radius;
         save.worldNumber = Mathf.Max(1, worldRunManager.CurrentWorldNumber);
+        save.currentChapter = Mathf.Max(1, worldRunManager.CurrentChapterIndex);
         save.worldStartMainCharacterLevel = Mathf.Max(1, worldRunManager.WorldStartMainCharacterLevel);
         save.isTutorialWorld = worldRunManager.IsTutorialWorld;
         save.tutorialShownStepMask = worldRunManager.TutorialShownStepMask;
@@ -185,6 +187,7 @@ public static class SaveDataMapper
             save.currentMana = Mathf.Max(0, state.currentMana);
             save.maxMana = Mathf.Max(0, state.maxMana);
             save.worldEarnedSoulAlreadyGranted = Mathf.Max(0, state.worldEarnedSoulAlreadyGranted);
+            save.runOccupiedNonStartTileCount = Mathf.Max(0, state.runOccupiedNonStartTileCount);
 
             save.settlementBattleCount = Mathf.Max(0, state.settlementBattleCount);
             save.settlementVictoryCount = Mathf.Max(0, state.settlementVictoryCount);
@@ -286,6 +289,7 @@ public static class SaveDataMapper
             profile.accountCurrencies = new PersistentAccountCurrencyState();
         profile.accountCurrencies.EnsureDefaults();
         profile.accountCurrencies.cashCurrency = Mathf.Max(0, saveData.currencies.cash);
+        profile.accountCurrencies.SetPurpleEssence(Mathf.Max(0, saveData.currencies.purpleEssence));
 
         int commonShard = Mathf.Max(0, saveData.currencies.unitShard);
         // 클래스별/스킬별 샤드는 폐기되었으므로 legacy melee/mid/ranged 값은 이관하지 않는다.

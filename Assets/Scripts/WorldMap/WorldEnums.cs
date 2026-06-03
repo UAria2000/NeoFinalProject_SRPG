@@ -24,6 +24,7 @@ public enum WorldTileEventType
     Graveyard = 6,
     EliteBattle = 7,
     Boss = 8,
+    ManaSpring = 9,
 }
 
 public static class WorldTileEventTypeExtensions
@@ -42,6 +43,7 @@ public static class WorldTileEventTypeExtensions
             || eventType == WorldTileEventType.Treasure
             || eventType == WorldTileEventType.Merchant
             || eventType == WorldTileEventType.Quest
-            || eventType == WorldTileEventType.EliteBattle;
+            || eventType == WorldTileEventType.EliteBattle
+            || eventType == WorldTileEventType.ManaSpring;
     }
 }

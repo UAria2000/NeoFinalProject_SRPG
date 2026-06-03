@@ -381,6 +381,13 @@ public class WorldSettlementPopupUI : MonoBehaviour
         sb.AppendLine($"처치한 적 {s.killedEnemyCount} / 완료 임무 {s.completedQuestCount} / 포획 {s.capturedEnemyCount}");
         sb.AppendLine($"EXP {s.baseExpTotal} * {s.expBonusPercent}% = {s.totalSettlementExpAward}");
         sb.AppendLine($"소울 {s.baseSoulTotal} * {s.soulBonusPercent}% = {s.totalSettlementSoulAward}");
+
+        if (s.purpleEssenceAward > 0)
+        {
+            sb.AppendLine($"보라색 정수 {s.purpleEssenceBaseAward} * {100 + s.purpleEssenceDifficultyBonusPercent}% = {s.purpleEssenceAward}");
+            sb.AppendLine($"정수 기준: 점령 {s.occupiedTileCountForEssence} / 타락 {s.corruptedUnitCountForEssence}");
+        }
+
         return sb.ToString();
     }
 
